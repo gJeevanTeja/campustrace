@@ -1,0 +1,17 @@
+﻿node_modules/
+frontend/node_modules/
+backend/__pycache__/
+backend/*.pyc
+backend/.env
+frontend/.env
+.env
+*.env
+db.sqlite3
+backend/media/
+backend/staticfiles/
+.vscode/
+.idea/
+*.log
+firebase-service-account.json
+build/
+frontend/build/
