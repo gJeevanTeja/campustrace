@@ -5,9 +5,9 @@ import axios from 'axios';
 // PC browser:  http://192.168.137.1:3000
 // Mobile:      http://192.168.137.1:3000  (same WiFi)
 
-const API_IP   = process.env.REACT_APP_API_IP || 'localhost';
-const BASE_URL = `http://${API_IP}:8000/api`;
-const WS_BASE  = `ws://${API_IP}:8000`;
+const API_IP = process.env.REACT_APP_API_IP || 'localhost';
+const BASE_URL = `http://${API_IP}:8000/api/`;
+const WS_BASE = `ws://${API_IP}:8000`;
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -27,7 +27,7 @@ api.interceptors.request.use(
 
 // ── Auto-refresh on 401 ───────────────────────────────────────────
 let isRefreshing = false;
-let failedQueue  = [];
+let failedQueue = [];
 
 const processQueue = (error, token = null) => {
   failedQueue.forEach((prom) => {
@@ -59,7 +59,7 @@ api.interceptors.response.use(
       }
 
       original._retry = true;
-      isRefreshing    = true;
+      isRefreshing = true;
 
       try {
         const refresh = localStorage.getItem('refresh_token');
@@ -88,35 +88,36 @@ api.interceptors.response.use(
 
 // ── Auth ──────────────────────────────────────────────────────────
 export const authAPI = {
-  register:       (data)     => api.post('/auth/register/', data),
-  login:          (data)     => api.post('/auth/login/', data),
-  logout:         (refresh)  => api.post('/auth/logout/', { refresh }),
-  forgotPassword: (data)     => api.post('/auth/forgot-password/', data),
-  resetPassword:  (data)     => api.post('/auth/reset-password/', data),
-  getProfile:     ()         => api.get('/auth/profile/'),
-  updateProfile:  (data)     => api.patch('/auth/profile/', data),
-  updateAvatar:   (formData) => api.post('/auth/profile/avatar/', formData, {
+  register: (data) => api.post('auth/register/', data),
+  login: (data) => api.post('auth/login/', data),
+  logout: (refresh) => api.post('auth/logout/', { refresh }),
+  forgotPassword: (data) => api.post('auth/forgot-password/', data),
+  resetPassword: (data) => api.post('auth/reset-password/', data),
+  getProfile: () => api.get('auth/profile/'),
+  updateProfile: (data) => api.patch('auth/profile/', data),
+  updateAvatar: (formData) => api.post('auth/profile/avatar/', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
-  changePassword: (data)     => api.post('/auth/change-password/', data),
-  updateLocation: (lat, lng) => api.post('/auth/update-location/', { latitude: lat, longitude: lng }),
-  getSettings:    ()         => api.get('/auth/settings/'),
-  updateSettings: (data)     => api.patch('/auth/settings/', data),
-  getNotificationSettings:    () => api.get('/auth/settings/'),
-  updateNotificationSettings: (data) => api.patch('/auth/settings/', data),
-  sendOTP:       (data)     => api.post('/auth/send-otp/', data),
-  verifyOTP:     (data)     => api.post('/auth/verify-otp/', data),
-  googleAuth:    (data)     => api.post('/auth/google/', data),
-  checkUsername: (username) => api.get(`/auth/check-username/?username=${username}`),
+  changePassword: (data) => api.post('auth/change-password/', data),
+  updateLocation: (lat, lng) => api.post('auth/update-location/', { latitude: lat, longitude: lng }),
+  getSettings: () => api.get('auth/settings/'),
+  updateSettings: (data) => api.patch('auth/settings/', data),
+  getNotificationSettings: () => api.get('auth/settings/'),
+  updateNotificationSettings: (data) => api.patch('auth/settings/', data),
+  sendOTP: (data) => api.post('auth/send-otp/', data),
+  verifyOTP: (data) => api.post('auth/verify-otp/', data),
+  googleAuth: (data) => api.post('auth/google/', data),
+  getColleges: () => api.get('admin/manage/'),
+  checkUsername: (username) => api.get(`auth/check-username/?username=${username}`),
 };
 
 // ── Items ─────────────────────────────────────────────────────────
 export const itemsAPI = {
-  getAll:     (params)       => api.get('/items/', { params }),
-  getRecent:  ()             => api.get('/items/recent/'),
-  getMyItems: ()             => api.get('/items/my-items/'),
-  getById:    (id, params)   => api.get(`/items/${id}/`, { params }),
-  getNearby:  (lat, lng, km) => api.get('/items/nearby/', { params: { lat, lng, km: km || 2 } }),
+  getAll: (params) => api.get('items/', { params }),
+  getRecent: () => api.get('items/recent/'),
+  getMyItems: () => api.get('items/my-items/'),
+  getById: (id, params) => api.get(`items/${id}/`, { params }),
+  getNearby: (lat, lng, km) => api.get('items/nearby/', { params: { lat, lng, km: km || 2 } }),
   create: (data) => {
     const form = new FormData();
     Object.entries(data).forEach(([k, v]) => {
@@ -127,69 +128,101 @@ export const itemsAPI = {
         form.append(k, v);
       }
     });
-    return api.post('/items/', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+    return api.post('items/', form, { headers: { 'Content-Type': 'multipart/form-data' } });
   },
-  update:    (id, data) => api.put(`/items/${id}/`, data),
-  delete:    (id)       => api.delete(`/items/${id}/`),
-  claim:     (id)       => api.post(`/items/${id}/claim/`),
-  claimItem: (id)       => api.post(`/items/${id}/claim/`),
+  update: (id, data) => api.put(`items/${id}/`, data),
+  delete: (id) => api.delete(`items/${id}/`),
+  claim: (id) => api.post(`items/${id}/claim/`),
+  claimItem: (id) => api.post(`items/${id}/claim/`),
   addPhotos: (id, photos) => {
     const form = new FormData();
     photos.forEach(p => form.append('photos', p));
-    return api.post(`/items/${id}/photos/`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
+    return api.post(`items/${id}/photos/`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
   },
 };
 
 // ── Notifications ─────────────────────────────────────────────────
 export const notificationsAPI = {
-  getAll:         (params) => api.get('/notifications/', { params }),
-  getUnreadCount: ()       => api.get('/notifications/unread-count/'),
-  markRead:       (id)     => api.post(`/notifications/${id}/read/`),
-  markAllRead:    ()       => api.post('/notifications/mark-all-read/'),
-  deleteOne:      (id)     => api.delete(`/notifications/${id}/delete/`),
-  delete:         (id)     => api.delete(`/notifications/${id}/delete/`),
-  clearAll:       ()       => api.delete('/notifications/clear-all/'),
-  toggleSound:    (val)    => api.post('/notifications/sound/', { notification_sound: val }),
-  toggleMute:     (val)    => api.post('/notifications/mute/', { notifications_enabled: val }),
+  getAll: (params) => api.get('notifications/', { params }),
+  getUnreadCount: () => api.get('notifications/unread-count/'),
+  markRead: (id) => api.post(`notifications/${id}/read/`),
+  markAllRead: () => api.post('notifications/mark-all-read/'),
+  deleteOne: (id) => api.delete(`notifications/${id}/delete/`),
+  delete: (id) => api.delete(`notifications/${id}/delete/`),
+  clearAll: () => api.delete('notifications/clear-all/'),
+  toggleSound: (val) => api.post('notifications/sound/', { notification_sound: val }),
+  toggleMute: (val) => api.post('notifications/mute/', { notifications_enabled: val }),
 };
 
 // ── Chat ──────────────────────────────────────────────────────────
 export const chatAPI = {
   // Rooms
-  startChat:      (data)                      => api.post('/chat/start/', data),
-  getRooms:       ()                          => api.get('/chat/'),
-  getUnreadCount: ()                          => api.get('/chat/unread/'),
+  startChat: (data) => api.post('chat/start/', data),
+  getRooms: () => api.get('chat/'),
+  getUnreadCount: () => api.get('chat/unread/'),
 
   // Messages
-  getMessages:    (roomId)                    => api.get(`/chat/${roomId}/`),
-  sendMessage:    (roomId, text, type='text') => api.post(`/chat/${roomId}/`, { message: text, message_type: type }),
+  getMessages: (roomId) => api.get(`chat/${roomId}/`),
+  sendMessage: (roomId, text, type = 'text') => api.post(`chat/${roomId}/`, { message: text, message_type: type }),
 
   // Media
-  uploadMedia: (roomId, formData) => api.post(`/chat/${roomId}/upload/`, formData, {
+  uploadMedia: (roomId, formData) => api.post(`chat/${roomId}/upload/`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
-  getMedia: (roomId, type = 'all') => api.get(`/chat/${roomId}/media/`, { params: { type } }),
+  getMedia: (roomId, type = 'all') => api.get(`chat/${roomId}/media/`, { params: { type } }),
 
   // Clear Chat
-  clearChat: (roomId) => api.delete(`/chat/${roomId}/clear/`),
+  clearChat: (roomId) => api.delete(`chat/${roomId}/clear/`),
 
   // Search
-  searchMessages: (roomId, q) => api.get(`/chat/${roomId}/search/`, { params: { q } }),
+  searchMessages: (roomId, q) => api.get(`chat/${roomId}/search/`, { params: { q } }),
 
   // Mute / Unmute
-  muteRoom:   (roomId) => api.post(`/chat/${roomId}/mute/`),
-  unmuteRoom: (roomId) => api.delete(`/chat/${roomId}/mute/`),
+  muteRoom: (roomId) => api.post(`chat/${roomId}/mute/`),
+  unmuteRoom: (roomId) => api.delete(`chat/${roomId}/mute/`),
 
   // Block / Unblock
-  blockUser:       (userId) => api.post(`/chat/block/${userId}/`),
-  unblockUser:     (userId) => api.delete(`/chat/block/${userId}/`),
-  getBlockStatus:  (userId) => api.get(`/chat/block/${userId}/status/`),
+  blockUser: (userId) => api.post(`chat/block/${userId}/`),
+  unblockUser: (userId) => api.delete(`chat/block/${userId}/`),
+  getBlockStatus: (userId) => api.get(`chat/block/${userId}/status/`),
 
   // Forward
-  forwardMessage: (messageId, targetRoomId) => api.post('/chat/forward/', {
-    message_id:     messageId,
+  forward_message: (messageId, targetRoomId) => api.post('chat/forward/', {
+    message_id: messageId,
     target_room_id: targetRoomId,
   }),
+};
+
+// ── Admin ─────────────────────────────────────────────────────────
+export const adminAPI = {
+  // Analytics
+  getAnalytics: () => api.get('admin/analytics/'),
+
+  // Colleges (Super Admin)
+  getColleges: () => api.get('admin/manage/'),
+  createCollege: (formData) => api.post('admin/manage/', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  updateCollege: (id, data) => api.patch(`admin/manage/${id}/`, data),
+  deleteCollege: (id) => api.delete(`admin/manage/${id}/`),
+
+  // Blocks
+  getBlocks: () => api.get('admin/blocks/'),
+  createBlock: (formData) => api.post('admin/blocks/', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  updateBlock: (id, data) => api.patch(`admin/blocks/${id}/`, data),
+  deleteBlock: (id) => api.delete(`admin/blocks/${id}/`),
+
+  // Categories
+  getCategories: () => api.get('admin/categories/'),
+  createCategory: (formData) => api.post('admin/categories/', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  updateCategory: (id, data) => api.patch(`admin/categories/${id}/`, data),
+  deleteCategory: (id) => api.delete(`admin/categories/${id}/`),
+
+  // User Management
+  getUsers: (params) => api.get('auth/admin/users/', { params }),
+  userAction: (id, action) => api.patch(`auth/admin/users/${id}/${action}/`),
+  getUserActivity: (id) => api.get(`auth/admin/users/${id}/activity/`),
+
+  // Auth & Onboarding
+  registerAdmin: (data) => api.post('auth/register-admin/', data),
 };
 
 // ── WebSocket helpers ─────────────────────────────────────────────

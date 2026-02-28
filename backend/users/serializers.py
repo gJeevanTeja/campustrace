@@ -35,7 +35,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'name', 'username', 'email', 'phone', 'department',
-            'section', 'college_year', 'password', 'confirm_password',
+            'section', 'college_year', 'college', 'password', 'confirm_password',
             'terms_accepted'
         ]
 
@@ -68,6 +68,19 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Enter a valid email address.")
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError("An account with this email already exists.")
+        
+        # Domain validation against selected college
+        college_id = self.initial_data.get('college')
+        if college_id:
+            from colleges.models import College
+            try:
+                college = College.objects.get(pk=college_id)
+                domain = value.split('@')[-1]
+                if college.email_domain.lower() not in domain.lower():
+                    raise serializers.ValidationError(f"Please use your {college.name} email ({college.email_domain}).")
+            except College.DoesNotExist:
+                raise serializers.ValidationError("Invalid college selected.")
+        
         return value
 
     def validate_phone(self, value):
@@ -151,6 +164,10 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError({"detail": "Invalid email/phone or password."})
         if not user.is_active:
             raise serializers.ValidationError({"detail": "Your account has been deactivated."})
+        if user.is_blocked:
+            raise serializers.ValidationError({"detail": "Your account is blocked. Contact administrator."})
+        if user.college and not user.college.is_active:
+            raise serializers.ValidationError({"detail": f"Logging into {user.college.name} is currently disabled."})
 
         data['user'] = user
         return data
@@ -237,3 +254,67 @@ class OTPRequestSerializer(serializers.Serializer):
 class OTPVerifySerializer(serializers.Serializer):
     identifier = serializers.CharField()
     otp_code   = serializers.CharField(min_length=6, max_length=6)
+
+
+class AdminRegisterSerializer(serializers.Serializer):
+    """
+    Handles atomic registration of a new College AND its initial College Admin.
+    """
+    # College Info
+    college_name = serializers.CharField(max_length=200)
+    email_domain = serializers.CharField(max_length=100)
+    
+    # Admin Info
+    name             = serializers.CharField(max_length=100)
+    email            = serializers.EmailField()
+    phone            = serializers.CharField(max_length=20)
+    password         = serializers.CharField(write_only=True, min_length=8)
+    confirm_password = serializers.CharField(write_only=True)
+    admin_secret_key = serializers.CharField(write_only=True)
+
+    def validate_admin_secret_key(self, value):
+        from django.conf import settings
+        secret = getattr(settings, 'ADMIN_SIGNUP_SECRET', 'admin123')
+        if value != secret:
+            raise serializers.ValidationError("Invalid admin secret key.")
+        return value
+
+    def validate_email(self, value):
+        value = value.lower().strip()
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("An account with this email already exists.")
+        
+        domain = value.split('@')[-1]
+        req_domain = self.initial_data.get('email_domain', '').lower()
+        if req_domain and req_domain not in domain:
+            raise serializers.ValidationError(f"Admin email must match the college domain ({req_domain}).")
+        return value
+
+    def validate(self, data):
+        if data['password'] != data['confirm_password']:
+            raise serializers.ValidationError({"confirm_password": "Passwords do not match."})
+        return data
+
+    def create(self, validated_data):
+        from colleges.models import College
+        from django.db import transaction
+
+        with transaction.atomic():
+            # 1. Create College
+            college = College.objects.create(
+                name=validated_data['college_name'],
+                email_domain=validated_data['email_domain']
+            )
+
+            # 2. Create Admin User
+            user = User.objects.create_user(
+                email=validated_data['email'].lower(),
+                password=validated_data['password'],
+                name=validated_data['name'],
+                phone=validated_data['phone'],
+                college=college,
+                role='college_admin',
+                is_verified=True,
+                is_staff=True  # Allow access to Django admin if needed
+            )
+            return user

@@ -22,8 +22,15 @@ import ChatRoom from './pages/ChatRoom';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Settings from './pages/Settings';
-import TermsPage from './pages/TermsPage'; 
-import Dashboard from './pages/Dashboard';    // ← NEW
+import TermsPage from './pages/TermsPage';
+import Dashboard from './pages/Dashboard';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import CollegeManager from './pages/admin/CollegeManager';
+import UserManager from './pages/admin/UserManager';
+import BlockManager from './pages/admin/BlockManager';
+import CategoryManager from './pages/admin/CategoryManager';
+import AdminSignup from './pages/admin/AdminSignup';
+import AuthLanding from './pages/AuthLanding';
 
 function AppRoutes() {
   const { darkMode, setDarkMode } = useTheme();
@@ -33,13 +40,32 @@ function AppRoutes() {
       <div className="app-container">
         <Routes>
           {/* Public */}
-          <Route path="/login"           element={<Login darkMode={darkMode} />} />
-          <Route path="/signup"          element={<Signup darkMode={darkMode} />} />
+          <Route path="/login" element={<Login darkMode={darkMode} />} />
+          <Route path="/signup" element={<Signup darkMode={darkMode} />} />
+          <Route path="/admin/signup" element={<AdminSignup darkMode={darkMode} />} />
           <Route path="/forgot-password" element={<ForgotPassword darkMode={darkMode} />} />
-          <Route path="/reset-password"  element={<ResetPassword darkMode={darkMode} />} />
-          <Route path="/terms"           element={<TermsPage darkMode={darkMode} />} />  {/* ← NEW */}
-          <Route path="/privacy"         element={<TermsPage darkMode={darkMode} />} />  {/* ← NEW */}
+          <Route path="/reset-password" element={<ResetPassword darkMode={darkMode} />} />
+          <Route path="/terms" element={<TermsPage darkMode={darkMode} />} />  {/* ← NEW */}
+          <Route path="/privacy" element={<TermsPage darkMode={darkMode} />} />  {/* ← NEW */}
           <Route path="/dashboard" element={<Dashboard darkMode={darkMode} />} />
+          <Route path="/welcome" element={<AuthLanding darkMode={darkMode} />} />
+
+          {/* Admin Routes */}
+          <Route path="/admin" element={
+            <ProtectedRoute><AdminDashboard darkMode={darkMode} /></ProtectedRoute>
+          } />
+          <Route path="/admin/colleges" element={
+            <ProtectedRoute><CollegeManager darkMode={darkMode} /></ProtectedRoute>
+          } />
+          <Route path="/admin/users" element={
+            <ProtectedRoute><UserManager darkMode={darkMode} /></ProtectedRoute>
+          } />
+          <Route path="/admin/blocks" element={
+            <ProtectedRoute><BlockManager darkMode={darkMode} /></ProtectedRoute>
+          } />
+          <Route path="/admin/categories" element={
+            <ProtectedRoute><CategoryManager darkMode={darkMode} /></ProtectedRoute>
+          } />
 
           {/* Protected */}
           <Route path="/" element={

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useNotifications } from '../context/NotificationContext';
+import { useAuth } from '../context/AuthContext';
 
 const BottomNav = ({ darkMode }) => {
   const navigate = useNavigate();
@@ -8,13 +9,18 @@ const BottomNav = ({ darkMode }) => {
   const { unreadCount, unreadChatCount } = useNotifications();
   const dm = darkMode;
 
+  const { user } = useAuth();
   const tabs = [
     { path: '/', icon: '🏠', label: 'Home' },
     { path: '/browse', icon: '🔍', label: 'Browse' },
     { path: '/report', icon: '➕', label: 'Report', special: true },
     { path: '/chat', icon: '💬', label: 'Chat' },
     { path: '/profile', icon: '👤', label: 'Profile' },
-    { path: '/dashboard', icon: '📊', label: 'Stats' }
+    {
+      path: (user?.role === 'student' || !user?.role) ? '/dashboard' : '/admin',
+      icon: '📊',
+      label: 'Stats'
+    }
   ];
 
   const isActive = (path) => {

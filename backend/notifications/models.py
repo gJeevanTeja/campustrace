@@ -62,21 +62,17 @@ class Notification(models.Model):
         )
 
     @classmethod
-    def bulk_create_for_all_users(cls, item, message, notification_type='new_item', exclude_user=None):
+    def bulk_create_for_all_users(cls, item, message, notification_type='new_item', exclude_user=None, user_queryset=None):
         """
         Creates in-app DB notifications for all active users.
-
-        ✅ NO send_mail() here — email removed entirely from this method.
-        ✅ This is fast (single bulk INSERT) — does not block HTTP response.
-
-        Email is ONLY sent from:
-          - users/views.py SendOTPView       → OTP login
-          - users/views.py ForgotPasswordView → password reset link
-          - items/views.py (claim code)       → when claim code feature is added
+        If user_queryset is provided, only those users are notified.
         """
-        from users.models import User as UserModel
+        if user_queryset is not None:
+            users = user_queryset.filter(is_active=True)
+        else:
+            from users.models import User as UserModel
+            users = UserModel.objects.filter(is_active=True)
 
-        users = UserModel.objects.filter(is_active=True)
         if exclude_user:
             users = users.exclude(id=exclude_user.id)
 

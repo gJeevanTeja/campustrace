@@ -4,36 +4,37 @@ import { itemsAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import BottomNav from '../components/BottomNav';
 import ItemCard from '../components/ItemCard';
+import { Shield } from 'lucide-react';
 
 import { useNotifications } from '../context/NotificationContext';
 
-const CATEGORIES = [ 
+const CATEGORIES = [
   { id: 'electronics', label: 'Electronics', icon: '🖥️' },
-  { id: 'keys',        label: 'Keys',        icon: '🔑' },
-  { id: 'wallet',      label: 'Wallets',     icon: '👛' },
-  { id: 'books',       label: 'Books',       icon: '📚' },
-  { id: 'clothing',    label: 'Clothing',    icon: '👕' },
-  { id: 'other',       label: 'Other',       icon: '📦' },
+  { id: 'keys', label: 'Keys', icon: '🔑' },
+  { id: 'wallet', label: 'Wallets', icon: '👛' },
+  { id: 'books', label: 'Books', icon: '📚' },
+  { id: 'clothing', label: 'Clothing', icon: '👕' },
+  { id: 'other', label: 'Other', icon: '📦' },
 ];
 
 const Home = ({ darkMode, setDarkMode }) => {
-  const [recent,   setRecent]   = useState([]);
-  const [loading,  setLoading]  = useState(true);
-  const [search,   setSearch]   = useState('');
+  const [recent, setRecent] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
   const { unreadCount } = useNotifications();
-  const navigate  = useNavigate();
-  const { user }  = useAuth();
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const bg     = darkMode ? '#0f172a' : '#f8fafc';
-  const card   = darkMode ? '#1e293b' : '#fff';
-  const text   = darkMode ? '#e2e8f0' : '#1e293b';
-  const muted  = darkMode ? '#94a3b8' : '#64748b';
+  const bg = darkMode ? '#0f172a' : '#f8fafc';
+  const card = darkMode ? '#1e293b' : '#fff';
+  const text = darkMode ? '#e2e8f0' : '#1e293b';
+  const muted = darkMode ? '#94a3b8' : '#64748b';
   const border = darkMode ? '#334155' : '#e2e8f0';
 
   useEffect(() => {
     itemsAPI.getRecent()
       .then(({ data }) => setRecent(Array.isArray(data) ? data : data.results || []))
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   }, []);
 
@@ -134,6 +135,26 @@ const Home = ({ darkMode, setDarkMode }) => {
             </button>
           </div>
         </form>
+
+        {/* Admin Quick Access Banner */}
+        {(user?.role === 'super_admin' || user?.role === 'college_admin' || user?.role === 'moderator') && (
+          <div
+            onClick={() => navigate('/admin')}
+            style={{
+              marginTop: 18, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
+              borderRadius: 14, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              cursor: 'pointer', backdropFilter: 'blur(8px)'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ background: '#fff', color: '#2563eb', padding: 6, borderRadius: 8, display: 'flex' }}>
+                <Shield size={16} />
+              </div>
+              <span style={{ fontSize: 13, fontWeight: 700 }}>Go to Admin Panel</span>
+            </div>
+            <span style={{ fontSize: 18 }}>→</span>
+          </div>
+        )}
       </div>
 
       {/* Quick Actions */}

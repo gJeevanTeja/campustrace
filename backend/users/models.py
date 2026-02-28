@@ -18,15 +18,17 @@ class UserManager(BaseUserManager):
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('role', 'admin')
+        extra_fields.setdefault('role', 'super_admin')
         return self.create_user(email, password, **extra_fields)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES = [
+        ('super_admin', 'Super Admin'),
+        ('college_admin', 'College Admin'),
+        ('moderator', 'Moderator'),
         ('student', 'Student'),
         ('faculty', 'Faculty'),
-        ('admin', 'Admin'),
     ]
 
     # Basic Info
@@ -35,6 +37,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     email      = models.EmailField(unique=True)
     phone      = models.CharField(max_length=20, blank=True, null=True, unique=True)
     role       = models.CharField(max_length=20, choices=ROLE_CHOICES, default='student')
+    
+    # College Link
+    college    = models.ForeignKey('colleges.College', on_delete=models.SET_NULL, null=True, blank=True, related_name='users')
+    
+    # Status Flags
+    is_blocked  = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=False)
+    last_active = models.DateTimeField(auto_now=True)
 
     # Academic Info
     department   = models.CharField(max_length=100, blank=True, null=True)

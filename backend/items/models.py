@@ -44,6 +44,12 @@ class Item(models.Model):
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='other')
     type = models.CharField(max_length=10, choices=TYPE_CHOICES)
     location = models.CharField(max_length=100, choices=LOCATION_CHOICES, default='other')
+    
+    # Multi-College fields
+    college = models.ForeignKey('colleges.College', on_delete=models.CASCADE, related_name='items', null=True, blank=True)
+    category_new = models.ForeignKey('colleges.Category', on_delete=models.SET_NULL, null=True, blank=True, related_name='items')
+    block = models.ForeignKey('colleges.Block', on_delete=models.SET_NULL, null=True, blank=True, related_name='items')
+    
     location_detail = models.CharField(max_length=200, blank=True, null=True)
     location_name = models.CharField(max_length=300, blank=True, null=True)  # GPS address text
     use_current_location = models.BooleanField(default=False)

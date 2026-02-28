@@ -20,8 +20,9 @@ from .serializers import (
     UserSerializer, RegisterSerializer, LoginSerializer,
     UpdateProfileSerializer, ChangePasswordSerializer,
     ForgotPasswordSerializer, ResetPasswordSerializer,
-    OTPRequestSerializer, OTPVerifySerializer,
+    OTPRequestSerializer, OTPVerifySerializer, AdminRegisterSerializer
 )
+from .permissions import IsSuperAdmin, IsCollegeAdmin, IsAdminOrModerator
 
 
 def get_tokens_for_user(user):
@@ -95,6 +96,27 @@ class RegisterView(APIView):
         if isinstance(first_error, list):
             first_error = first_error[0]
         return Response({'message': str(first_error), 'errors': errors},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+
+class RegisterAdminView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = AdminRegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            tokens = get_tokens_for_user(user)
+            return Response({
+                'message': 'College Admin registration successful!',
+                'tokens': tokens,
+                'user': UserSerializer(user, context={'request': request}).data,
+            }, status=status.HTTP_201_CREATED)
+
+        errors = serializer.errors
+        msg = next(iter(errors.values()))
+        if isinstance(msg, list): msg = msg[0]
+        return Response({'message': str(msg), 'errors': errors},
                         status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -524,13 +546,103 @@ class CheckUsernameView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        username = request.query_params.get('username', '').strip().lower()
-        if not username or len(username) < 3:
-            return Response({'available': False, 'error': 'Username too short'})
-        if not re.match(r'^[a-zA-Z0-9_\.]+$', username):
-            return Response({'available': False, 'error': 'Invalid characters'})
+        username = request.query_params.get('username', '').lower().strip()
+        if not username:
+            return Response({'available': False, 'error': 'No username provided.'})
+        
+        # Check if username exists
         exists = User.objects.filter(username=username).exists()
+        return Response({'available': not exists})
+
+class AdminUserListView(APIView):
+    permission_classes = [IsAdminOrModerator]
+    
+    def get(self, request):
+        user = request.user
+        qs = User.objects.all().order_by('-created_at')
+        if user.role != 'super_admin':
+            if not user.college:
+                return Response({'error': 'Admin not linked to a college'}, status=400)
+            qs = qs.filter(college=user.college)
+            
+        role = request.query_params.get('role')
+        if role:
+            qs = qs.filter(role=role)
+            
+        search = request.query_params.get('search')
+        if search:
+            qs = qs.filter(Q(name__icontains=search) | Q(email__icontains=search))
+            
+        return Response(UserSerializer(qs, many=True, context={'request': request}).data)
+
+class AdminUserActionView(APIView):
+    permission_classes = [IsAdminOrModerator]
+    
+    def patch(self, request, pk, action):
+        try:
+            target_user = User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
+            
+        # Security check
+        if request.user.role != 'super_admin' and target_user.college != request.user.college:
+            return Response({'error': 'Unauthorized to manage users from other colleges'}, status=403)
+            
+        # Role hierarchy check
+        if request.user.role == 'moderator' and target_user.role in ['college_admin', 'super_admin']:
+            return Response({'error': 'Moderators cannot manage admins'}, status=403)
+
+        if action == 'block':
+            target_user.is_blocked = True
+            target_user.is_active = False 
+            target_user.save()
+        elif action == 'unblock':
+            target_user.is_blocked = False
+            target_user.is_active = True
+            target_user.save()
+        elif action == 'verify':
+            target_user.is_verified = True
+            target_user.save()
+        elif action == 'promote':
+            if request.user.role not in ['super_admin', 'college_admin']:
+                return Response({'error': 'Only admins can promote users'}, status=403)
+            target_user.role = 'moderator'
+            target_user.save()
+        elif action == 'demote':
+            if request.user.role not in ['super_admin', 'college_admin']:
+                return Response({'error': 'Only admins can demote users'}, status=403)
+            target_user.role = 'student'
+            target_user.save()
+        else:
+            return Response({'error': 'Invalid action'}, status=400)
+            
         return Response({
-            'available': not exists,
-            'message': 'Username is available!' if not exists else 'Username already taken.',
+            'message': f'User {action}ed successfully',
+            'user': UserSerializer(target_user, context={'request': request}).data
+        })
+
+class AdminUserActivityView(APIView):
+    permission_classes = [IsAdminOrModerator]
+    
+    def get(self, request, pk):
+        try:
+            target_user = User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
+            
+        if request.user.role != 'super_admin' and target_user.college != request.user.college:
+            return Response({'error': 'Unauthorized'}, status=403)
+            
+        # Basic activity: items posted, claimed, last active
+        items_count = target_user.items.count()
+        claimed_count = target_user.claimed_items.count()
+        
+        return Response({
+            'user_id': target_user.id,
+            'name': target_user.name,
+            'last_active': target_user.last_active,
+            'items_posted': items_count,
+            'items_claimed': claimed_count,
+            'role': target_user.role,
+            'status': 'Blocked' if target_user.is_blocked else 'Active'
         })

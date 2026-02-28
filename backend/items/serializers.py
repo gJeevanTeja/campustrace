@@ -55,6 +55,7 @@ class ItemSerializer(serializers.ModelSerializer):
             'incident_datetime', 'user', 'claimed_by',
             'created_at', 'updated_at', 'time_ago',
             'distance_from_user', 'nearby_matches',
+            'college', 'category_new', 'block',
         ]
         read_only_fields = ['id', 'reference_number', 'user', 'created_at', 'updated_at']
 
@@ -147,7 +148,7 @@ class ItemCreateSerializer(serializers.ModelSerializer):
             'title', 'description', 'category', 'type', 'location',
             'location_detail', 'latitude', 'longitude', 'location_name',
             'use_current_location', 'image', 'contact_phone', 'incident_datetime',
-            'photos',
+            'photos', 'college', 'category_new', 'block',
         ]
 
     def validate_incident_datetime(self, value):

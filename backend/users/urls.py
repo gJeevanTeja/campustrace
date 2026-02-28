@@ -5,12 +5,14 @@ from .views import (
     ProfileView, UploadAvatarView, ChangePasswordView,
     ForgotPasswordView, ResetPasswordView, UpdateLocationView,
     SettingsView, SendOTPView, VerifyOTPView, GoogleAuthView,
-    CheckUsernameView,
+    CheckUsernameView, AdminUserListView, AdminUserActionView,
+    AdminUserActivityView, RegisterAdminView,
 )
 
 urlpatterns = [
     # Standard auth
     path('register/', RegisterView.as_view(), name='register'),
+    path('register-admin/', RegisterAdminView.as_view(), name='register-admin'),
     path('login/', LoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token-refresh'),
@@ -38,4 +40,9 @@ urlpatterns = [
 
     # Username availability check
     path('check-username/', CheckUsernameView.as_view(), name='check-username'),
+
+    # Admin User Management
+    path('admin/users/', AdminUserListView.as_view(), name='admin-user-list'),
+    path('admin/users/<int:pk>/<str:action>/', AdminUserActionView.as_view(), name='admin-user-action'),
+    path('admin/users/<int:pk>/activity/', AdminUserActivityView.as_view(), name='admin-user-activity'),
 ]

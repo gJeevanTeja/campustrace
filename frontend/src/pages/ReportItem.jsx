@@ -10,12 +10,8 @@ import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { itemsAPI } from '../services/api';
 import BottomNav from '../components/BottomNav';
-import GoogleMapPicker from '../components/MapPicker'; // ← replaces MapPicker
-
-const CATEGORIES = [
-  'electronics', 'books', 'keys', 'wallet', 'id_card',
-  'clothing', 'accessories', 'documents', 'other',
-];
+import GoogleMapPicker from '../components/MapPicker';
+import { adminAPI } from '../services/api';
 
 const ReportItem = ({ darkMode }) => {
   const navigate = useNavigate();
@@ -26,15 +22,26 @@ const ReportItem = ({ darkMode }) => {
     title: '',
     description: '',
     category: '',
+    category_new: '',
+    block: '',
     incident_date: '',
     incident_time: '',
-    location: 'other',   // ✅ required by backend; always set
+    location: 'other',
     location_name: '',
     location_detail: '',
     contact_phone: '',
     latitude: null,
     longitude: null,
   });
+
+  const [categories, setCategories] = useState([]);
+  const [blocks, setBlocks] = useState([]);
+
+  useState(() => {
+    // Fetch categories and blocks
+    adminAPI.getCategories().then(({ data }) => setCategories(data)).catch(() => { });
+    adminAPI.getBlocks().then(({ data }) => setBlocks(data)).catch(() => { });
+  }, []);
 
   const [photos, setPhotos] = useState([]);
   const [photoPreviews, setPhotoPreviews] = useState([]);
@@ -97,7 +104,8 @@ const ReportItem = ({ darkMode }) => {
 
     if (!form.title.trim()) return setError('Item title is required');
     if (!form.description.trim()) return setError('Description is required');
-    if (!form.category) return setError('Please select a category');
+    if (!form.category_new) return setError('Please select a category');
+    if (!form.block) return setError('Please select a campus block');
     if (!form.incident_date) return setError('Please select a date');
     if (!form.incident_time) return setError('Please select a time');
 
@@ -205,11 +213,26 @@ const ReportItem = ({ darkMode }) => {
           <label style={{ display: 'block', fontWeight: 600, fontSize: 14, marginBottom: 6, color: text }}>
             Category *
           </label>
-          <select name="category" value={form.category} onChange={handleChange} style={inputStyle}>
+          <select name="category_new" value={form.category_new} onChange={handleChange} style={inputStyle}>
             <option value="">Select category</option>
-            {CATEGORIES.map(c => (
-              <option key={c} value={c}>
-                {c.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+            {categories.map(c => (
+              <option key={c.id} value={c.id}>
+                {c.icon} {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Block / Location */}
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: 'block', fontWeight: 600, fontSize: 14, marginBottom: 6, color: text }}>
+            Campus Block *
+          </label>
+          <select name="block" value={form.block} onChange={handleChange} style={inputStyle}>
+            <option value="">Select campus location</option>
+            {blocks.map(b => (
+              <option key={b.id} value={b.id}>
+                {b.name}
               </option>
             ))}
           </select>

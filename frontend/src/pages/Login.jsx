@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../services/api';
 
@@ -19,7 +19,6 @@ const Login = ({ darkMode: dm }) => {
   const submittingRef = useRef(false);
 
   const { login } = useAuth();
-  const navigate = useNavigate();
 
   // Clear error when user starts typing
   useEffect(() => { setError(''); }, [form.email, form.password, otpId, otpCode]);
@@ -31,6 +30,14 @@ const Login = ({ darkMode: dm }) => {
   const muted = dm ? '#94a3b8' : '#64748b';
   const border = dm ? '#334155' : '#e2e8f0';
   const inp = dm ? '#0f172a' : '#f8fafc';
+
+  const redirectAfterLogin = (user) => {
+    if (['super_admin', 'college_admin', 'moderator'].includes(user?.role)) {
+      window.location.href = '/admin';
+    } else {
+      window.location.href = '/';
+    }
+  };
 
   const inputBase = {
     width: '100%', padding: '13px 16px 13px 44px', borderRadius: 12,
@@ -49,11 +56,11 @@ const Login = ({ darkMode: dm }) => {
     setError('');
     setLoading(true);
     try {
-      await login({
+      const data = await login({
         email: form.email.trim().toLowerCase(),
         password: form.password,
       });
-      window.location.href = '/';
+      redirectAfterLogin(data.user);
     } catch (err) {
       // Network error — backend unreachable
       if (!err.response) {
@@ -116,7 +123,7 @@ const Login = ({ darkMode: dm }) => {
       });
       localStorage.setItem('access_token', data.tokens.access);
       localStorage.setItem('refresh_token', data.tokens.refresh);
-      window.location.href = '/';
+      redirectAfterLogin(data.user);
     } catch (err) {
       if (!err.response) {
         setError('Cannot reach server. Make sure Django is running.');
@@ -146,7 +153,7 @@ const Login = ({ darkMode: dm }) => {
             });
             localStorage.setItem('access_token', data.tokens.access);
             localStorage.setItem('refresh_token', data.tokens.refresh);
-            window.location.href = '/';
+            redirectAfterLogin(data.user);
           } catch (err) {
             setError(err.response?.data?.error || 'Google sign-in failed.');
           }
@@ -180,6 +187,9 @@ const Login = ({ darkMode: dm }) => {
           <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg,#2563eb,#7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', boxShadow: '0 8px 24px rgba(37,99,235,0.3)', fontSize: 32 }}>📍</div>
           <h2 style={{ fontWeight: 800, color: text, margin: '0 0 3px', fontSize: 22 }}>CampusTrace</h2>
           <p style={{ color: muted, fontSize: 13, margin: 0 }}>Secure access to your university portal</p>
+          <div style={{ marginTop: 12 }}>
+            <Link to="/welcome" style={{ fontSize: 12, color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>← Switch Role (Student/Staff)</Link>
+          </div>
         </div>
 
         {/* Tab Switch */}

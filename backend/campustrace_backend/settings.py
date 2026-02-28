@@ -1,16 +1,24 @@
 """
 Django settings for CampusTrace Lost & Found Portal
+✅ UPDATED: SQLite → Neon PostgreSQL (cloud shared database)
 """
 from pathlib import Path
 from datetime import timedelta
 import os
+import dj_database_url
+from dotenv import load_dotenv
+
+# ── Load .env file ─────────────────────────────────────────────
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-campustrace-secret-key-change-in-production-2024'
-DEBUG = True
+# ── Security ───────────────────────────────────────────────────
+SECRET_KEY = os.environ.get('SECRET_KEY')
+DEBUG        = os.environ.get('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = ['*']
 
+# ── Applications ───────────────────────────────────────────────
 INSTALLED_APPS = [
     'daphne',
     'django.contrib.admin',
@@ -28,8 +36,10 @@ INSTALLED_APPS = [
     'items',
     'notifications',
     'chat',
+    'colleges',
 ]
 
+# ── Middleware ─────────────────────────────────────────────────
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',   # ✅ MUST be first
     'django.middleware.security.SecurityMiddleware',
@@ -41,8 +51,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'campustrace_backend.urls'
+ROOT_URLCONF     = 'campustrace_backend.urls'
+WSGI_APPLICATION = 'campustrace_backend.wsgi.application'
+ASGI_APPLICATION = 'campustrace_backend.asgi.application'
 
+# ── Templates ──────────────────────────────────────────────────
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -59,57 +72,69 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'campustrace_backend.wsgi.application'
-ASGI_APPLICATION = 'campustrace_backend.asgi.application'
-
+# ── Django Channels (WebSockets) ───────────────────────────────
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels.layers.InMemoryChannelLayer',
     },
 }
 
+# ══════════════════════════════════════════════════════════════════
+# ✅ DATABASE — Neon PostgreSQL (Cloud Shared Database)
+#    All teammates use the same DATABASE_URL from backend/.env
+#    Old SQLite is removed — data now lives in the cloud
+# ══════════════════════════════════════════════════════════════════
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=600,         # reuse connections for 10 minutes
+        conn_health_checks=True,  # auto-reconnect if connection drops
+        ssl_require=True,         # Neon requires SSL
+    )
 }
 
+# ── Authentication ─────────────────────────────────────────────
 AUTHENTICATION_BACKENDS = [
     'users.backends.EmailBackend',
 ]
 
-FRONTEND_URL = 'http://192.168.137.1:3005'
+# ── Frontend URL ───────────────────────────────────────────────
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'eedaladineshreddy@gmail.com'
-EMAIL_HOST_PASSWORD = 'iqcv zapy rccv bbrv'
-DEFAULT_FROM_EMAIL = 'CampusTrace <eedaladineshreddy@gmail.com>'
+# ══════════════════════════════════════════════════════════════════
+# ✅ EMAIL — Gmail SMTP (Password reset, notifications)
+# ══════════════════════════════════════════════════════════════════
+EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST          = 'smtp.gmail.com'
+EMAIL_PORT          = 587
+EMAIL_USE_TLS       = True
+EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL  = f'CampusTrace <{EMAIL_HOST_USER}>'
 EMAIL_SUBJECT_PREFIX = '[CampusTrace] '
 
 # ══════════════════════════════════════════════════════════════════
 # ✅ SMS OTP — Fast2SMS API Key (Indian SMS gateway)
-# ✅ YOUR KEY IS ALREADY PASTED BELOW — SMS OTP is now ACTIVE
-# ──────────────────────────────────────────────────────────────────
-# To get a new key: fast2sms.com → Dashboard → Dev API
-# Free tier: 50 SMS/day  |  Paid: ₹0.15/SMS
-FAST2SMS_API_KEY = 'I3k4tI083Ip9YBwf5nzK6GxU4TLKQK0dTC60xhYcAPqz3pVDDI7ue4UveSEq'
+# ══════════════════════════════════════════════════════════════════
+FAST2SMS_API_KEY = os.environ.get('FAST2SMS_API_KEY')
+
+# ══════════════════════════════════════════════════════════════════
+# ✅ Groq AI API Key (Free AI for claim verification)
+# ══════════════════════════════════════════════════════════════════
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
 
 # ══════════════════════════════════════════════════════════════════
 # ✅ Google Sign-In — University Email Restriction
-# ──────────────────────────────────────────────────────────────────
+# ══════════════════════════════════════════════════════════════════
 # Option A — Allow ALL Google accounts (open, good for testing):
 #   ALLOWED_UNIVERSITY_DOMAINS = None
 #
 # Option B — Restrict to your university only:
 #   ALLOWED_UNIVERSITY_DOMAINS = ['mallareddyuniversity.ac.in', 'mrcet.ac.in']
 #
-ALLOWED_UNIVERSITY_DOMAINS = None   # ← change to a list to restrict to university emails
-# ══════════════════════════════════════════════════════════════════
+ALLOWED_UNIVERSITY_DOMAINS = None  # ← change to list to restrict
 
+# ── Password Validators ────────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -117,21 +142,27 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# ── Internationalization ───────────────────────────────────────
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'Asia/Kolkata'
-USE_I18N = True
-USE_TZ = True
+TIME_ZONE     = 'Asia/Kolkata'
+USE_I18N      = True
+USE_TZ        = True
 
-STATIC_URL = 'static/'
+# ── Static & Media Files ───────────────────────────────────────
+STATIC_URL  = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL   = '/media/'
+MEDIA_ROOT  = BASE_DIR / 'media'
 
+# ── Upload Size Limits (10MB) ──────────────────────────────────
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-AUTH_USER_MODEL = 'users.User'
 
+# ── Defaults ───────────────────────────────────────────────────
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+AUTH_USER_MODEL    = 'users.User'
+
+# ── REST Framework ─────────────────────────────────────────────
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -148,18 +179,20 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20,
 }
 
+# ── JWT Settings ───────────────────────────────────────────────
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
-    'ROTATE_REFRESH_TOKENS': True,
+    'ACCESS_TOKEN_LIFETIME':    timedelta(days=7),
+    'REFRESH_TOKEN_LIFETIME':   timedelta(days=30),
+    'ROTATE_REFRESH_TOKENS':    True,
     'BLACKLIST_AFTER_ROTATION': True,
 }
 
-# ✅ CORS — allow all origins for local network + mobile access
+# ── CORS — allow all origins for local network + mobile access ─
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     'accept', 'accept-encoding', 'authorization', 'content-type',
-    'dnt', 'origin', 'user-agent', 'x-csrftoken', 'x-requested-with', 'cache-control',
+    'dnt', 'origin', 'user-agent', 'x-csrftoken', 'x-requested-with',
+    'cache-control',
 ]
 CORS_ALLOW_METHODS = ['DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT']
