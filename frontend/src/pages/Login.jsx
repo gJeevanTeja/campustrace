@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../services/api';
+import { MapPin, Lock, Smartphone, AlertTriangle, CheckCircle2, Mail, Eye, EyeOff, Loader2, Send } from 'lucide-react';
 
 const Login = ({ darkMode: dm }) => {
   const [tab, setTab] = useState('password'); // 'password' | 'otp'
@@ -24,12 +25,12 @@ const Login = ({ darkMode: dm }) => {
   useEffect(() => { setError(''); }, [form.email, form.password, otpId, otpCode]);
 
   // Colors
-  const bg = dm ? '#0f172a' : '#f0f4ff';
-  const card = dm ? '#1e293b' : '#ffffff';
-  const text = dm ? '#e2e8f0' : '#1e293b';
+  const bg = dm ? '#121212' : '#f0f4ff';
+  const card = dm ? '#1e1e1e' : '#ffffff';
+  const text = dm ? '#e2e8f0' : '#1e1e1e';
   const muted = dm ? '#94a3b8' : '#64748b';
-  const border = dm ? '#334155' : '#e2e8f0';
-  const inp = dm ? '#0f172a' : '#f8fafc';
+  const border = dm ? '#2d2d2d' : '#e2e8f0';
+  const inp = dm ? '#121212' : '#f8fafc';
 
   const redirectAfterLogin = (user) => {
     if (['super_admin', 'college_admin', 'moderator'].includes(user?.role)) {
@@ -184,7 +185,9 @@ const Login = ({ darkMode: dm }) => {
 
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg,#2563eb,#7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', boxShadow: '0 8px 24px rgba(37,99,235,0.3)', fontSize: 32 }}>📍</div>
+          <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg,#2563eb,#7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', boxShadow: '0 8px 24px rgba(37,99,235,0.3)', color: '#fff' }}>
+            <MapPin size={32} />
+          </div>
           <h2 style={{ fontWeight: 800, color: text, margin: '0 0 3px', fontSize: 22 }}>CampusTrace</h2>
           <p style={{ color: muted, fontSize: 13, margin: 0 }}>Secure access to your university portal</p>
           <div style={{ marginTop: 12 }}>
@@ -193,16 +196,18 @@ const Login = ({ darkMode: dm }) => {
         </div>
 
         {/* Tab Switch */}
-        <div style={{ display: 'flex', background: dm ? '#0f172a' : '#f1f5f9', borderRadius: 12, padding: 4, marginBottom: 24 }}>
-          {[['password', '🔒 Password'], ['otp', '📱 OTP Login']].map(([t, lbl]) => (
-            <button key={t} onClick={() => switchTab(t)}
+        <div style={{ display: 'flex', background: dm ? '#121212' : '#f1f5f9', borderRadius: 12, padding: 4, marginBottom: 24 }}>
+          {[{ id: 'password', icon: <Lock size={16} />, label: 'Password' }, { id: 'otp', icon: <Smartphone size={16} />, label: 'OTP Login' }].map(t => (
+            <button key={t.id} onClick={() => switchTab(t.id)}
               style={{
                 flex: 1, padding: '9px', borderRadius: 9, border: 'none', cursor: 'pointer',
                 fontWeight: 600, fontSize: 13, transition: 'all .2s',
-                background: tab === t ? card : 'transparent',
-                color: tab === t ? '#2563eb' : muted,
-                boxShadow: tab === t ? '0 2px 8px rgba(0,0,0,.10)' : 'none',
-              }}>{lbl}</button>
+                background: tab === t.id ? card : 'transparent',
+                color: tab === t.id ? '#2563eb' : muted,
+                boxShadow: tab === t.id ? '0 2px 8px rgba(0,0,0,.10)' : 'none',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6
+              }}>
+              {t.icon} {t.label}</button>
           ))}
         </div>
 
@@ -211,13 +216,13 @@ const Login = ({ darkMode: dm }) => {
 
         {/* Alerts */}
         {error && (
-          <div style={{ background: '#fee2e2', border: '1px solid #fecaca', borderRadius: 12, padding: '11px 14px', marginBottom: 14, color: '#dc2626', fontSize: 14 }}>
-            ⚠️ {error}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fee2e2', border: '1px solid #fecaca', borderRadius: 12, padding: '11px 14px', marginBottom: 14, color: '#dc2626', fontSize: 14 }}>
+            <AlertTriangle size={18} /> {error}
           </div>
         )}
         {success && (
-          <div style={{ background: '#dcfce7', border: '1px solid #bbf7d0', borderRadius: 12, padding: '11px 14px', marginBottom: 14, color: '#16a34a', fontSize: 14 }}>
-            ✅ {success}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#dcfce7', border: '1px solid #bbf7d0', borderRadius: 12, padding: '11px 14px', marginBottom: 14, color: '#16a34a', fontSize: 14 }}>
+            <CheckCircle2 size={18} /> {success}
           </div>
         )}
 
@@ -231,7 +236,7 @@ const Login = ({ darkMode: dm }) => {
             <div style={{ marginBottom: 16 }}>
               <label style={{ fontSize: 13, fontWeight: 600, color: text, marginBottom: 6, display: 'block' }}>University Email</label>
               <div style={{ position: 'relative' }}>
-                <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 16 }}>✉️</span>
+                <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: muted, display: 'flex' }}><Mail size={16} /></span>
                 <input
                   type="email"
                   value={form.email}
@@ -250,7 +255,7 @@ const Login = ({ darkMode: dm }) => {
                 <Link to="/forgot-password" style={{ fontSize: 13, color: '#2563eb', textDecoration: 'none' }}>Forgot?</Link>
               </div>
               <div style={{ position: 'relative' }}>
-                <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 16 }}>🔒</span>
+                <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: muted, display: 'flex' }}><Lock size={16} /></span>
                 <input
                   type={showPass ? 'text' : 'password'}
                   value={form.password}
@@ -265,9 +270,9 @@ const Login = ({ darkMode: dm }) => {
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: muted }}
+                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: muted, display: 'flex' }}
                 >
-                  {showPass ? '🙈' : '👁️'}
+                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
@@ -275,9 +280,9 @@ const Login = ({ darkMode: dm }) => {
             <button
               type="submit"
               disabled={loading}
-              style={{ width: '100%', padding: '14px', borderRadius: 12, border: 'none', background: loading ? '#93c5fd' : 'linear-gradient(135deg,#2563eb,#7c3aed)', color: '#fff', fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer' }}
+              style={{ width: '100%', padding: '14px', borderRadius: 12, border: 'none', background: loading ? '#93c5fd' : 'linear-gradient(135deg,#2563eb,#7c3aed)', color: '#fff', fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
             >
-              {loading ? '⏳ Signing in...' : 'Sign In'}
+              {loading ? <><Loader2 size={18} className="animate-spin" /> Signing in...</> : 'Sign In'}
             </button>
           </form>
         )}
@@ -286,10 +291,10 @@ const Login = ({ darkMode: dm }) => {
         {tab === 'otp' && !otpSent && (
           <form onSubmit={handleSendOTP}>
             <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-              {[['email', '📧 Email'], ['phone', '📱 Phone']].map(([t, lbl]) => (
-                <button key={t} type="button" onClick={() => setOtpType(t)}
-                  style={{ flex: 1, padding: '10px', borderRadius: 10, border: `1.5px solid ${otpType === t ? '#2563eb' : border}`, background: otpType === t ? (dm ? '#1e3a5f' : '#eff6ff') : inp, color: otpType === t ? '#2563eb' : muted, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
-                  {lbl}
+              {[{ id: 'email', icon: <Mail size={16} />, label: 'Email' }, { id: 'phone', icon: <Smartphone size={16} />, label: 'Phone' }].map(t => (
+                <button key={t.id} type="button" onClick={() => setOtpType(t.id)}
+                  style={{ flex: 1, padding: '10px', borderRadius: 10, border: `1.5px solid ${otpType === t.id ? '#2563eb' : border}`, background: otpType === t.id ? (dm ? '#2d2d2d' : '#eff6ff') : inp, color: otpType === t.id ? '#2563eb' : muted, fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                  {t.icon} {t.label}
                 </button>
               ))}
             </div>
@@ -298,7 +303,9 @@ const Login = ({ darkMode: dm }) => {
                 {otpType === 'email' ? 'Registered Email' : 'Registered Phone (10 digits)'}
               </label>
               <div style={{ position: 'relative' }}>
-                <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 16 }}>{otpType === 'email' ? '✉️' : '📱'}</span>
+                <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: muted, display: 'flex' }}>
+                  {otpType === 'email' ? <Mail size={16} /> : <Smartphone size={16} />}
+                </span>
                 <input
                   value={otpId}
                   onChange={e => setOtpId(e.target.value)}
@@ -309,8 +316,8 @@ const Login = ({ darkMode: dm }) => {
               </div>
             </div>
             <button type="submit" disabled={loading}
-              style={{ width: '100%', padding: '14px', borderRadius: 12, border: 'none', background: loading ? '#94a3b8' : 'linear-gradient(135deg,#7c3aed,#2563eb)', color: '#fff', fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer' }}>
-              {loading ? '⏳ Sending...' : '📨 Send OTP'}
+              style={{ width: '100%', padding: '14px', borderRadius: 12, border: 'none', background: loading ? '#94a3b8' : 'linear-gradient(135deg,#7c3aed,#2563eb)', color: '#fff', fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              {loading ? <><Loader2 size={18} className="animate-spin" /> Sending...</> : <><Send size={18} /> Send OTP</>}
             </button>
           </form>
         )}
@@ -319,7 +326,7 @@ const Login = ({ darkMode: dm }) => {
         {tab === 'otp' && otpSent && (
           <form onSubmit={handleVerifyOTP}>
             <div style={{ textAlign: 'center', marginBottom: 20 }}>
-              <div style={{ fontSize: 44, marginBottom: 8 }}>📩</div>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8, color: text }}><Mail size={44} strokeWidth={1.5} /></div>
               <p style={{ fontWeight: 600, color: text, margin: '0 0 4px' }}>Enter the 6-digit OTP</p>
               <p style={{ color: muted, fontSize: 13, margin: 0 }}>Sent to {otpId}</p>
             </div>
@@ -332,8 +339,8 @@ const Login = ({ darkMode: dm }) => {
               style={{ ...inputBase, paddingLeft: 16, textAlign: 'center', fontSize: 28, fontWeight: 800, letterSpacing: 14, marginBottom: 16 }}
             />
             <button type="submit" disabled={loading || otpCode.length !== 6}
-              style={{ width: '100%', padding: '14px', borderRadius: 12, border: 'none', background: otpCode.length === 6 ? 'linear-gradient(135deg,#7c3aed,#2563eb)' : '#94a3b8', color: '#fff', fontSize: 15, fontWeight: 700, cursor: otpCode.length === 6 ? 'pointer' : 'not-allowed', marginBottom: 10 }}>
-              {loading ? '⏳ Verifying...' : '✅ Verify & Login'}
+              style={{ width: '100%', padding: '14px', borderRadius: 12, border: 'none', background: otpCode.length === 6 ? 'linear-gradient(135deg,#7c3aed,#2563eb)' : '#94a3b8', color: '#fff', fontSize: 15, fontWeight: 700, cursor: otpCode.length === 6 ? 'pointer' : 'not-allowed', marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              {loading ? <><Loader2 size={18} className="animate-spin" /> Verifying...</> : <><CheckCircle2 size={18} /> Verify & Login</>}
             </button>
             <button type="button" onClick={() => { setOtpSent(false); setOtpCode(''); setSuccess(''); }}
               style={{ width: '100%', padding: '12px', borderRadius: 12, border: `1.5px solid ${border}`, background: 'none', color: muted, fontSize: 14, cursor: 'pointer' }}>

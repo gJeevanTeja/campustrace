@@ -1,32 +1,17 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, ArrowRight, GraduationCap } from 'lucide-react';
+import { ShieldCheck, ArrowRight, GraduationCap, MapPin, Sun, Moon } from 'lucide-react';
 
-const AuthLanding = ({ darkMode: dm }) => {
+const AuthLanding = ({ darkMode: dm, setDarkMode }) => {
     const navigate = useNavigate();
 
-    const bg = dm ? '#0f172a' : '#f0f4ff';
-    const card = dm ? '#1e293b' : '#ffffff';
-    const text = dm ? '#e2e8f0' : '#1e293b';
+    const bg = dm ? '#121212' : '#f0f4ff';
+    const card = dm ? '#1e1e1e' : '#ffffff';
+    const text = dm ? '#e2e8f0' : '#1e1e1e';
     const muted = dm ? '#94a3b8' : '#64748b';
-    const border = dm ? '#334155' : '#e2e8f0';
+    const border = dm ? '#2d2d2d' : '#e2e8f0';
 
-    const cardStyle = {
-        background: card,
-        borderRadius: 24,
-        padding: '32px',
-        border: `1.5px solid ${border}`,
-        cursor: 'pointer',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        textAlign: 'center',
-        gap: 16,
-        boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-        width: '100%',
-        maxWidth: 300
-    };
+    // Styles handled by CSS class .auth-card
 
     return (
         <div style={{
@@ -36,8 +21,37 @@ const AuthLanding = ({ darkMode: dm }) => {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '24px'
+            padding: '24px',
+            position: 'relative' // Added for absolute positioning of the toggle button
         }}>
+            {/* Dark Mode Toggle */}
+            {setDarkMode && (
+                <button
+                    type="button"
+                    onClick={() => setDarkMode(!dm)}
+                    style={{
+                        position: 'absolute',
+                        top: 24,
+                        right: 24,
+                        background: dm ? '#2d2d2d' : '#e2e8f0',
+                        border: 'none',
+                        borderRadius: '50%',
+                        width: 40,
+                        height: 40,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        color: text,
+                        boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+                        transition: 'background 0.3s'
+                    }}
+                    title={dm ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                >
+                    {dm ? <Sun size={20} /> : <Moon size={20} />}
+                </button>
+            )}
+
             <div style={{ textAlign: 'center', marginBottom: 48 }}>
                 <div style={{
                     width: 80, height: 80, borderRadius: 20,
@@ -45,33 +59,26 @@ const AuthLanding = ({ darkMode: dm }) => {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     margin: '0 auto 20px', boxShadow: '0 10px 30px rgba(37,99,235,0.3)'
                 }}>
-                    <span style={{ fontSize: 40 }}>📍</span>
+                    <MapPin size={40} color="#ffffff" strokeWidth={2.5} />
                 </div>
                 <h1 style={{ fontSize: 32, fontWeight: 900, color: text, margin: '0 0 10px' }}>CampusTrace</h1>
                 <p style={{ color: muted, fontSize: 16, maxWidth: 400 }}>Choose your portal to track lost items across your university</p>
             </div>
 
-            <div style={{
-                display: 'flex',
-                flexDirection: window.innerWidth < 640 ? 'column' : 'row',
-                gap: 24,
-                width: '100%',
-                justifyContent: 'center'
-            }}>
+            <div className="auth-landing-cards">
                 {/* Student Portal */}
                 <div
+                    className="auth-card"
                     onClick={() => navigate('/login')}
                     onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-8px)';
                         e.currentTarget.style.borderColor = '#2563eb';
                         e.currentTarget.style.boxShadow = '0 20px 40px rgba(37,99,235,0.15)';
                     }}
                     onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
                         e.currentTarget.style.borderColor = border;
                         e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.06)';
                     }}
-                    style={cardStyle}
+                    style={{ background: card, border: `1.5px solid ${border}` }}
                 >
                     <div style={{
                         width: 64, height: 64, borderRadius: 16,
@@ -91,18 +98,17 @@ const AuthLanding = ({ darkMode: dm }) => {
 
                 {/* Admin Portal */}
                 <div
+                    className="auth-card"
                     onClick={() => navigate('/login')} // We can modify login to handle both or have /admin/login
                     onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-8px)';
                         e.currentTarget.style.borderColor = '#7c3aed';
                         e.currentTarget.style.boxShadow = '0 20px 40px rgba(124,58,237,0.15)';
                     }}
                     onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
                         e.currentTarget.style.borderColor = border;
                         e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.06)';
                     }}
-                    style={cardStyle}
+                    style={{ background: card, border: `1.5px solid ${border}` }}
                 >
                     <div style={{
                         width: 64, height: 64, borderRadius: 16,

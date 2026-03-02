@@ -46,10 +46,10 @@ const GoogleMapPicker = ({
   const [gpsLoading, setGpsLoading] = useState(false);
 
   const dm = darkMode;
-  const text = dm ? '#e2e8f0' : '#1e293b';
+  const text = dm ? '#e2e8f0' : '#1e1e1e';
   const muted = dm ? '#94a3b8' : '#64748b';
-  const border = dm ? '#334155' : '#e2e8f0';
-  const inputBg = dm ? '#0f172a' : '#f8fafc';
+  const border = dm ? '#2d2d2d' : '#e2e8f0';
+  const inputBg = dm ? '#121212' : '#f8fafc';
 
   // ── Reverse geocode lat/lng → address string ─────────────────
   const reverseGeocode = useCallback((lat, lng) => {
@@ -425,7 +425,7 @@ const GoogleMapPicker = ({
       {selectedAddress ? (
         <div style={{
           marginTop: 10, padding: '10px 14px',
-          background: dm ? '#0f172a' : '#f0f9ff',
+          background: dm ? '#121212' : '#f0f9ff',
           border: `1px solid ${border}`, borderRadius: 10,
           fontSize: 13, display: 'flex', gap: 8, alignItems: 'flex-start',
         }}>
@@ -453,13 +453,13 @@ const GoogleMapPicker = ({
 
 // Dark map style
 const DARK_STYLES = [
-  { elementType: 'geometry', stylers: [{ color: '#1e293b' }] },
+  { elementType: 'geometry', stylers: [{ color: '#1e1e1e' }] },
   { elementType: 'labels.text.fill', stylers: [{ color: '#94a3b8' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#0f172a' }] },
-  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#334155' }] },
-  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#0f172a' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#121212' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#2d2d2d' }] },
+  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#121212' }] },
   { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0f2942' }] },
-  { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#1e3a5f' }] },
+  { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#2d2d2d' }] },
 ];
 
 export default GoogleMapPicker;

@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { CheckCircle2, XCircle, Loader2, GraduationCap, Sun, Moon, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../services/api';
 
@@ -10,7 +11,7 @@ const DEPARTMENTS = [
 ];
 const YEARS = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
 
-const Signup = ({ darkMode: dm }) => {
+const Signup = ({ darkMode: dm, setDarkMode }) => {
   const navigate = useNavigate();
   const { register } = useAuth();
 
@@ -32,12 +33,12 @@ const Signup = ({ darkMode: dm }) => {
       .catch(() => { });
   }, []);
 
-  const bg = dm ? '#0f172a' : 'linear-gradient(135deg,#eff6ff 0%,#f0fdf4 100%)';
-  const card = dm ? '#1e293b' : '#ffffff';
-  const text = dm ? '#e2e8f0' : '#1e293b';
+  const bg = dm ? '#121212' : 'linear-gradient(135deg,#eff6ff 0%,#f0fdf4 100%)';
+  const card = dm ? '#1e1e1e' : '#ffffff';
+  const text = dm ? '#e2e8f0' : '#1e1e1e';
   const muted = dm ? '#94a3b8' : '#64748b';
-  const border = dm ? '#334155' : '#e2e8f0';
-  const inp = dm ? '#0f172a' : '#f8fafc';
+  const border = dm ? '#2d2d2d' : '#e2e8f0';
+  const inp = dm ? '#121212' : '#f8fafc';
 
   const inputStyle = (field) => ({
     width: '100%', padding: '12px 16px', borderRadius: 12, boxSizing: 'border-box',
@@ -90,7 +91,6 @@ const Signup = ({ darkMode: dm }) => {
     else if (!'6789'.includes(form.phone[0])) e.phone = 'Enter a valid Indian mobile number (starts with 6-9)';
     if (!form.department) e.department = 'Please select a department';
     if (!form.section.trim()) e.section = 'Section is required';
-    if (!form.college) e.college = 'Please select your college';
     if (!form.college_year) e.college_year = 'Please select a year';
     if (!form.password || form.password.length < 8) e.password = 'Password must be at least 8 characters';
     else if (!/[A-Z]/.test(form.password)) e.password = 'Password needs at least one uppercase letter';
@@ -98,13 +98,7 @@ const Signup = ({ darkMode: dm }) => {
     if (form.password !== form.confirm_password) e.confirm_password = 'Passwords do not match';
     if (!form.terms_accepted) e.terms_accepted = 'You must accept the Terms and Conditions';
 
-    // Email domain validation
-    if (form.email && form.college) {
-      const selectedCol = colleges.find(c => c.id === parseInt(form.college));
-      if (selectedCol && !form.email.toLowerCase().endsWith(selectedCol.email_domain.toLowerCase())) {
-        e.email = `Registration restricted to ${selectedCol.name} emails (@${selectedCol.email_domain})`;
-      }
-    }
+    // Email domain validation removed as college selection is removed
 
     return e;
   };
@@ -156,13 +150,35 @@ const Signup = ({ darkMode: dm }) => {
     if (!window.google) { const s = document.createElement('script'); s.src = 'https://accounts.google.com/gsi/client'; s.onload = load; document.head.appendChild(s); } else { load(); }
   };
 
-  const uIcon = usernameStatus === 'available' ? '✅' : usernameStatus === 'taken' ? '❌' : usernameStatus === 'checking' ? '⏳' : '';
+  const uIcon = usernameStatus === 'available' ? <CheckCircle2 size={16} color="#16a34a" /> : usernameStatus === 'taken' ? <XCircle size={16} color="#ef4444" /> : usernameStatus === 'checking' ? <Loader2 size={16} className="animate-spin" color={muted} /> : null;
 
   return (
-    <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px 16px' }}>
-      <div style={{ width: '100%', maxWidth: 460, background: card, borderRadius: 24, padding: '32px 28px', boxShadow: '0 8px 40px rgba(0,0,0,.10)' }}>
+    <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+      <div style={{ width: '100%', maxWidth: 460, background: card, borderRadius: 24, padding: 'max(24px, 4vw)', boxShadow: '0 8px 40px rgba(0,0,0,.10)' }}>
 
-        <button onClick={() => navigate('/login')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: muted, marginBottom: 18, padding: 0, fontSize: 14 }}>← Back</button>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+          <button onClick={() => navigate('/login')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: muted, padding: 0, fontSize: 14 }}>← Back</button>
+
+          <button
+            type="button"
+            onClick={() => setDarkMode(!dm)}
+            style={{
+              background: dm ? '#2d2d2d' : '#e2e8f0',
+              border: 'none',
+              borderRadius: '50%',
+              width: 32,
+              height: 32,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: text
+            }}
+            title={dm ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          >
+            {dm ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+        </div>
 
         <div style={{ marginBottom: 22 }}>
           <h1 style={{ fontSize: 26, fontWeight: 800, color: '#1e40af', margin: 0 }}>CampusTrace</h1>
@@ -188,7 +204,9 @@ const Signup = ({ darkMode: dm }) => {
         </div>
 
         {globalError && (
-          <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 12, padding: '11px 14px', marginBottom: 14, color: '#dc2626', fontSize: 14 }}>⚠️ {globalError}</div>
+          <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 12, padding: '11px 14px', marginBottom: 14, color: '#dc2626', fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <AlertTriangle size={16} /> {globalError}
+          </div>
         )}
 
         <form onSubmit={handleSubmit} noValidate autoComplete="off">
@@ -215,7 +233,7 @@ const Signup = ({ darkMode: dm }) => {
                 style={{ ...inputStyle('username'), paddingRight: 36 }} />
               {uIcon && <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 16 }}>{uIcon}</span>}
             </div>
-            {usernameStatus === 'available' && form.username && <p style={{ color: '#16a34a', fontSize: 12, marginTop: 4 }}>✅ Username is available!</p>}
+            {usernameStatus === 'available' && form.username && <p style={{ color: '#16a34a', fontSize: 12, marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}><CheckCircle2 size={12} /> Username is available!</p>}
             {errors.username && <p style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{errors.username}</p>}
           </div>
 
@@ -233,7 +251,7 @@ const Signup = ({ darkMode: dm }) => {
               Phone Number * <span style={{ color: muted, fontWeight: 400, fontSize: 12 }}>(10 digits, India)</span>
             </label>
             <div style={{ display: 'flex', alignItems: 'center', border: `1.5px solid ${errors.phone ? '#ef4444' : border}`, borderRadius: 12, background: errors.phone ? (dm ? '#2d1515' : '#fff5f5') : inp, overflow: 'hidden' }}>
-              <span style={{ padding: '12px 10px 12px 14px', fontWeight: 700, fontSize: 14, borderRight: `1px solid ${border}`, background: dm ? '#1e293b' : '#f1f5f9', whiteSpace: 'nowrap', color: text }}>🇮🇳 +91</span>
+              <span style={{ padding: '12px 10px 12px 14px', fontWeight: 700, fontSize: 14, borderRight: `1px solid ${border}`, background: dm ? '#1e1e1e' : '#f1f5f9', whiteSpace: 'nowrap', color: text }}>+91</span>
               <input value={form.phone} onChange={handlePhone} placeholder="9876543210"
                 maxLength={10} inputMode="numeric" autoComplete="off"
                 style={{ flex: 1, border: 'none', background: 'transparent', padding: '12px 14px', fontSize: 14, outline: 'none', color: text }} />
@@ -244,17 +262,6 @@ const Signup = ({ darkMode: dm }) => {
               )}
             </div>
             {errors.phone && <p style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{errors.phone}</p>}
-          </div>
-
-          {/* College Selection */}
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ display: 'block', fontWeight: 600, color: text, marginBottom: 5, fontSize: 14 }}>College / University *</label>
-            <select name="college" value={form.college} onChange={handleChange}
-              style={{ ...inputStyle('college'), appearance: 'none', cursor: 'pointer' }}>
-              <option value="">Select your College</option>
-              {colleges.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-            {errors.college && <p style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{errors.college}</p>}
           </div>
 
           {/* Department */}
@@ -269,7 +276,7 @@ const Signup = ({ darkMode: dm }) => {
           </div>
 
           {/* Section + Year */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+          <div className="form-grid-2">
             <div>
               <label style={{ display: 'block', fontWeight: 600, color: text, marginBottom: 5, fontSize: 14 }}>Section *</label>
               <input name="section" value={form.section} onChange={handleChange}
@@ -312,7 +319,7 @@ const Signup = ({ darkMode: dm }) => {
           </div>
 
           {/* Terms */}
-          <div style={{ marginBottom: 20, padding: 14, background: dm ? '#0f172a' : '#f8fafc', borderRadius: 12, border: `1.5px solid ${errors.terms_accepted ? '#ef4444' : border}` }}>
+          <div style={{ marginBottom: 20, padding: 14, background: dm ? '#121212' : '#f8fafc', borderRadius: 12, border: `1.5px solid ${errors.terms_accepted ? '#ef4444' : border}` }}>
             <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
               <input type="checkbox" name="terms_accepted" checked={form.terms_accepted} onChange={handleChange}
                 style={{ width: 18, height: 18, marginTop: 2, accentColor: '#2563eb', flexShrink: 0, cursor: 'pointer' }} />
@@ -329,7 +336,15 @@ const Signup = ({ darkMode: dm }) => {
 
           <button type="submit" disabled={loading}
             style={{ width: '100%', padding: '14px', borderRadius: 12, border: 'none', background: loading ? '#93c5fd' : 'linear-gradient(135deg,#1e40af,#3b82f6)', color: '#fff', fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer' }}>
-            {loading ? '⏳ Creating Account...' : '🎓 Create Account'}
+            {loading ? (
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Creating Account...
+              </span>
+            ) : (
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                <GraduationCap size={18} /> Create Account
+              </span>
+            )}
           </button>
 
           <p style={{ textAlign: 'center', marginTop: 18, color: muted, fontSize: 14 }}>

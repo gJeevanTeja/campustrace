@@ -30,11 +30,11 @@ const TermsPage = ({ darkMode: dm }) => {
   const location  = useLocation();
   const [tab, setTab] = useState(location.pathname === '/privacy' ? 'privacy' : 'terms');
 
-  const bg     = dm ? '#0f172a' : '#f8fafc';
-  const card   = dm ? '#1e293b' : '#fff';
-  const text   = dm ? '#e2e8f0' : '#1e293b';
+  const bg     = dm ? '#121212' : '#f8fafc';
+  const card   = dm ? '#1e1e1e' : '#fff';
+  const text   = dm ? '#e2e8f0' : '#1e1e1e';
   const muted  = dm ? '#94a3b8' : '#64748b';
-  const border = dm ? '#334155' : '#e2e8f0';
+  const border = dm ? '#2d2d2d' : '#e2e8f0';
   const items  = tab === 'terms' ? TERMS : PRIVACY;
 
   return (
@@ -68,7 +68,7 @@ const TermsPage = ({ darkMode: dm }) => {
           </div>
           {items.map((item, i) => (
             <div key={i} style={{ padding:'16px', borderBottom: i < items.length-1 ? `1px solid ${border}` : 'none', display:'flex', gap:14, alignItems:'flex-start' }}>
-              <div style={{ width:42, height:42, borderRadius:12, background: dm?'#0f172a':'#f0f4ff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, flexShrink:0 }}>
+              <div style={{ width:42, height:42, borderRadius:12, background: dm?'#121212':'#f0f4ff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, flexShrink:0 }}>
                 {item.icon}
               </div>
               <div style={{ flex:1 }}>

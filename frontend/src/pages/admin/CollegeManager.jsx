@@ -69,9 +69,9 @@ const CollegeManager = ({ darkMode }) => {
         }
     };
 
-    const bg = dm ? '#1e293b' : '#fff';
-    const border = dm ? '#334155' : '#e2e8f0';
-    const text = dm ? '#f1f5f9' : '#1e293b';
+    const bg = dm ? '#1e1e1e' : '#fff';
+    const border = dm ? '#2d2d2d' : '#e2e8f0';
+    const text = dm ? '#f1f5f9' : '#1e1e1e';
 
     return (
         <AdminLayout darkMode={dm}>
@@ -92,7 +92,7 @@ const CollegeManager = ({ darkMode }) => {
             }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead>
-                        <tr style={{ borderBottom: `1px solid ${border}`, background: dm ? '#33415544' : '#f8fafc' }}>
+                        <tr style={{ borderBottom: `1px solid ${border}`, background: dm ? '#2d2d2d44' : '#f8fafc' }}>
                             <th style={{ padding: '16px', fontSize: 13, color: dm ? '#94a3b8' : '#64748b' }}>College / University</th>
                             <th style={{ padding: '16px', fontSize: 13, color: dm ? '#94a3b8' : '#64748b' }}>Email Domain</th>
                             <th style={{ padding: '16px', fontSize: 13, color: dm ? '#94a3b8' : '#64748b' }}>Status</th>
@@ -119,7 +119,7 @@ const CollegeManager = ({ darkMode }) => {
                                 </td>
                                 <td style={{ padding: '16px' }}>
                                     <span style={{
-                                        padding: '4px 10px', borderRadius: 8, background: dm ? '#334155' : '#f1f5f9',
+                                        padding: '4px 10px', borderRadius: 8, background: dm ? '#2d2d2d' : '#f1f5f9',
                                         fontSize: 13, fontWeight: 600, color: '#2563eb'
                                     }}>
                                         @{c.email_domain}
@@ -185,7 +185,7 @@ const CollegeManager = ({ darkMode }) => {
                                         type="text" required
                                         value={formData.name}
                                         onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                        style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: 10, border: `1px solid ${border}`, background: dm ? '#0f172a' : '#f8fafc', color: text }}
+                                        style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: 10, border: `1px solid ${border}`, background: dm ? '#121212' : '#f8fafc', color: text }}
                                         placeholder="e.g. Stanford University"
                                     />
                                 </div>
@@ -199,7 +199,7 @@ const CollegeManager = ({ darkMode }) => {
                                         type="text" required
                                         value={formData.email_domain}
                                         onChange={e => setFormData({ ...formData, email_domain: e.target.value })}
-                                        style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: 10, border: `1px solid ${border}`, background: dm ? '#0f172a' : '#f8fafc', color: text }}
+                                        style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: 10, border: `1px solid ${border}`, background: dm ? '#121212' : '#f8fafc', color: text }}
                                         placeholder="e.g. stanford.edu"
                                     />
                                 </div>

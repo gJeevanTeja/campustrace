@@ -3,11 +3,11 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { chatAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import EmojiPicker from '../components/EmojiPicker';
+
 
 const THEMES = {
   messenger: { name: '💙 Messenger', bg: '#e5ddd5', sentBg: '#0084ff', sentText: '#fff', receivedBg: '#fff', receivedText: '#050505', header: '#0084ff' },
-  dark: { name: '🌑 Dark', bg: '#0f172a', sentBg: '#3b82f6', sentText: '#fff', receivedBg: '#1e293b', receivedText: '#e2e8f0', header: '#1e293b' },
+  dark: { name: '🌑 Dark', bg: '#121212', sentBg: '#3b82f6', sentText: '#fff', receivedBg: '#1e1e1e', receivedText: '#e2e8f0', header: '#1e1e1e' },
   green: { name: '🌿 Forest', bg: '#d4edda', sentBg: '#2d6a4f', sentText: '#fff', receivedBg: '#fff', receivedText: '#1b1b1b', header: '#2d6a4f' },
   rose: { name: '🌸 Rose', bg: '#fce4ec', sentBg: '#e91e63', sentText: '#fff', receivedBg: '#fff', receivedText: '#1b1b1b', header: '#e91e63' },
   midnight: { name: '🔮 Midnight', bg: '#1a1a2e', sentBg: '#7c3aed', sentText: '#fff', receivedBg: '#16213e', receivedText: '#e0e0e0', header: '#7c3aed' },
@@ -41,7 +41,7 @@ const ChatRoom = ({ darkMode }) => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [wsStatus, setWsStatus] = useState('connecting');
-  const [showEmoji, setShowEmoji] = useState(false);
+
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [showDotMenu, setShowDotMenu] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -445,7 +445,7 @@ const ChatRoom = ({ darkMode }) => {
   return (
     <div
       style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: theme.bg, overflow: 'hidden', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}
-      onClick={() => { setShowDotMenu(false); setShowEmoji(false); setShowAttachMenu(false); setShowThemePicker(false); }}
+      onClick={() => { setShowDotMenu(false); setShowAttachMenu(false); setShowThemePicker(false); }}
     >
 
       {/* ── HEADER ─────────────────────────────────────────────── */}
@@ -504,7 +504,7 @@ const ChatRoom = ({ darkMode }) => {
 
       {/* ── FORWARD TOOLBAR ────────────────────────────────────── */}
       {forwardMode && (
-        <div style={{ background: '#1e293b', color: '#fff', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+        <div style={{ background: '#1e1e1e', color: '#fff', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <span style={{ fontSize: 14 }}>
             {selectedMsgIds.size === 0 ? 'Tap messages to select' : `${selectedMsgIds.size} selected`}
           </span>
@@ -635,7 +635,7 @@ const ChatRoom = ({ darkMode }) => {
           {/* Attach */}
           <div style={{ position: 'relative', flexShrink: 0 }}>
             <button
-              onClick={() => { setShowAttachMenu(v => !v); setShowEmoji(false); }}
+              onClick={() => { setShowAttachMenu(v => !v); }}
               style={{ width: 36, height: 36, borderRadius: '50%', background: theme.header, border: 'none', fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
               ➕
             </button>
@@ -670,18 +670,7 @@ const ChatRoom = ({ darkMode }) => {
               onKeyDown={handleKey} placeholder="Aa" rows={1}
               style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', padding: '9px 12px', color: '#050505', fontSize: 15, resize: 'none', maxHeight: 100, fontFamily: 'inherit', lineHeight: 1.4 }}
             />
-            <div style={{ position: 'relative', flexShrink: 0 }}>
-              <button onClick={() => { setShowEmoji(v => !v); setShowAttachMenu(false); }}
-                style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', padding: '8px 10px', color: '#f59e0b' }}>
-                😊
-              </button>
-              {showEmoji && (
-                <EmojiPicker
-                  onSelect={emoji => { setInput(prev => prev + emoji); inputRef.current?.focus(); }}
-                  onClose={() => setShowEmoji(false)}
-                />
-              )}
-            </div>
+
           </div>
 
           {/* Send */}

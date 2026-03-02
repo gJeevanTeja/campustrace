@@ -13,10 +13,10 @@ import {
 
 const StatCard = ({ title, value, icon, trend, dm }) => (
     <div style={{
-        background: dm ? '#1e293b' : '#fff',
+        background: dm ? '#1e1e1e' : '#fff',
         padding: '24px',
         borderRadius: '16px',
-        border: `1px solid ${dm ? '#334155' : '#e2e8f0'}`,
+        border: `1px solid ${dm ? '#2d2d2d' : '#e2e8f0'}`,
         boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
     }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -124,10 +124,10 @@ const AdminDashboard = ({ darkMode }) => {
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px' }}>
                 {/* Charts - Will populate with real data once available */}
                 <div style={{
-                    background: dm ? '#1e293b' : '#fff',
+                    background: dm ? '#1e1e1e' : '#fff',
                     padding: '24px',
                     borderRadius: '16px',
-                    border: `1px solid ${dm ? '#334155' : '#e2e8f0'}`
+                    border: `1px solid ${dm ? '#2d2d2d' : '#e2e8f0'}`
                 }}>
                     <h4 style={{ margin: '0 0 24px', fontSize: 16, fontWeight: 700 }}>Reporting Activity</h4>
                     <div style={{ height: 300 }}>
@@ -141,11 +141,11 @@ const AdminDashboard = ({ darkMode }) => {
                                 { name: 'Sat', reports: 10 },
                                 { name: 'Sun', reports: 8 },
                             ]}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={dm ? '#334155' : '#f1f5f9'} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={dm ? '#2d2d2d' : '#f1f5f9'} />
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: dm ? '#94a3b8' : '#64748b' }} />
                                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: dm ? '#94a3b8' : '#64748b' }} />
                                 <Tooltip
-                                    contentStyle={{ background: dm ? '#1e293b' : '#fff', borderRadius: 12, border: `1px solid ${dm ? '#334155' : '#e2e8f0'}` }}
+                                    contentStyle={{ background: dm ? '#1e1e1e' : '#fff', borderRadius: 12, border: `1px solid ${dm ? '#2d2d2d' : '#e2e8f0'}` }}
                                     itemStyle={{ fontSize: 12, fontWeight: 600 }}
                                 />
                                 <Bar dataKey="reports" fill="#2563eb" radius={[4, 4, 0, 0]} />
@@ -155,10 +155,10 @@ const AdminDashboard = ({ darkMode }) => {
                 </div>
 
                 <div style={{
-                    background: dm ? '#1e293b' : '#fff',
+                    background: dm ? '#1e1e1e' : '#fff',
                     padding: '24px',
                     borderRadius: '16px',
-                    border: `1px solid ${dm ? '#334155' : '#e2e8f0'}`
+                    border: `1px solid ${dm ? '#2d2d2d' : '#e2e8f0'}`
                 }}>
                     <h4 style={{ margin: '0 0 24px', fontSize: 16, fontWeight: 700 }}>Distribution</h4>
                     <div style={{ height: 300 }}>

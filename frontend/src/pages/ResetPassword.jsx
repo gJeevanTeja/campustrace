@@ -15,11 +15,11 @@ const ResetPassword = ({ darkMode }) => {
 
   const dm = darkMode;
   const colors = {
-    bg:     dm ? '#0f172a' : '#ffffff',
-    text:   dm ? '#e2e8f0' : '#1e293b',
+    bg:     dm ? '#121212' : '#ffffff',
+    text:   dm ? '#e2e8f0' : '#1e1e1e',
     muted:  dm ? '#94a3b8' : '#64748b',
-    border: dm ? '#334155' : '#e2e8f0',
-    input:  dm ? '#1e293b' : '#f8fafc',
+    border: dm ? '#2d2d2d' : '#e2e8f0',
+    input:  dm ? '#1e1e1e' : '#f8fafc',
     accent: '#2563eb',
   };
 

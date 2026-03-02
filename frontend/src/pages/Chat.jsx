@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { chatAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import BottomNav from '../components/BottomNav';
+import { MessageCircle, Loader2, Package } from 'lucide-react';
 
 const Chat = ({ darkMode }) => {
   const navigate = useNavigate();
@@ -14,10 +15,10 @@ const Chat = ({ darkMode }) => {
   const [error, setError] = useState('');
 
   const dm = darkMode;
-  const bg = dm ? '#0f172a' : '#f0f2f5';
+  const bg = dm ? '#121212' : '#f0f2f5';
   const text = dm ? '#e2e8f0' : '#1a1a1a';
   const muted = dm ? '#94a3b8' : '#65676b';
-  const border = dm ? '#334155' : '#e4e6ea';
+  const border = dm ? '#2d2d2d' : '#e4e6ea';
   const headerBg = 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)';
 
   // ── Open direct room from URL param ──────────────────────────────
@@ -85,8 +86,8 @@ const Chat = ({ darkMode }) => {
             <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, letterSpacing: '-0.5px' }}>Messages</h1>
             <p style={{ margin: '2px 0 0', fontSize: 13, opacity: 0.8 }}>Private conversations</p>
           </div>
-          <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>
-            💬
+          <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+            <MessageCircle size={18} />
           </div>
         </div>
       </div>
@@ -100,12 +101,12 @@ const Chat = ({ darkMode }) => {
       <div style={{ padding: '12px 0' }}>
         {loading ? (
           <div style={{ textAlign: 'center', padding: 60, color: muted }}>
-            <div style={{ fontSize: 36, marginBottom: 10 }}>⏳</div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}><Loader2 size={36} className="animate-spin" /></div>
             <p>Loading conversations...</p>
           </div>
         ) : rooms.length === 0 ? (
           <div style={{ textAlign: 'center', padding: 70 }}>
-            <div style={{ fontSize: 64, marginBottom: 12 }}>💬</div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12, color: muted }}><MessageCircle size={64} strokeWidth={1} /></div>
             <p style={{ color: text, fontWeight: 700, fontSize: 18, margin: '0 0 6px' }}>No conversations yet</p>
             <p style={{ color: muted, fontSize: 14 }}>Start a chat from any item's detail page.</p>
           </div>
@@ -118,7 +119,7 @@ const Chat = ({ darkMode }) => {
                 style={{
                   display: 'flex', alignItems: 'center', gap: 14,
                   padding: '10px 16px', cursor: 'pointer',
-                  background: hasUnread ? (dm ? '#1e3a5f' : '#e8f0fe') : 'transparent',
+                  background: hasUnread ? (dm ? '#2d2d2d' : '#e8f0fe') : 'transparent',
                   borderBottom: `1px solid ${border}`,
                   transition: 'background 0.15s',
                 }}>
@@ -158,8 +159,8 @@ const Chat = ({ darkMode }) => {
                       </div>
                     )}
                   </div>
-                  <div style={{ fontSize: 11, color: muted, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    📦 {room.item?.title || room.item_title}
+                  <div style={{ fontSize: 11, color: muted, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <Package size={12} /> {room.item?.title || room.item_title}
                     {room.item?.incident_datetime && ` • ${room.item.type === 'lost' ? 'Lost on' : 'Found on'}: ${new Date(room.item.incident_datetime).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} at ${new Date(room.item.incident_datetime).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}`}
                   </div>
                 </div>

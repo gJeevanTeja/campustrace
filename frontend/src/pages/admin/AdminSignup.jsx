@@ -18,12 +18,12 @@ const AdminSignup = ({ darkMode: dm }) => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const bg = dm ? '#0f172a' : '#f8fafc';
-    const card = dm ? '#1e293b' : '#ffffff';
-    const text = dm ? '#e2e8f0' : '#1e293b';
+    const bg = dm ? '#121212' : '#f8fafc';
+    const card = dm ? '#1e1e1e' : '#ffffff';
+    const text = dm ? '#e2e8f0' : '#1e1e1e';
     const muted = dm ? '#94a3b8' : '#64748b';
-    const border = dm ? '#334155' : '#e2e8f0';
-    const inp = dm ? '#0f172a' : '#f8fafc';
+    const border = dm ? '#2d2d2d' : '#e2e8f0';
+    const inp = dm ? '#121212' : '#f8fafc';
 
     const inputStyle = {
         width: '100%', padding: '12px 16px 12px 42px', borderRadius: 12,
@@ -152,7 +152,7 @@ const AdminSignup = ({ darkMode: dm }) => {
                         </div>
                     </div>
 
-                    <div style={{ marginBottom: 24, padding: 16, background: dm ? '#0f172a' : '#f1f5f9', borderRadius: 12, border: `1.5px dashed ${border}` }}>
+                    <div style={{ marginBottom: 24, padding: 16, background: dm ? '#121212' : '#f1f5f9', borderRadius: 12, border: `1.5px dashed ${border}` }}>
                         <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#2563eb', marginBottom: 8 }}>Activation Key Required</label>
                         <div style={{ position: 'relative' }}>
                             <ShieldCheck size={18} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#2563eb' }} />
@@ -163,7 +163,7 @@ const AdminSignup = ({ darkMode: dm }) => {
                                 onChange={handleChange}
                                 placeholder="Enter system activation key"
                                 required
-                                style={{ ...inputStyle, border: '1.5px solid #2563eb', background: dm ? '#1e293b' : '#fff' }}
+                                style={{ ...inputStyle, border: '1.5px solid #2563eb', background: dm ? '#1e1e1e' : '#fff' }}
                             />
                         </div>
                     </div>

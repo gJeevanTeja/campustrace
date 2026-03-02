@@ -4,17 +4,17 @@ import { itemsAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import BottomNav from '../components/BottomNav';
 import ItemCard from '../components/ItemCard';
-import { Shield } from 'lucide-react';
+import { Shield, Laptop, Key, Wallet, Book, Shirt, Package, MapPin, Hand, Bell, Sun, Moon, Search, Frown, PartyPopper, Loader2, Mailbox } from 'lucide-react';
 
 import { useNotifications } from '../context/NotificationContext';
 
 const CATEGORIES = [
-  { id: 'electronics', label: 'Electronics', icon: '🖥️' },
-  { id: 'keys', label: 'Keys', icon: '🔑' },
-  { id: 'wallet', label: 'Wallets', icon: '👛' },
-  { id: 'books', label: 'Books', icon: '📚' },
-  { id: 'clothing', label: 'Clothing', icon: '👕' },
-  { id: 'other', label: 'Other', icon: '📦' },
+  { id: 'electronics', label: 'Electronics', icon: <Laptop size={24} /> },
+  { id: 'keys', label: 'Keys', icon: <Key size={24} /> },
+  { id: 'wallet', label: 'Wallets', icon: <Wallet size={24} /> },
+  { id: 'books', label: 'Books', icon: <Book size={24} /> },
+  { id: 'clothing', label: 'Clothing', icon: <Shirt size={24} /> },
+  { id: 'other', label: 'Other', icon: <Package size={24} /> },
 ];
 
 const Home = ({ darkMode, setDarkMode }) => {
@@ -25,11 +25,11 @@ const Home = ({ darkMode, setDarkMode }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const bg = darkMode ? '#0f172a' : '#f8fafc';
-  const card = darkMode ? '#1e293b' : '#fff';
-  const text = darkMode ? '#e2e8f0' : '#1e293b';
+  const bg = darkMode ? '#121212' : '#f8fafc';
+  const card = darkMode ? '#1e1e1e' : '#fff';
+  const text = darkMode ? '#e2e8f0' : '#1e1e1e';
   const muted = darkMode ? '#94a3b8' : '#64748b';
-  const border = darkMode ? '#334155' : '#e2e8f0';
+  const border = darkMode ? '#2d2d2d' : '#e2e8f0';
 
   useEffect(() => {
     itemsAPI.getRecent()
@@ -55,11 +55,11 @@ const Home = ({ darkMode, setDarkMode }) => {
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
           <div>
-            <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, letterSpacing: -0.5 }}>
-              📍 CampusTrace
+            <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, letterSpacing: -0.5, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <MapPin size={24} strokeWidth={2.5} /> CampusTrace
             </h1>
-            <p style={{ margin: '4px 0 0', fontSize: 13, opacity: 0.85 }}>
-              Hello, {user?.name?.split(' ')[0] || 'there'} 👋
+            <p style={{ margin: '4px 0 0', fontSize: 13, opacity: 0.85, display: 'flex', alignItems: 'center', gap: 4 }}>
+              Hello, {user?.name?.split(' ')[0] || 'there'} <Hand size={14} />
             </p>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -73,7 +73,7 @@ const Home = ({ darkMode, setDarkMode }) => {
                 color: '#fff', fontSize: 18, position: 'relative'
               }}
             >
-              🔔
+              <Bell size={20} />
               {unreadCount > 0 && (
                 <span style={{
                   position: 'absolute', top: 2, right: 2,
@@ -99,7 +99,7 @@ const Home = ({ darkMode, setDarkMode }) => {
                 color: '#fff', fontSize: 18
               }}
             >
-              {darkMode ? '☀️' : '🌙'}
+              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
           </div>
         </div>
@@ -112,14 +112,14 @@ const Home = ({ darkMode, setDarkMode }) => {
             padding: '4px 4px 4px 16px',
             boxShadow: '0 4px 16px rgba(0,0,0,0.15)'
           }}>
-            <span style={{ fontSize: 18, marginRight: 8 }}>🔍</span>
+            <span style={{ display: 'flex', alignItems: 'center', marginRight: 8, color: '#64748b' }}><Search size={20} /></span>
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search lost or found items..."
               style={{
                 flex: 1, border: 'none', outline: 'none',
-                fontSize: 14, color: '#1e293b', background: 'transparent'
+                fontSize: 14, color: '#1e1e1e', background: 'transparent'
               }}
             />
             <button
@@ -169,7 +169,7 @@ const Home = ({ darkMode, setDarkMode }) => {
               boxShadow: '0 4px 16px rgba(239,68,68,0.3)'
             }}
           >
-            <div style={{ fontSize: 28, marginBottom: 6 }}>😔</div>
+            <div style={{ marginBottom: 6 }}><Frown size={32} /></div>
             <div style={{ fontWeight: 700, fontSize: 15 }}>Lost Something?</div>
             <div style={{ fontSize: 12, opacity: 0.9, marginTop: 2 }}>Report a lost item</div>
           </button>
@@ -182,7 +182,7 @@ const Home = ({ darkMode, setDarkMode }) => {
               boxShadow: '0 4px 16px rgba(22,163,74,0.3)'
             }}
           >
-            <div style={{ fontSize: 28, marginBottom: 6 }}>🎉</div>
+            <div style={{ marginBottom: 6 }}><PartyPopper size={32} /></div>
             <div style={{ fontWeight: 700, fontSize: 15 }}>Found Something?</div>
             <div style={{ fontSize: 12, opacity: 0.9, marginTop: 2 }}>Report a found item</div>
           </button>
@@ -207,7 +207,7 @@ const Home = ({ darkMode, setDarkMode }) => {
                   boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
                 }}
               >
-                <span style={{ fontSize: 22 }}>{cat.icon}</span>
+                <span>{cat.icon}</span>
                 {cat.label}
               </button>
             ))}
@@ -228,12 +228,12 @@ const Home = ({ darkMode, setDarkMode }) => {
 
           {loading ? (
             <div style={{ textAlign: 'center', padding: 40, color: muted }}>
-              <div style={{ fontSize: 32, marginBottom: 8 }}>⏳</div>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}><Loader2 size={32} className="animate-spin" /></div>
               Loading items...
             </div>
           ) : recent.length === 0 ? (
             <div style={{ textAlign: 'center', padding: 40, color: muted }}>
-              <div style={{ fontSize: 48 }}>📭</div>
+              <div style={{ display: 'flex', justifyContent: 'center' }}><Mailbox size={48} strokeWidth={1.5} /></div>
               <p style={{ marginTop: 8 }}>No items yet. Be the first to report!</p>
             </div>
           ) : (

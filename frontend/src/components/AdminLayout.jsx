@@ -42,10 +42,10 @@ const AdminLayout = ({ children, darkMode }) => {
 
     const filteredMenu = menuItems.filter(item => item.roles.includes(user.role));
 
-    const sidebarBg = dm ? '#1e293b' : '#ffffff';
-    const bodyBg = dm ? '#0f172a' : '#f8fafc';
-    const textColor = dm ? '#f1f5f9' : '#1e293b';
-    const borderColor = dm ? '#334155' : '#e2e8f0';
+    const sidebarBg = dm ? '#1e1e1e' : '#ffffff';
+    const bodyBg = dm ? '#121212' : '#f8fafc';
+    const textColor = dm ? '#f1f5f9' : '#1e1e1e';
+    const borderColor = dm ? '#2d2d2d' : '#e2e8f0';
 
     return (
         <div style={{ display: 'flex', minHeight: '100vh', background: bodyBg, color: textColor }}>
@@ -113,7 +113,7 @@ const AdminLayout = ({ children, darkMode }) => {
                         onClick={logout}
                         style={{
                             width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px',
-                            borderRadius: 10, border: 'none', background: dm ? '#334155' : '#f1f5f9',
+                            borderRadius: 10, border: 'none', background: dm ? '#2d2d2d' : '#f1f5f9',
                             color: '#ef4444', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: '0.2s'
                         }}
                     >

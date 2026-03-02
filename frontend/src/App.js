@@ -41,14 +41,14 @@ function AppRoutes() {
         <Routes>
           {/* Public */}
           <Route path="/login" element={<Login darkMode={darkMode} />} />
-          <Route path="/signup" element={<Signup darkMode={darkMode} />} />
+          <Route path="/signup" element={<Signup darkMode={darkMode} setDarkMode={setDarkMode} />} />
           <Route path="/admin/signup" element={<AdminSignup darkMode={darkMode} />} />
           <Route path="/forgot-password" element={<ForgotPassword darkMode={darkMode} />} />
           <Route path="/reset-password" element={<ResetPassword darkMode={darkMode} />} />
           <Route path="/terms" element={<TermsPage darkMode={darkMode} />} />  {/* ← NEW */}
           <Route path="/privacy" element={<TermsPage darkMode={darkMode} />} />  {/* ← NEW */}
           <Route path="/dashboard" element={<Dashboard darkMode={darkMode} />} />
-          <Route path="/welcome" element={<AuthLanding darkMode={darkMode} />} />
+          <Route path="/welcome" element={<AuthLanding darkMode={darkMode} setDarkMode={setDarkMode} />} />
 
           {/* Admin Routes */}
           <Route path="/admin" element={

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Home, Search, Plus, MessageCircle, User, BarChart2 } from 'lucide-react';
 import { useNotifications } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -11,14 +12,14 @@ const BottomNav = ({ darkMode }) => {
 
   const { user } = useAuth();
   const tabs = [
-    { path: '/', icon: '🏠', label: 'Home' },
-    { path: '/browse', icon: '🔍', label: 'Browse' },
-    { path: '/report', icon: '➕', label: 'Report', special: true },
-    { path: '/chat', icon: '💬', label: 'Chat' },
-    { path: '/profile', icon: '👤', label: 'Profile' },
+    { path: '/', icon: <Home size={22} />, label: 'Home' },
+    { path: '/browse', icon: <Search size={22} />, label: 'Browse' },
+    { path: '/report', icon: <Plus size={24} />, label: 'Report', special: true },
+    { path: '/chat', icon: <MessageCircle size={22} />, label: 'Chat' },
+    { path: '/profile', icon: <User size={22} />, label: 'Profile' },
     {
       path: (user?.role === 'student' || !user?.role) ? '/dashboard' : '/admin',
-      icon: '📊',
+      icon: <BarChart2 size={22} />,
       label: 'Stats'
     }
   ];
@@ -31,8 +32,8 @@ const BottomNav = ({ darkMode }) => {
   return (
     <div style={{
       position: 'fixed', bottom: 0, left: 0, right: 0,
-      background: dm ? '#1e293b' : '#ffffff',
-      borderTop: `1px solid ${dm ? '#334155' : '#e2e8f0'}`,
+      background: dm ? '#1e1e1e' : '#ffffff',
+      borderTop: `1px solid ${dm ? '#2d2d2d' : '#e2e8f0'}`,
       display: 'flex', justifyContent: 'space-around', alignItems: 'center',
       paddingBottom: 'env(safe-area-inset-bottom, 4px)',
       height: 54,
@@ -54,7 +55,7 @@ const BottomNav = ({ darkMode }) => {
                 fontSize: 18, boxShadow: '0 2px 8px rgba(59,130,246,0.4)',
               }}
             >
-              ➕
+              <Plus size={24} color="#fff" />
             </button>
           );
         }
@@ -71,7 +72,9 @@ const BottomNav = ({ darkMode }) => {
             }}
           >
             <div style={{ position: 'relative' }}>
-              <span style={{ fontSize: 18, lineHeight: 1 }}>{tab.icon}</span>
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: active ? '#3b82f6' : (dm ? '#64748b' : '#94a3b8'), marginBottom: 2 }}>
+                {tab.icon}
+              </span>
 
               {/* Overlays for Badges */}
               {tab.label === 'Chat' && unreadChatCount > 0 && (
@@ -81,7 +84,7 @@ const BottomNav = ({ darkMode }) => {
                   fontSize: '10px', fontWeight: 'bold',
                   minWidth: '16px', height: '16px', borderRadius: '8px',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  padding: '0 4px', border: `2px solid ${dm ? '#1e293b' : '#ffffff'}`
+                  padding: '0 4px', border: `2px solid ${dm ? '#1e1e1e' : '#ffffff'}`
                 }}>
                   {unreadChatCount}
                 </div>
@@ -94,7 +97,7 @@ const BottomNav = ({ darkMode }) => {
                   fontSize: '10px', fontWeight: 'bold',
                   minWidth: '16px', height: '16px', borderRadius: '8px',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  padding: '0 4px', border: `2px solid ${dm ? '#1e293b' : '#ffffff'}`
+                  padding: '0 4px', border: `2px solid ${dm ? '#1e1e1e' : '#ffffff'}`
                 }}>
                   {unreadCount}
                 </div>
