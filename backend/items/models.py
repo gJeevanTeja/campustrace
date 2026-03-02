@@ -13,6 +13,7 @@ class Item(models.Model):
     STATUS_CHOICES = [
         ('active', 'Active'),
         ('claimed', 'Claimed'),
+        ('returned', 'Returned'),
         ('closed', 'Closed'),
     ]
 
@@ -41,6 +42,9 @@ class Item(models.Model):
 
     title = models.CharField(max_length=200)
     description = models.TextField()
+    brand = models.CharField(max_length=100, blank=True, null=True)
+    color = models.CharField(max_length=50, blank=True, null=True)
+    unique_mark = models.CharField(max_length=200, blank=True, null=True)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='other')
     type = models.CharField(max_length=10, choices=TYPE_CHOICES)
     location = models.CharField(max_length=100, choices=LOCATION_CHOICES, default='other')
@@ -114,3 +118,29 @@ class ItemPhoto(models.Model):
 
     def __str__(self):
         return f"Photo for {self.item.title} (primary={self.is_primary})"
+
+
+class ClaimRequest(models.Model):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='claim_requests')
+    claimant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='claims_made')
+    answers = models.JSONField(default=dict)
+    correct_score = models.IntegerField(default=0)
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('pending', 'Pending'),
+            ('approved', 'Approved'),
+            ('rejected', 'Rejected')
+        ],
+        default='pending'
+    )
+    claim_code = models.CharField(max_length=6, blank=True, null=True)
+    is_returned = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'claim_requests'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Claim for {self.item.title} by {self.claimant.username}"

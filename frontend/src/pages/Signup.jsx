@@ -16,21 +16,14 @@ const Signup = ({ darkMode: dm }) => {
 
   const [form, setForm] = useState({
     name: '', username: '', email: '', phone: '', department: '',
-    section: '', college_year: '', college: '', password: '', confirm_password: '',
+    section: '', college_year: '', college_name: '', password: '', confirm_password: '',
     terms_accepted: false,
   });
-  const [colleges, setColleges] = useState([]);
   const [errors, setErrors] = useState({});
   const [globalError, setGlobalError] = useState('');
   const [loading, setLoading] = useState(false);
   const [usernameStatus, setUsernameStatus] = useState(''); // ''|'checking'|'available'|'taken'
   const usernameTimer = useRef(null);
-
-  React.useEffect(() => {
-    authAPI.getColleges()
-      .then(({ data }) => setColleges(data))
-      .catch(() => { });
-  }, []);
 
   const bg = dm ? '#0f172a' : 'linear-gradient(135deg,#eff6ff 0%,#f0fdf4 100%)';
   const card = dm ? '#1e293b' : '#ffffff';
@@ -79,6 +72,8 @@ const Signup = ({ darkMode: dm }) => {
     }, 500);
   };
 
+
+
   const validate = () => {
     const e = {};
     if (!form.name.trim() || form.name.trim().length < 2) e.name = 'Full name must be at least 2 characters';
@@ -90,21 +85,13 @@ const Signup = ({ darkMode: dm }) => {
     else if (!'6789'.includes(form.phone[0])) e.phone = 'Enter a valid Indian mobile number (starts with 6-9)';
     if (!form.department) e.department = 'Please select a department';
     if (!form.section.trim()) e.section = 'Section is required';
-    if (!form.college) e.college = 'Please select your college';
+    if (!form.college_name.trim()) e.college_name = 'Please type your college name';
     if (!form.college_year) e.college_year = 'Please select a year';
     if (!form.password || form.password.length < 8) e.password = 'Password must be at least 8 characters';
     else if (!/[A-Z]/.test(form.password)) e.password = 'Password needs at least one uppercase letter';
     else if (!/[0-9]/.test(form.password)) e.password = 'Password needs at least one number';
     if (form.password !== form.confirm_password) e.confirm_password = 'Passwords do not match';
     if (!form.terms_accepted) e.terms_accepted = 'You must accept the Terms and Conditions';
-
-    // Email domain validation
-    if (form.email && form.college) {
-      const selectedCol = colleges.find(c => c.id === parseInt(form.college));
-      if (selectedCol && !form.email.toLowerCase().endsWith(selectedCol.email_domain.toLowerCase())) {
-        e.email = `Registration restricted to ${selectedCol.name} emails (@${selectedCol.email_domain})`;
-      }
-    }
 
     return e;
   };
@@ -126,7 +113,7 @@ const Signup = ({ darkMode: dm }) => {
         const fe = {};
         Object.entries(d.errors || d).forEach(([k, v]) => {
           const msg = Array.isArray(v) ? v[0] : String(v);
-          const known = ['name', 'username', 'email', 'phone', 'department', 'section', 'college_year', 'password', 'confirm_password', 'terms_accepted'];
+          const known = ['name', 'username', 'email', 'phone', 'department', 'section', 'college_year', 'college_name', 'password', 'confirm_password', 'terms_accepted'];
           if (known.includes(k)) fe[k] = msg;
           else if (['non_field_errors', 'detail'].includes(k)) setGlobalError(Array.isArray(v) ? v[0] : String(v));
         });
@@ -249,12 +236,9 @@ const Signup = ({ darkMode: dm }) => {
           {/* College Selection */}
           <div style={{ marginBottom: 14 }}>
             <label style={{ display: 'block', fontWeight: 600, color: text, marginBottom: 5, fontSize: 14 }}>College / University *</label>
-            <select name="college" value={form.college} onChange={handleChange}
-              style={{ ...inputStyle('college'), appearance: 'none', cursor: 'pointer' }}>
-              <option value="">Select your College</option>
-              {colleges.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-            {errors.college && <p style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{errors.college}</p>}
+            <input name="college_name" value={form.college_name} onChange={handleChange}
+              placeholder="e.g. Malla Reddy University" autoComplete="organization" style={inputStyle('college_name')} />
+            {errors.college_name && <p style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{errors.college_name}</p>}
           </div>
 
           {/* Department */}

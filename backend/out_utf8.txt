@@ -1,0 +1,1 @@
+﻿[('jeevanteja428@gmail.com', 'super_admin'), ('2311cs030126@mallareddyuniversity.ac.in', 'college_admin'), ('2311cs030142@mallareddyuniversity.ac.in', 'college_admin'), ('2311cs030154@mallareddyuniversity.ac.in', 'college_admin')]

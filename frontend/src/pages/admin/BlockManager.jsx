@@ -26,7 +26,7 @@ const BlockManager = ({ darkMode }) => {
         try {
             setLoading(true);
             const { data } = await adminAPI.getBlocks();
-            setBlocks(data);
+            setBlocks(data.results || data || []);
         } catch (err) {
             console.error(err);
         } finally {

@@ -39,8 +39,12 @@ const ReportItem = ({ darkMode }) => {
 
   useState(() => {
     // Fetch categories and blocks
-    adminAPI.getCategories().then(({ data }) => setCategories(data)).catch(() => { });
-    adminAPI.getBlocks().then(({ data }) => setBlocks(data)).catch(() => { });
+    adminAPI.getCategories()
+      .then(({ data }) => setCategories(data.results || data || []))
+      .catch(() => { });
+    adminAPI.getBlocks()
+      .then(({ data }) => setBlocks(data.results || data || []))
+      .catch(() => { });
   }, []);
 
   const [photos, setPhotos] = useState([]);

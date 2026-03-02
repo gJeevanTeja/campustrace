@@ -26,7 +26,7 @@ const CollegeManager = ({ darkMode }) => {
         try {
             setLoading(true);
             const { data } = await adminAPI.getColleges();
-            setColleges(data);
+            setColleges(data.results || data || []);
         } catch (err) {
             console.error(err);
         } finally {

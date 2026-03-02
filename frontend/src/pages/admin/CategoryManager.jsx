@@ -25,7 +25,7 @@ const CategoryManager = ({ darkMode }) => {
         try {
             setLoading(true);
             const { data } = await adminAPI.getCategories();
-            setCategories(data);
+            setCategories(data.results || data || []);
         } catch (err) {
             console.error(err);
         } finally {

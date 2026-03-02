@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'notifications',
     'chat',
     'colleges',
+    'analytics',
+    'administration',
 ]
 
 # ── Middleware ─────────────────────────────────────────────────

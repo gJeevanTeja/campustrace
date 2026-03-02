@@ -115,6 +115,10 @@ class StartChatView(APIView):
         if item.user == request.user:
             return Response({'error': 'You cannot chat about your own item.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        # ✅ Enforce college isolation for admins
+        if request.user.role != 'super_admin' and item.college != request.user.college:
+            return Response({'error': 'You can only chat about items in your own college.'}, status=status.HTTP_403_FORBIDDEN)
+
         user1, user2 = request.user, item.user
 
         # ✅ Block check — prevent starting chat if blocked

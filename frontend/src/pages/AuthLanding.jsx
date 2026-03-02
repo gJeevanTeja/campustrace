@@ -123,7 +123,7 @@ const AuthLanding = ({ darkMode: dm }) => {
 
             <div style={{ marginTop: 48, fontSize: 14, color: muted }}>
                 Need to register your university? <span
-                    onClick={() => navigate('/admin/signup')}
+                    onClick={() => navigate('/admin/request')}
                     style={{ color: '#2563eb', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
                 >Click here</span>
             </div>

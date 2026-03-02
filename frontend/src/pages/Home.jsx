@@ -137,24 +137,27 @@ const Home = ({ darkMode, setDarkMode }) => {
         </form>
 
         {/* Admin Quick Access Banner */}
-        {(user?.role === 'super_admin' || user?.role === 'college_admin' || user?.role === 'moderator') && (
-          <div
-            onClick={() => navigate('/admin')}
-            style={{
-              marginTop: 18, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: 14, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              cursor: 'pointer', backdropFilter: 'blur(8px)'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ background: '#fff', color: '#2563eb', padding: 6, borderRadius: 8, display: 'flex' }}>
-                <Shield size={16} />
-              </div>
-              <span style={{ fontSize: 13, fontWeight: 700 }}>Go to Admin Panel</span>
-            </div>
-            <span style={{ fontSize: 18 }}>→</span>
-          </div>
-        )}
+        {(() => {
+          const authUser = JSON.parse(localStorage.getItem("user")) || user;
+          return authUser && (authUser.role === 'college_admin' || authUser.role === 'super_admin') ? (
+            <button
+              onClick={() => {
+                if (authUser.role === "super_admin") {
+                  navigate("/super-admin-dashboard");
+                } else {
+                  navigate("/admin-dashboard");
+                }
+              }}
+              style={{
+                marginTop: 18, background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)',
+                borderRadius: 14, padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                cursor: 'pointer', backdropFilter: 'blur(10px)', color: '#fff', fontSize: 15, fontWeight: 800, width: '100%'
+              }}
+            >
+              <Shield size={18} /> Admin Panel
+            </button>
+          ) : null;
+        })()}
       </div>
 
       {/* Quick Actions */}

@@ -29,20 +29,21 @@ import CollegeManager from './pages/admin/CollegeManager';
 import UserManager from './pages/admin/UserManager';
 import BlockManager from './pages/admin/BlockManager';
 import CategoryManager from './pages/admin/CategoryManager';
-import AdminSignup from './pages/admin/AdminSignup';
+import AdminRequestForm from './pages/admin/AdminRequestForm';
+import AdminRequestManager from './pages/admin/AdminRequestManager';
 import AuthLanding from './pages/AuthLanding';
 
 function AppRoutes() {
   const { darkMode, setDarkMode } = useTheme();
 
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <div className="app-container">
         <Routes>
           {/* Public */}
           <Route path="/login" element={<Login darkMode={darkMode} />} />
           <Route path="/signup" element={<Signup darkMode={darkMode} />} />
-          <Route path="/admin/signup" element={<AdminSignup darkMode={darkMode} />} />
+          <Route path="/admin/request" element={<AdminRequestForm darkMode={darkMode} />} />
           <Route path="/forgot-password" element={<ForgotPassword darkMode={darkMode} />} />
           <Route path="/reset-password" element={<ResetPassword darkMode={darkMode} />} />
           <Route path="/terms" element={<TermsPage darkMode={darkMode} />} />  {/* ← NEW */}
@@ -52,6 +53,12 @@ function AppRoutes() {
 
           {/* Admin Routes */}
           <Route path="/admin" element={
+            <ProtectedRoute><AdminDashboard darkMode={darkMode} /></ProtectedRoute>
+          } />
+          <Route path="/admin-dashboard" element={
+            <ProtectedRoute><AdminDashboard darkMode={darkMode} /></ProtectedRoute>
+          } />
+          <Route path="/super-admin-dashboard" element={
             <ProtectedRoute><AdminDashboard darkMode={darkMode} /></ProtectedRoute>
           } />
           <Route path="/admin/colleges" element={
@@ -65,6 +72,9 @@ function AppRoutes() {
           } />
           <Route path="/admin/categories" element={
             <ProtectedRoute><CategoryManager darkMode={darkMode} /></ProtectedRoute>
+          } />
+          <Route path="/admin/requests" element={
+            <ProtectedRoute><AdminRequestManager darkMode={darkMode} /></ProtectedRoute>
           } />
 
           {/* Protected */}

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Item, ItemPhoto
+from .models import Item, ItemPhoto, ClaimRequest
 from users.serializers import UserSerializer
 import math
 
@@ -16,6 +16,15 @@ def haversine_distance(lat1, lon1, lat2, lon2):
              math.sin(d_lon / 2) ** 2)
     c     = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     return round(R * c, 2)
+
+
+class ClaimRequestSerializer(serializers.ModelSerializer):
+    claimant = UserSerializer(read_only=True)
+
+    class Meta:
+        model = ClaimRequest
+        fields = ['id', 'item', 'claimant', 'answers', 'correct_score', 'status', 'created_at']
+        read_only_fields = ['id', 'item', 'claimant', 'correct_score', 'status', 'created_at']
 
 
 class ItemPhotoSerializer(serializers.ModelSerializer):
@@ -43,6 +52,8 @@ class ItemSerializer(serializers.ModelSerializer):
     can_be_claimed     = serializers.SerializerMethodField()
     distance_from_user = serializers.SerializerMethodField()
     nearby_matches     = serializers.SerializerMethodField()
+    pending_claims     = serializers.SerializerMethodField()
+    my_claim           = serializers.SerializerMethodField()
 
     class Meta:
         model  = Item
@@ -55,7 +66,7 @@ class ItemSerializer(serializers.ModelSerializer):
             'incident_datetime', 'user', 'claimed_by',
             'created_at', 'updated_at', 'time_ago',
             'distance_from_user', 'nearby_matches',
-            'college', 'category_new', 'block',
+            'college', 'category_new', 'block', 'pending_claims', 'my_claim'
         ]
         read_only_fields = ['id', 'reference_number', 'user', 'created_at', 'updated_at']
 
@@ -63,6 +74,22 @@ class ItemSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if obj.image and request:
             return request.build_absolute_uri(obj.image.url)
+        return None
+
+    def get_pending_claims(self, obj):
+        request = self.context.get('request')
+        # Only show pending claims to the user who posted the item
+        if request and request.user.is_authenticated and obj.user == request.user:
+            claims = ClaimRequest.objects.filter(item=obj, status='pending')
+            return ClaimRequestSerializer(claims, many=True).data
+        return []
+
+    def get_my_claim(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            claim = ClaimRequest.objects.filter(item=obj, claimant=request.user).order_by('-created_at').first()
+            if claim:
+                return ClaimRequestSerializer(claim).data
         return None
 
     def get_time_ago(self, obj):
@@ -87,7 +114,13 @@ class ItemSerializer(serializers.ModelSerializer):
         return f"🔴 Lost here: {obj.title}" if obj.type == 'lost' else f"🟢 Found here: {obj.title}"
 
     def get_can_be_claimed(self, obj):
-        return obj.type == 'lost' and obj.status == 'active'
+        request = self.context.get('request')
+        user = request.user if request and request.user.is_authenticated else None
+        if obj.status != 'active':
+            return False
+        if user and obj.user == user:
+            return False
+        return True
 
     def get_distance_from_user(self, obj):
         request = self.context.get('request')

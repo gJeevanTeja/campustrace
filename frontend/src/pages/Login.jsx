@@ -32,7 +32,11 @@ const Login = ({ darkMode: dm }) => {
   const inp = dm ? '#0f172a' : '#f8fafc';
 
   const redirectAfterLogin = (user) => {
-    if (['super_admin', 'college_admin', 'moderator'].includes(user?.role)) {
+    if (user?.role === 'super_admin') {
+      window.location.href = '/super-admin-dashboard';
+    } else if (user?.role === 'college_admin') {
+      window.location.href = '/admin-dashboard';
+    } else if (user?.role === 'moderator') {
       window.location.href = '/admin';
     } else {
       window.location.href = '/';
@@ -123,6 +127,7 @@ const Login = ({ darkMode: dm }) => {
       });
       localStorage.setItem('access_token', data.tokens.access);
       localStorage.setItem('refresh_token', data.tokens.refresh);
+      localStorage.setItem('user', JSON.stringify(data.user));
       redirectAfterLogin(data.user);
     } catch (err) {
       if (!err.response) {
@@ -153,6 +158,7 @@ const Login = ({ darkMode: dm }) => {
             });
             localStorage.setItem('access_token', data.tokens.access);
             localStorage.setItem('refresh_token', data.tokens.refresh);
+            localStorage.setItem('user', JSON.stringify(data.user));
             redirectAfterLogin(data.user);
           } catch (err) {
             setError(err.response?.data?.error || 'Google sign-in failed.');
