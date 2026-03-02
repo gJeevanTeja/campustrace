@@ -11,13 +11,8 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('access_token');
     if (token) {
       authAPI.getProfile()
-        .then(({ data }) => {
-          setUser(data);
-          localStorage.setItem('user', JSON.stringify(data));
-        })
-        .catch(() => {
-          localStorage.clear();
-        })
+        .then(({ data }) => setUser(data))
+        .catch(() => localStorage.clear())
         .finally(() => setLoading(false));
     } else {
       setLoading(false);
@@ -26,27 +21,21 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     const { data } = await authAPI.login(credentials);
-    const access = data?.tokens?.access || data?.access;
+    const access  = data?.tokens?.access  || data?.access;
     const refresh = data?.tokens?.refresh || data?.refresh;
-    if (access) localStorage.setItem('access_token', access);
+    if (access)  localStorage.setItem('access_token',  access);
     if (refresh) localStorage.setItem('refresh_token', refresh);
-    if (data.user) {
-      setUser(data.user);
-      localStorage.setItem('user', JSON.stringify(data.user));
-    }
+    if (data.user) setUser(data.user);
     return data;
   };
 
   const register = async (formData) => {
     const { data } = await authAPI.register(formData);
-    const access = data?.tokens?.access || data?.access;
+    const access  = data?.tokens?.access  || data?.access;
     const refresh = data?.tokens?.refresh || data?.refresh;
-    if (access) localStorage.setItem('access_token', access);
+    if (access)  localStorage.setItem('access_token',  access);
     if (refresh) localStorage.setItem('refresh_token', refresh);
-    if (data.user) {
-      setUser(data.user);
-      localStorage.setItem('user', JSON.stringify(data.user));
-    }
+    if (data.user) setUser(data.user);
     return data;
   };
 
@@ -54,18 +43,12 @@ export const AuthProvider = ({ children }) => {
     try {
       const refresh = localStorage.getItem('refresh_token');
       await authAPI.logout(refresh);
-    } catch { }
+    } catch {}
     localStorage.clear();
     setUser(null);
   };
 
-  const updateUser = (userData) => {
-    setUser(prev => {
-      const updated = { ...prev, ...userData };
-      localStorage.setItem('user', JSON.stringify(updated));
-      return updated;
-    });
-  };
+  const updateUser = (userData) => setUser(prev => ({ ...prev, ...userData }));
 
   return (
     <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>

@@ -12,6 +12,7 @@ import { itemsAPI, chatAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import BottomNav from '../components/BottomNav';
 import GoogleLocationCard from '../components/LocationCard';  // ← replaces LocationCard
+import { Search, AlertCircle, ImageOff, Clock, MapPin, User, Phone, MessageCircle, Hand, CheckCircle2, Target, Info } from 'lucide-react';
 
 const ItemDetails = ({ darkMode }) => {
   const { id } = useParams();
@@ -26,22 +27,13 @@ const ItemDetails = ({ darkMode }) => {
   const [activePhoto, setActivePhoto] = useState(0);
   const [startingChat, setStartingChat] = useState(false);
 
-  // Claim Verification State
-  const [showClaimModal, setShowClaimModal] = useState(false);
-  const [claimAnswers, setClaimAnswers] = useState({ brand: '', color: '', unique_mark: '' });
-  const [claimCode, setClaimCode] = useState(null);
-  const [verifying, setVerifying] = useState(false);
-  const [claimError, setClaimError] = useState('');
-  const [enteredCode, setEnteredCode] = useState('');
-  const [confirming, setConfirming] = useState(false);
-
   const dm = darkMode;
   const colors = {
-    bg: dm ? '#0f172a' : '#f8fafc',
-    card: dm ? '#1e293b' : '#ffffff',
-    text: dm ? '#e2e8f0' : '#1e293b',
+    bg: dm ? '#121212' : '#f8fafc',
+    card: dm ? '#1e1e1e' : '#ffffff',
+    text: dm ? '#e2e8f0' : '#1e1e1e',
     muted: dm ? '#94a3b8' : '#64748b',
-    border: dm ? '#334155' : '#e2e8f0',
+    border: dm ? '#333333' : '#e2e8f0',
     accent: '#3b82f6',
     tag: dm ? '#0f2942' : '#eff6ff',
     tagText: dm ? '#93c5fd' : '#1d4ed8',
@@ -50,28 +42,22 @@ const ItemDetails = ({ darkMode }) => {
   };
 
   // ── Fetch item ────────────────────────────────────────────────
-  const fetchItem = async () => {
-    try {
-      const res = await itemsAPI.getById(id);
-      setItem(res.data);
-    } catch {
-      setError('Item not found or has been removed.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchItem = async () => {
+      try {
+        const res = await itemsAPI.getById(id);
+        setItem(res.data);
+      } catch {
+        setError('Item not found or has been removed.');
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchItem();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   // ── Actions ───────────────────────────────────────────────────
   const handleClaim = async () => {
-    if (item.type === 'found') {
-      setShowClaimModal(true);
-      return;
-    }
     if (!window.confirm('Are you sure you want to claim this item?')) return;
     setClaiming(true);
     try {
@@ -82,60 +68,6 @@ const ItemDetails = ({ darkMode }) => {
       alert('Could not claim item. Please try again.');
     } finally {
       setClaiming(false);
-    }
-  };
-
-  const handleVerifyClaim = async (e) => {
-    e.preventDefault();
-    setVerifying(true);
-    setClaimError('');
-    try {
-      const res = await itemsAPI.verifyClaim(id, claimAnswers);
-      setClaimCode(res.data.claim_code);
-      setClaimSuccess(true);
-      setItem(prev => ({ ...prev, status: 'claimed' }));
-      setShowClaimModal(false);
-    } catch (err) {
-      setClaimError(err.response?.data?.error || 'Verification failed. Try again.');
-    } finally {
-      setVerifying(false);
-    }
-  };
-
-  const handleConfirmReturn = async (e) => {
-    e.preventDefault();
-    if (!enteredCode) return;
-    setConfirming(true);
-    try {
-      await itemsAPI.confirmReturn(id, enteredCode);
-      setItem(prev => ({ ...prev, status: 'returned' }));
-      setEnteredCode('');
-      alert('Item successfully returned!');
-    } catch (err) {
-      alert(err.response?.data?.error || 'Invalid claim code.');
-    } finally {
-      setConfirming(false);
-    }
-  };
-
-  const handleApprove = async (claimId) => {
-    try {
-      if (!window.confirm("Approve this claim? An OTP will be generated.")) return;
-      await itemsAPI.approveClaim(claimId);
-      alert('Claim approved! The user has been notified.');
-      fetchItem(); // refresh to update pending claims list
-    } catch (err) {
-      alert('Error approving claim.');
-    }
-  };
-
-  const handleReject = async (claimId) => {
-    try {
-      if (!window.confirm("Reject this claim?")) return;
-      await itemsAPI.rejectClaim(claimId);
-      fetchItem(); // Refresh pending claims list
-    } catch (err) {
-      alert('Error rejecting claim.');
     }
   };
 
@@ -194,7 +126,7 @@ const ItemDetails = ({ darkMode }) => {
   if (loading) return (
     <div style={{ minHeight: '100vh', background: colors.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
+        <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}><Search size={40} color={colors.muted} /></div>
         <p style={{ color: colors.muted }}>Loading item details...</p>
       </div>
     </div>
@@ -202,7 +134,7 @@ const ItemDetails = ({ darkMode }) => {
 
   if (error || !item) return (
     <div style={{ minHeight: '100vh', background: colors.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
-      <div style={{ fontSize: 50 }}>😕</div>
+      <AlertCircle size={50} color={colors.muted} />
       <p style={{ color: colors.text, fontSize: 16 }}>{error || 'Item not found'}</p>
       <button onClick={() => navigate(-1)} style={{ background: colors.accent, color: '#fff', border: 'none', borderRadius: 10, padding: '10px 24px', cursor: 'pointer', fontWeight: 600 }}>
         Go Back
@@ -250,8 +182,8 @@ const ItemDetails = ({ darkMode }) => {
             )}
           </div>
         ) : (
-          <div style={{ height: 200, borderRadius: 16, marginBottom: 16, background: dm ? '#1e293b' : '#f1f5f9', border: `1px solid ${colors.border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            <div style={{ fontSize: 50 }}>📦</div>
+          <div style={{ height: 200, borderRadius: 16, marginBottom: 16, background: dm ? '#1e1e1e' : '#f1f5f9', border: `1px solid ${colors.border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <ImageOff size={50} color={colors.muted} />
             <p style={{ color: colors.muted, fontSize: 13 }}>No photo available</p>
           </div>
         )}
@@ -261,12 +193,12 @@ const ItemDetails = ({ darkMode }) => {
           <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: typeColor.bg, color: typeColor.text }}>{item.type?.toUpperCase()}</span>
             <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: colors.tag, color: colors.tagText }}>{item.category}</span>
-            <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: dm ? '#1e293b' : '#f1f5f9', color: colors.muted }}>#{item.reference_number}</span>
+            <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: dm ? '#1e1e1e' : '#f1f5f9', color: colors.muted }}>#{item.reference_number}</span>
           </div>
           <h2 style={{ margin: '0 0 8px', fontSize: 20, fontWeight: 700, color: colors.text }}>{item.title}</h2>
           <p style={{ margin: '0 0 12px', fontSize: 14, color: colors.muted, lineHeight: 1.6 }}>{item.description}</p>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center', color: colors.muted, fontSize: 13 }}>
-            <span>🕐</span><span>{item.time_ago}</span>
+            <Clock size={16} /><span>{item.time_ago}</span>
             {item.incident_datetime && (
               <span style={{ marginLeft: 8 }}>· {item.type === 'lost' ? 'Lost on' : 'Found on'}: {new Date(item.incident_datetime).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} at {new Date(item.incident_datetime).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
             )}
@@ -286,8 +218,8 @@ const ItemDetails = ({ darkMode }) => {
         ) : (
           /* Fallback text card when no GPS coordinates */
           <div style={{ background: colors.card, borderRadius: 16, padding: 16, marginBottom: 12, border: `1px solid ${colors.border}` }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: colors.muted, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 10 }}>
-              📍 Location Details
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: colors.muted, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 10 }}>
+              <MapPin size={16} /> Location Details
             </div>
             <p style={{ margin: 0, fontSize: 15, fontWeight: 600, color: colors.text }}>
               {item.location_name || item.location_display || item.location}
@@ -300,9 +232,11 @@ const ItemDetails = ({ darkMode }) => {
 
         {/* ── Posted by ─────────────────────────────────────────── */}
         <div style={{ background: colors.card, borderRadius: 16, padding: 16, marginBottom: 12, border: `1px solid ${colors.border}` }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: colors.muted, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 12 }}>👤 Posted By</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: colors.muted, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 12 }}>
+            <User size={16} /> Posted By
+          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 44, height: 44, borderRadius: '50%', background: dm ? '#334155' : '#e0e7ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, color: colors.accent, flexShrink: 0, overflow: 'hidden' }}>
+            <div style={{ width: 44, height: 44, borderRadius: '50%', background: dm ? '#333333' : '#e0e7ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, color: colors.accent, flexShrink: 0, overflow: 'hidden' }}>
               {item.user?.avatar
                 ? <img src={item.user.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 : item.user?.name?.[0]?.toUpperCase() || '?'}
@@ -320,15 +254,17 @@ const ItemDetails = ({ darkMode }) => {
         {/* ── Contact actions ───────────────────────────────────── */}
         {item.status === 'active' && !(user && item && (item.user?.id === user.id || item.user === user.id)) && (
           <div style={{ background: colors.card, borderRadius: 16, padding: 16, marginBottom: 12, border: `1px solid ${colors.border}` }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: colors.muted, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 12 }}>📲 Contact Owner</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: colors.muted, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 12 }}>
+              <Phone size={16} /> Contact Owner
+            </div>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               <button onClick={handleStartChat} disabled={startingChat}
                 style={{ flex: 1, minWidth: 100, background: colors.accent, color: '#fff', border: 'none', borderRadius: 12, padding: '12px 8px', cursor: 'pointer', fontWeight: 600, fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: startingChat ? 0.7 : 1 }}>
-                💬 {startingChat ? 'Opening...' : 'Chat'}
+                <MessageCircle size={18} /> {startingChat ? 'Opening...' : 'Chat'}
               </button>
               <button onClick={handleCall}
                 style={{ flex: 1, minWidth: 100, background: '#10b981', color: '#fff', border: 'none', borderRadius: 12, padding: '12px 8px', cursor: 'pointer', fontWeight: 600, fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                📞 Call
+                <Phone size={18} /> Call
               </button>
               <button onClick={handleWhatsApp}
                 style={{ flex: 1, minWidth: 100, background: '#25d366', color: '#fff', border: 'none', borderRadius: 12, padding: '12px 8px', cursor: 'pointer', fontWeight: 600, fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
@@ -344,98 +280,24 @@ const ItemDetails = ({ darkMode }) => {
         )}
 
         {/* ── Claim button ──────────────────────────────────────── */}
-        {item.can_be_claimed && !claimSuccess && item.status === 'active' && !item.my_claim && (
+        {item.can_be_claimed && !claimSuccess && (
           <button onClick={handleClaim} disabled={claiming}
-            style={{ width: '100%', background: '#f59e0b', color: '#fff', border: 'none', borderRadius: 14, padding: 14, cursor: 'pointer', fontWeight: 700, fontSize: 16, marginBottom: 12, opacity: claiming ? 0.7 : 1 }}>
-            {claiming ? 'Processing...' : (item.type === 'found' ? '✋ Claim This Item' : '✋ I Found This Item')}
+            style={{ width: '100%', background: '#f59e0b', color: '#fff', border: 'none', borderRadius: 14, padding: 14, cursor: 'pointer', fontWeight: 700, fontSize: 16, marginBottom: 12, opacity: claiming ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <Hand size={20} /> {claiming ? 'Claiming...' : 'I Found This Item'}
           </button>
         )}
-
-        {/* Claim Status (For Claimant) */}
-        {(claimSuccess || (item.my_claim && item.my_claim.status === 'pending')) && (
-          <div style={{ background: '#fef9c3', border: '1px solid #fef08a', borderRadius: 14, padding: 14, marginBottom: 16, textAlign: 'center' }}>
-            <p style={{ margin: 0, color: '#ca8a04', fontWeight: 700, fontSize: 14 }}>⏳ Claim Pending Review</p>
-            <p style={{ margin: '6px 0 0', color: '#a16207', fontSize: 13 }}>Please wait for the finder to review your answers.</p>
-          </div>
-        )}
-
-        {(item.my_claim && item.my_claim.status === 'rejected') && (
-          <div style={{ background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 14, padding: 14, marginBottom: 16, textAlign: 'center' }}>
-            <p style={{ margin: 0, color: '#dc2626', fontWeight: 700, fontSize: 14 }}>❌ Claim Rejected</p>
-            <p style={{ margin: '6px 0 0', color: '#b91c1c', fontSize: 13 }}>The finder did not approve your answers.</p>
-          </div>
-        )}
-
-        {/* Claim Code Display (For verified owners) */}
-        {(claimCode || (item.my_claim && item.my_claim.status === 'approved' && item.my_claim.claim_code)) && (
-          <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 14, padding: 16, marginBottom: 16, textAlign: 'center' }}>
-            <p style={{ margin: '0 0 8px', color: '#1d4ed8', fontWeight: 700, fontSize: 14 }}>✅ Ownership Verified!</p>
-            <p style={{ margin: '0 0 12px', color: '#3b82f6', fontSize: 13 }}>Share this code with the person who found the item.</p>
-            <div style={{ background: '#ffffff', borderRadius: 8, padding: '12px', fontSize: 24, fontWeight: 800, letterSpacing: '4px', color: '#1e3a8a', border: '1px dashed #93c5fd' }}>
-              {claimCode || item.my_claim.claim_code}
-            </div>
-            <p style={{ margin: '8px 0 0', color: '#ef4444', fontSize: 12, fontWeight: 600 }}>Expires in 30 minutes</p>
-          </div>
-        )}
-
-        {/* Pending Claims Review (For the found item reporter) */}
-        {item.pending_claims?.length > 0 && (
-          <div style={{ background: colors.card, border: `1px solid ${colors.accent}`, borderRadius: 16, padding: 16, marginBottom: 16 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: colors.accent, marginBottom: 12 }}>🕵️ PENDING CLAIMS ({item.pending_claims.length})</div>
-            <p style={{ margin: '0 0 12px', fontSize: 13, color: colors.muted }}>Review the answers below to verify the real owner.</p>
-            {item.pending_claims.map(claim => (
-              <div key={claim.id} style={{ padding: 12, background: colors.bg, borderRadius: 12, marginBottom: 10, border: `1px solid ${colors.border}` }}>
-                <p style={{ margin: '0 0 8px', fontWeight: 700, fontSize: 13 }}>User: {claim.claimant?.username}</p>
-                <div style={{ marginBottom: 12 }}>
-                  <p style={{ margin: 0, fontSize: 12, color: colors.muted }}>Brand/Make:</p>
-                  <p style={{ margin: '0 0 6px', fontSize: 13, fontWeight: 600 }}>{claim.answers?.brand || 'N/A'}</p>
-                  <p style={{ margin: 0, fontSize: 12, color: colors.muted }}>Color:</p>
-                  <p style={{ margin: '0 0 6px', fontSize: 13, fontWeight: 600 }}>{claim.answers?.color || 'N/A'}</p>
-                  <p style={{ margin: 0, fontSize: 12, color: colors.muted }}>Unique Mark:</p>
-                  <p style={{ margin: '0 0 6px', fontSize: 13, fontWeight: 600 }}>{claim.answers?.unique_mark || 'N/A'}</p>
-                </div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button onClick={() => handleApprove(claim.id)} style={{ flex: 1, padding: 10, background: '#10b981', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}>✅ Approve</button>
-                  <button onClick={() => handleReject(claim.id)} style={{ flex: 1, padding: 10, background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}>❌ Reject</button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Enter Claim Code UI (For the found item reporter) */}
-        {item.status === 'active' && item.type === 'found' && user && item.user?.id === user.id && (
-          <div style={{ background: colors.card, border: `1px solid ${colors.accent}`, borderRadius: 16, padding: 16, marginBottom: 16 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: colors.accent, marginBottom: 12 }}>🔐 VERIFY CLAIM CODE</div>
-            <p style={{ margin: '0 0 12px', fontSize: 13, color: colors.muted }}>Enter the 6-digit code shared by an approved owner to confirm return.</p>
-            <form onSubmit={handleConfirmReturn} style={{ display: 'flex', gap: 8 }}>
-              <input
-                type="text"
-                maxLength="6"
-                placeholder="000000"
-                value={enteredCode}
-                onChange={(e) => setEnteredCode(e.target.value)}
-                style={{ flex: 1, padding: '12px', borderRadius: 10, border: `1px solid ${colors.border}`, background: colors.bg, color: colors.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '2px', outline: 'none' }}
-              />
-              <button disabled={confirming || enteredCode.length < 6} type="submit" style={{ background: colors.accent, color: '#fff', border: 'none', borderRadius: 10, padding: '0 20px', fontWeight: 700, cursor: (confirming || enteredCode.length < 6) ? 'not-allowed' : 'pointer', opacity: (confirming || enteredCode.length < 6) ? 0.6 : 1 }}>
-                {confirming ? '...' : 'Confirm'}
-              </button>
-            </form>
-          </div>
-        )}
-
-        {/* Returned success state */}
-        {item.status === 'returned' && (
-          <div style={{ background: '#dcfce7', border: '1px solid #86efac', borderRadius: 14, padding: 14, marginBottom: 12, textAlign: 'center' }}>
-            <p style={{ margin: 0, color: '#16a34a', fontWeight: 700 }}>🎉 Item Successfully Returned!</p>
+        {claimSuccess && (
+          <div style={{ background: '#dcfce7', border: '1px solid #86efac', borderRadius: 14, padding: 14, marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <CheckCircle2 size={20} color="#16a34a" />
+            <p style={{ margin: 0, color: '#16a34a', fontWeight: 600 }}>Item marked as found! The owner will be notified.</p>
           </div>
         )}
 
         {/* ── Nearby matches ────────────────────────────────────── */}
         {item.nearby_matches?.length > 0 && (
           <div style={{ background: colors.nearbyBg, border: `1px solid ${colors.nearbyBorder}`, borderRadius: 16, padding: 16, marginBottom: 12 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#16a34a', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 12 }}>
-              🎯 Nearby Matches ({item.nearby_matches.length})
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#16a34a', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 12 }}>
+              <Target size={16} /> Nearby Matches ({item.nearby_matches.length})
             </div>
             {item.nearby_matches.map(match => (
               <div key={match.id} onClick={() => navigate(`/item/${match.id}`)}
@@ -448,8 +310,8 @@ const ItemDetails = ({ darkMode }) => {
                   <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 10, background: match.type === 'found' ? '#dcfce7' : '#fee2e2', color: match.type === 'found' ? '#16a34a' : '#dc2626' }}>
                     {match.type?.toUpperCase()}
                   </span>
-                  <p style={{ margin: '4px 0 0', fontSize: 11, color: colors.accent, fontWeight: 600 }}>
-                    📍 {match.distance}
+                  <p style={{ margin: '4px 0 0', fontSize: 11, color: colors.accent, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
+                    <MapPin size={12} /> {match.distance}
                   </p>
                 </div>
               </div>
@@ -459,8 +321,8 @@ const ItemDetails = ({ darkMode }) => {
 
         {/* ── Item meta ─────────────────────────────────────────── */}
         <div style={{ background: colors.card, borderRadius: 16, padding: 16, border: `1px solid ${colors.border}` }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: colors.muted, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 12 }}>
-            ℹ️ Item Info
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: colors.muted, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 12 }}>
+            <Info size={16} /> Item Info
           </div>
           {[
             ['Reference', `#${item.reference_number}`],
@@ -477,47 +339,6 @@ const ItemDetails = ({ darkMode }) => {
         </div>
 
       </div>
-
-      {/* ── Claim Verification Modal ────────────────────────────── */}
-      {showClaimModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-          <div style={{ background: colors.bg, width: '100%', maxWidth: 500, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: '24px 20px', boxSizing: 'border-box', animation: 'slideUp 0.3s ease-out' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: colors.text }}>Verify Ownership</h3>
-              <button onClick={() => setShowClaimModal(false)} style={{ background: 'none', border: 'none', fontSize: 24, color: colors.muted, cursor: 'pointer' }}>×</button>
-            </div>
-            <p style={{ margin: '0 0 20px', fontSize: 14, color: colors.muted }}>
-              To ensure this returns to the right person, answer at least 3 details about the item correctly.
-            </p>
-            {claimError && (
-              <div style={{ background: '#fee2e2', color: '#dc2626', borderRadius: 10, padding: 12, fontSize: 13, marginBottom: 16, fontWeight: 600 }}>
-                ⚠️ {claimError}
-              </div>
-            )}
-            <form onSubmit={handleVerifyClaim}>
-              <div style={{ marginBottom: 12 }}>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: colors.text, marginBottom: 6 }}>Brand / Make</label>
-                <input required type="text" placeholder="e.g. Apple, Nike" value={claimAnswers.brand} onChange={e => setClaimAnswers(prev => ({ ...prev, brand: e.target.value }))} style={{ width: '100%', padding: '12px', borderRadius: 10, border: `1.5px solid ${colors.border}`, background: colors.card, color: colors.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
-              </div>
-              <div style={{ marginBottom: 12 }}>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: colors.text, marginBottom: 6 }}>Color</label>
-                <input required type="text" placeholder="e.g. Matte Black" value={claimAnswers.color} onChange={e => setClaimAnswers(prev => ({ ...prev, color: e.target.value }))} style={{ width: '100%', padding: '12px', borderRadius: 10, border: `1.5px solid ${colors.border}`, background: colors.card, color: colors.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
-              </div>
-              <div style={{ marginBottom: 20 }}>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: colors.text, marginBottom: 6 }}>Unique Mark / Scratch</label>
-                <input required type="text" placeholder="e.g. Scratch on top left corner" value={claimAnswers.unique_mark} onChange={e => setClaimAnswers(prev => ({ ...prev, unique_mark: e.target.value }))} style={{ width: '100%', padding: '12px', borderRadius: 10, border: `1.5px solid ${colors.border}`, background: colors.card, color: colors.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
-              </div>
-              <button disabled={verifying} type="submit" style={{ width: '100%', padding: '14px', borderRadius: 12, border: 'none', background: colors.accent, color: '#fff', fontWeight: 700, fontSize: 16, cursor: verifying ? 'not-allowed' : 'pointer', opacity: verifying ? 0.7 : 1 }}>
-                {verifying ? 'Verifying...' : 'Verify Answers'}
-              </button>
-            </form>
-          </div>
-          <style>{`
-            @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-          `}</style>
-        </div>
-      )}
-
       <BottomNav darkMode={dm} />
     </div>
   );

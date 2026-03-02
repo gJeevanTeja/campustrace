@@ -85,10 +85,10 @@ const GoogleLocationCard = ({
 
   const itemColor = itemType === 'lost' ? '#ef4444' : '#16a34a';
   const dm = darkMode;
-  const cardBg = dm ? '#1e293b' : '#fff';
-  const text = dm ? '#e2e8f0' : '#1e293b';
+  const cardBg = dm ? '#1e1e1e' : '#fff';
+  const text = dm ? '#e2e8f0' : '#1e1e1e';
   const muted = dm ? '#94a3b8' : '#64748b';
-  const border = dm ? '#334155' : '#e2e8f0';
+  const border = dm ? '#333333' : '#e2e8f0';
 
   useEffect(() => {
     if (!itemLat || !itemLng) return;
@@ -355,11 +355,11 @@ const GoogleLocationCard = ({
 };
 
 const DARK_STYLES = [
-  { elementType: 'geometry', stylers: [{ color: '#1e293b' }] },
+  { elementType: 'geometry', stylers: [{ color: '#1e1e1e' }] },
   { elementType: 'labels.text.fill', stylers: [{ color: '#94a3b8' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#0f172a' }] },
-  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#334155' }] },
-  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#0f172a' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#121212' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#333333' }] },
+  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#121212' }] },
   { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0f2942' }] },
   { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#1e3a5f' }] },
 ];

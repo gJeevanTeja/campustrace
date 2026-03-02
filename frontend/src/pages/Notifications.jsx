@@ -2,42 +2,43 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { notificationsAPI } from '../services/api';
 import BottomNav from '../components/BottomNav';
+import { Package, CheckCircle, PartyPopper, RefreshCw, Lock, Bell, User, Circle, Check, Trash2, Loader2, BellOff } from 'lucide-react';
 
 // ── Notification type config (NO "message" type — chat is its own tab) ──────
 const TYPE_CONFIG = {
-  new_item:         { emoji: '📦', label: 'New Item',      color: '#3b82f6', bg: '#eff6ff' },
-  item_claimed:     { emoji: '✅', label: 'Item Claimed',   color: '#10b981', bg: '#f0fdf4' },
-  item_found:       { emoji: '🎉', label: 'Item Found',     color: '#10b981', bg: '#f0fdf4' },
-  item_returned:    { emoji: '🔄', label: 'Returned',       color: '#8b5cf6', bg: '#f5f3ff' },
-  password_changed: { emoji: '🔐', label: 'Security',       color: '#f59e0b', bg: '#fffbeb' },
-  system:           { emoji: '🔔', label: 'System',         color: '#64748b', bg: '#f1f5f9' },
-  account:          { emoji: '👤', label: 'Account',        color: '#ec4899', bg: '#fdf2f8' },
-  default:          { emoji: '🔔', label: 'Notification',   color: '#64748b', bg: '#f1f5f9' },
+  new_item: { emoji: <Package size={20} />, label: 'New Item', color: '#3b82f6', bg: '#eff6ff' },
+  item_claimed: { emoji: <CheckCircle size={20} />, label: 'Item Claimed', color: '#10b981', bg: '#f0fdf4' },
+  item_found: { emoji: <PartyPopper size={20} />, label: 'Item Found', color: '#10b981', bg: '#f0fdf4' },
+  item_returned: { emoji: <RefreshCw size={20} />, label: 'Returned', color: '#8b5cf6', bg: '#f5f3ff' },
+  password_changed: { emoji: <Lock size={20} />, label: 'Security', color: '#f59e0b', bg: '#fffbeb' },
+  system: { emoji: <Bell size={20} />, label: 'System', color: '#64748b', bg: '#f1f5f9' },
+  account: { emoji: <User size={20} />, label: 'Account', color: '#ec4899', bg: '#fdf2f8' },
+  default: { emoji: <Bell size={20} />, label: 'Notification', color: '#64748b', bg: '#f1f5f9' },
 };
 
 // Filter tabs — Messages intentionally excluded (use Chat tab for that)
 const FILTER_TABS = [
-  { id: 'all',       label: 'All',           emoji: '' },
-  { id: 'unread',    label: 'Unread',        emoji: '🔵' },
-  { id: 'new_item',  label: 'Items',         emoji: '📦' },
-  { id: 'claimed',   label: 'Claimed',       emoji: '✅' },
-  { id: 'security',  label: 'Security',      emoji: '🔐' },
+  { id: 'all', label: 'All', emoji: null },
+  { id: 'unread', label: 'Unread', emoji: <Circle size={14} fill="currentColor" /> },
+  { id: 'new_item', label: 'Items', emoji: <Package size={14} /> },
+  { id: 'claimed', label: 'Claimed', emoji: <CheckCircle size={14} /> },
+  { id: 'security', label: 'Security', emoji: <Lock size={14} /> },
 ];
 
 const Notifications = ({ darkMode }) => {
   const navigate = useNavigate();
 
   const [notifications, setNotifications] = useState([]);
-  const [loading,       setLoading]       = useState(true);
-  const [filter,        setFilter]        = useState('all');
-  const [clearing,      setClearing]      = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
+  const [clearing, setClearing] = useState(false);
 
-  const dm     = darkMode;
-  const bg     = dm ? '#0f172a' : '#f8fafc';
-  const card   = dm ? '#1e293b' : '#ffffff';
-  const text   = dm ? '#e2e8f0' : '#1a1a1a';
-  const muted  = dm ? '#94a3b8' : '#64748b';
-  const border = dm ? '#334155' : '#e4e6ea';
+  const dm = darkMode;
+  const bg = dm ? '#121212' : '#f8fafc';
+  const card = dm ? '#1e1e1e' : '#ffffff';
+  const text = dm ? '#e2e8f0' : '#1a1a1a';
+  const muted = dm ? '#94a3b8' : '#64748b';
+  const border = dm ? '#333333' : '#e4e6ea';
   const headerBg = 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)';
 
   // ── Fetch ────────────────────────────────────────────────────────
@@ -69,14 +70,14 @@ const Notifications = ({ darkMode }) => {
     try {
       await notificationsAPI.markRead(id);
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
-    } catch {}
+    } catch { }
   };
 
   const handleMarkAllRead = async () => {
     try {
       await notificationsAPI.markAllRead();
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-    } catch {}
+    } catch { }
   };
 
   const handleDelete = async (id, e) => {
@@ -84,7 +85,7 @@ const Notifications = ({ darkMode }) => {
     try {
       await notificationsAPI.deleteOne(id);
       setNotifications(prev => prev.filter(n => n.id !== id));
-    } catch {}
+    } catch { }
   };
 
   const handleClearAll = async () => {
@@ -93,7 +94,7 @@ const Notifications = ({ darkMode }) => {
     try {
       await notificationsAPI.clearAll();
       setNotifications([]);
-    } catch {} finally {
+    } catch { } finally {
       setClearing(false);
     }
   };
@@ -106,23 +107,23 @@ const Notifications = ({ darkMode }) => {
   // ── Filter logic ──────────────────────────────────────────────────
   const getFiltered = () => {
     switch (filter) {
-      case 'unread':   return notifications.filter(n => !n.is_read);
-      case 'new_item': return notifications.filter(n => ['new_item','item_found','item_returned'].includes(n.notification_type));
-      case 'claimed':  return notifications.filter(n => ['item_claimed','claim_accepted','claim_rejected'].includes(n.notification_type));
-      case 'security': return notifications.filter(n => ['password_changed','account','system'].includes(n.notification_type));
-      default:         return notifications;
+      case 'unread': return notifications.filter(n => !n.is_read);
+      case 'new_item': return notifications.filter(n => ['new_item', 'item_found', 'item_returned'].includes(n.notification_type));
+      case 'claimed': return notifications.filter(n => ['item_claimed', 'claim_accepted', 'claim_rejected'].includes(n.notification_type));
+      case 'security': return notifications.filter(n => ['password_changed', 'account', 'system'].includes(n.notification_type));
+      default: return notifications;
     }
   };
 
-  const displayed  = getFiltered();
+  const displayed = getFiltered();
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
   // ── Time formatter ────────────────────────────────────────────────
   const formatTime = (dateStr) => {
     if (!dateStr) return '';
     const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
-    if (diff < 60)    return 'Just now';
-    if (diff < 3600)  return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
     if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
     return new Date(dateStr).toLocaleDateString([], { month: 'short', day: 'numeric' });
@@ -138,7 +139,7 @@ const Notifications = ({ darkMode }) => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 22 }}>🔔</span>
+              <span style={{ display: 'flex' }}><Bell size={24} /></span>
               <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800 }}>Notifications</h1>
               {unreadCount > 0 && (
                 <div style={{ background: '#ef4444', color: '#fff', borderRadius: 20, padding: '2px 8px', fontSize: 12, fontWeight: 700 }}>
@@ -152,14 +153,14 @@ const Notifications = ({ darkMode }) => {
           <div style={{ display: 'flex', gap: 8 }}>
             {unreadCount > 0 && (
               <button onClick={handleMarkAllRead}
-                style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 8, padding: '6px 10px', color: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
-                ✓ All read
+                style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 8, padding: '6px 10px', color: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <Check size={14} /> All read
               </button>
             )}
             {notifications.length > 0 && (
               <button onClick={handleClearAll} disabled={clearing}
-                style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 8, padding: '6px 10px', color: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
-                🗑️ Clear
+                style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 8, padding: '6px 10px', color: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <Trash2 size={14} /> Clear
               </button>
             )}
           </div>
@@ -172,7 +173,7 @@ const Notifications = ({ darkMode }) => {
             return (
               <button key={tab.id} onClick={() => setFilter(tab.id)}
                 style={{ flexShrink: 0, padding: '6px 14px', borderRadius: 20, border: 'none', cursor: 'pointer', background: active ? '#fff' : 'rgba(255,255,255,0.2)', color: active ? '#7c3aed' : '#fff', fontWeight: active ? 700 : 500, fontSize: 13, display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.15s' }}>
-                {tab.emoji && <span>{tab.emoji}</span>}
+                {tab.emoji && <span style={{ display: 'flex' }}>{tab.emoji}</span>}
                 {tab.label}
                 {tab.id === 'all' && notifications.length > 0 && (
                   <span style={{ background: active ? '#7c3aed' : 'rgba(255,255,255,0.3)', color: '#fff', borderRadius: 10, padding: '0 5px', fontSize: 11 }}>
@@ -193,13 +194,13 @@ const Notifications = ({ darkMode }) => {
       {/* Content */}
       <div style={{ padding: '12px 0' }}>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 60, color: muted }}>
-            <div style={{ fontSize: 36, marginBottom: 10 }}>⏳</div>
+          <div style={{ textAlign: 'center', padding: 60, color: muted, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ marginBottom: 10 }}><Loader2 size={36} className="animate-spin" /></div>
             <p>Loading notifications...</p>
           </div>
         ) : displayed.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: 70 }}>
-            <div style={{ fontSize: 60, marginBottom: 12 }}>🔕</div>
+          <div style={{ textAlign: 'center', padding: 70, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ marginBottom: 12 }}><BellOff size={60} strokeWidth={1} color={muted} /></div>
             <p style={{ color: text, fontWeight: 700, fontSize: 18, margin: '0 0 6px' }}>
               {filter === 'unread' ? 'All caught up!' : 'No notifications'}
             </p>
@@ -209,14 +210,14 @@ const Notifications = ({ darkMode }) => {
           </div>
         ) : (
           displayed.map(notif => {
-            const cfg     = getTypeConfig(notif.notification_type);
-            const unread  = !notif.is_read;
+            const cfg = getTypeConfig(notif.notification_type);
+            const unread = !notif.is_read;
             return (
               <div key={notif.id} onClick={() => handleTap(notif)}
                 style={{
                   display: 'flex', alignItems: 'flex-start', gap: 12,
                   padding: '14px 16px', cursor: 'pointer',
-                  background: unread ? (dm ? '#1e293b' : '#f0f4ff') : card,
+                  background: unread ? (dm ? '#1e1e1e' : '#f0f4ff') : card,
                   borderBottom: `1px solid ${border}`,
                   borderLeft: unread ? `4px solid ${cfg.color}` : '4px solid transparent',
                   transition: 'background 0.15s',
@@ -225,9 +226,9 @@ const Notifications = ({ darkMode }) => {
                 {/* Icon */}
                 <div style={{
                   width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
-                  background: dm ? `${cfg.color}25` : cfg.bg,
+                  background: dm ? `${cfg.color}25` : cfg.bg, color: cfg.color,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 20, border: `1.5px solid ${dm ? cfg.color + '40' : cfg.color + '30'}`,
+                  border: `1.5px solid ${dm ? cfg.color + '40' : cfg.color + '30'}`,
                 }}>
                   {cfg.emoji}
                 </div>

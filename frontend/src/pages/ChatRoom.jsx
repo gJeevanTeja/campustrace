@@ -4,13 +4,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { chatAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import EmojiPicker from '../components/EmojiPicker';
+import { Heart, Moon, TreePine, Flower, Star, Search, Image as ImageIcon, Bell, BellOff, Palette, Forward, Phone, Ban, Loader2, Trash2, Plus, Smile, Send, Video, FileText, Link as LinkIcon, Mailbox, User, MoreVertical, X, Check, CheckCheck } from 'lucide-react';
 
 const THEMES = {
-  messenger: { name: '💙 Messenger', bg: '#e5ddd5', sentBg: '#0084ff', sentText: '#fff', receivedBg: '#fff', receivedText: '#050505', header: '#0084ff' },
-  dark: { name: '🌑 Dark', bg: '#0f172a', sentBg: '#3b82f6', sentText: '#fff', receivedBg: '#1e293b', receivedText: '#e2e8f0', header: '#1e293b' },
-  green: { name: '🌿 Forest', bg: '#d4edda', sentBg: '#2d6a4f', sentText: '#fff', receivedBg: '#fff', receivedText: '#1b1b1b', header: '#2d6a4f' },
-  rose: { name: '🌸 Rose', bg: '#fce4ec', sentBg: '#e91e63', sentText: '#fff', receivedBg: '#fff', receivedText: '#1b1b1b', header: '#e91e63' },
-  midnight: { name: '🔮 Midnight', bg: '#1a1a2e', sentBg: '#7c3aed', sentText: '#fff', receivedBg: '#16213e', receivedText: '#e0e0e0', header: '#7c3aed' },
+  messenger: { name: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Heart size={16} /> Messenger</span>, bg: '#e5ddd5', sentBg: '#0084ff', sentText: '#fff', receivedBg: '#fff', receivedText: '#050505', header: '#0084ff' },
+  dark: { name: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Moon size={16} /> Dark</span>, bg: '#121212', sentBg: '#3b82f6', sentText: '#fff', receivedBg: '#1e1e1e', receivedText: '#e2e8f0', header: '#1e1e1e' },
+  green: { name: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><TreePine size={16} /> Forest</span>, bg: '#d4edda', sentBg: '#2d6a4f', sentText: '#fff', receivedBg: '#fff', receivedText: '#1b1b1b', header: '#2d6a4f' },
+  rose: { name: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Flower size={16} /> Rose</span>, bg: '#fce4ec', sentBg: '#e91e63', sentText: '#fff', receivedBg: '#fff', receivedText: '#1b1b1b', header: '#e91e63' },
+  midnight: { name: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Star size={16} /> Midnight</span>, bg: '#1a1a2e', sentBg: '#7c3aed', sentText: '#fff', receivedBg: '#16213e', receivedText: '#e0e0e0', header: '#7c3aed' },
 };
 
 const COLORS = ['#f97316', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ec4899'];
@@ -338,15 +339,15 @@ const ChatRoom = ({ darkMode }) => {
   // ── Dot menu items ────────────────────────────────────────────
   // ✅ View Profile → own profile | clicking header → other user's profile
   const dotMenuItems = [
-    { label: '👤 View Profile', action: () => { navigate('/profile'); setShowDotMenu(false); } },
-    { label: '🔍 Search', action: () => { setSearchMode(true); setShowDotMenu(false); } },
-    { label: '🖼️ Media & Links', action: openMediaViewer },
-    { label: isMuted ? '🔔 Unmute' : '🔕 Mute', action: handleMuteToggle },
-    { label: '🎨 Chat Theme', action: () => { setShowThemePicker(true); setShowDotMenu(false); } },
-    { label: '📨 Forward Message', action: () => { setForwardMode(true); setShowDotMenu(false); } },
-    { label: '📞 View Contact', action: () => { navigate(`/user/${otherUserId}`); setShowDotMenu(false); } },
-    { label: '🚫 Block User', action: handleBlockUser, danger: true },
-    { label: clearingChat ? '⏳ Clearing...' : '🗑️ Clear Chat', action: handleClearChat, danger: true },
+    { label: <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><User size={16} /> View Profile</span>, action: () => { navigate('/profile'); setShowDotMenu(false); } },
+    { label: <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Search size={16} /> Search</span>, action: () => { setSearchMode(true); setShowDotMenu(false); } },
+    { label: <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><ImageIcon size={16} /> Media & Links</span>, action: openMediaViewer },
+    { label: isMuted ? <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Bell size={16} /> Unmute</span> : <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><BellOff size={16} /> Mute</span>, action: handleMuteToggle },
+    { label: <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Palette size={16} /> Chat Theme</span>, action: () => { setShowThemePicker(true); setShowDotMenu(false); } },
+    { label: <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Forward size={16} /> Forward Message</span>, action: () => { setForwardMode(true); setShowDotMenu(false); } },
+    { label: <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Phone size={16} /> View Contact</span>, action: () => { navigate(`/user/${otherUserId}`); setShowDotMenu(false); } },
+    { label: <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Ban size={16} /> Block User</span>, action: handleBlockUser, danger: true },
+    { label: clearingChat ? <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Loader2 size={16} className="animate-spin" /> Clearing...</span> : <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Trash2 size={16} /> Clear Chat</span>, action: handleClearChat, danger: true },
   ];
 
   // ── Grouped messages with date separators ─────────────────────
@@ -469,8 +470,8 @@ const ChatRoom = ({ darkMode }) => {
         {/* Name — clicks to OTHER user's profile */}
         <div style={{ flex: 1, minWidth: 0, cursor: 'pointer' }}
           onClick={() => otherUserId && navigate(`/user/${otherUserId}`)}>
-          <div style={{ fontWeight: 700, fontSize: 15, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {otherName} {isMuted ? '🔕' : ''}
+          <div style={{ fontWeight: 700, fontSize: 15, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}>
+            {otherName} {isMuted ? <BellOff size={14} /> : ''}
           </div>
           {itemTitle && (
             <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -482,8 +483,8 @@ const ChatRoom = ({ darkMode }) => {
         {/* 3-dot menu */}
         <div style={{ position: 'relative' }} onClick={e => e.stopPropagation()}>
           <button onClick={() => setShowDotMenu(v => !v)}
-            style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', width: 36, height: 36, cursor: 'pointer', color: '#fff', fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            ⋮
+            style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', width: 36, height: 36, cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <MoreVertical size={20} />
           </button>
 
           {showDotMenu && (
@@ -504,7 +505,7 @@ const ChatRoom = ({ darkMode }) => {
 
       {/* ── FORWARD TOOLBAR ────────────────────────────────────── */}
       {forwardMode && (
-        <div style={{ background: '#1e293b', color: '#fff', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+        <div style={{ background: '#1e1e1e', color: '#fff', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <span style={{ fontSize: 14 }}>
             {selectedMsgIds.size === 0 ? 'Tap messages to select' : `${selectedMsgIds.size} selected`}
           </span>
@@ -549,7 +550,7 @@ const ChatRoom = ({ darkMode }) => {
               {otherName[0]?.toUpperCase()}
             </div>
             <p style={{ fontWeight: 700, fontSize: 16, margin: 0 }}>{otherName}</p>
-            <p style={{ fontSize: 13, margin: 0 }}>Say hi to start the conversation! 👋</p>
+            <p style={{ fontSize: 13, margin: 0 }}>Say hi to start the conversation!</p>
           </div>
         )}
 
@@ -621,8 +622,8 @@ const ChatRoom = ({ darkMode }) => {
 
       {/* ── BLOCKED BANNER ─────────────────────────────────────── */}
       {isBlocked && (
-        <div style={{ background: '#fee2e2', color: '#dc2626', padding: '10px 16px', textAlign: 'center', fontSize: 13, fontWeight: 600, flexShrink: 0 }}>
-          🚫 You have blocked this user. Unblock to send messages.
+        <div style={{ background: '#fee2e2', color: '#dc2626', padding: '10px 16px', textAlign: 'center', fontSize: 13, fontWeight: 600, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+          <Ban size={16} /> You have blocked this user. Unblock to send messages.
         </div>
       )}
 
@@ -636,15 +637,15 @@ const ChatRoom = ({ darkMode }) => {
           <div style={{ position: 'relative', flexShrink: 0 }}>
             <button
               onClick={() => { setShowAttachMenu(v => !v); setShowEmoji(false); }}
-              style={{ width: 36, height: 36, borderRadius: '50%', background: theme.header, border: 'none', fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-              ➕
+              style={{ width: 36, height: 36, borderRadius: '50%', background: theme.header, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+              <Plus size={20} />
             </button>
             {showAttachMenu && (
               <div style={{ position: 'absolute', bottom: '110%', left: 0, background: '#fff', borderRadius: 14, boxShadow: '0 8px 24px rgba(0,0,0,0.18)', border: '1px solid #e4e6eb', zIndex: 200, overflow: 'hidden', minWidth: 160 }}>
                 {[
-                  { label: '🖼️ Image', accept: 'image/*', type: 'image' },
-                  { label: '🎥 Video', accept: 'video/*', type: 'video' },
-                  { label: '📄 File', accept: '*/*', type: 'file' },
+                  { label: <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><ImageIcon size={16} /> Image</span>, accept: 'image/*', type: 'image' },
+                  { label: <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Video size={16} /> Video</span>, accept: 'video/*', type: 'video' },
+                  { label: <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><FileText size={16} /> File</span>, accept: '*/*', type: 'file' },
                 ].map((opt, i) => (
                   <label key={opt.type}
                     style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', cursor: 'pointer', fontSize: 14, color: '#1a1a1a', borderBottom: i < 2 ? '1px solid #f0f2f5' : 'none' }}
@@ -672,8 +673,8 @@ const ChatRoom = ({ darkMode }) => {
             />
             <div style={{ position: 'relative', flexShrink: 0 }}>
               <button onClick={() => { setShowEmoji(v => !v); setShowAttachMenu(false); }}
-                style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', padding: '8px 10px', color: '#f59e0b' }}>
-                😊
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px 10px', color: '#f59e0b', display: 'flex', alignItems: 'center' }}>
+                <Smile size={20} />
               </button>
               {showEmoji && (
                 <EmojiPicker
@@ -686,8 +687,8 @@ const ChatRoom = ({ darkMode }) => {
 
           {/* Send */}
           <button onClick={() => sendMessage()} disabled={!input.trim() || sending}
-            style={{ width: 36, height: 36, borderRadius: '50%', background: input.trim() && !sending ? theme.header : '#e4e6eb', border: 'none', cursor: input.trim() && !sending ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0, transition: 'background 0.15s', color: input.trim() && !sending ? '#fff' : '#65676b' }}>
-            ➤
+            style={{ width: 36, height: 36, borderRadius: '50%', background: input.trim() && !sending ? theme.header : '#e4e6eb', border: 'none', cursor: input.trim() && !sending ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.15s', color: input.trim() && !sending ? '#fff' : '#65676b' }}>
+            <Send size={16} />
           </button>
         </div>
       )}
@@ -765,10 +766,10 @@ const ChatRoom = ({ darkMode }) => {
             <div style={{ display: 'flex', padding: '0 16px', borderBottom: '1px solid #e4e6eb', gap: 4 }}>
               {[
                 { id: 'all', label: `All (${(mediaData?.counts?.images || 0) + (mediaData?.counts?.videos || 0) + (mediaData?.counts?.files || 0)})` },
-                { id: 'image', label: `📷 ${mediaData?.counts?.images || 0}` },
-                { id: 'video', label: `🎥 ${mediaData?.counts?.videos || 0}` },
-                { id: 'file', label: `📄 ${mediaData?.counts?.files || 0}` },
-                { id: 'links', label: `🔗 ${mediaData?.links?.length || 0}` },
+                { id: 'image', label: <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><ImageIcon size={14} /> {mediaData?.counts?.images || 0}</span> },
+                { id: 'video', label: <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Video size={14} /> {mediaData?.counts?.videos || 0}</span> },
+                { id: 'file', label: <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><FileText size={14} /> {mediaData?.counts?.files || 0}</span> },
+                { id: 'links', label: <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><LinkIcon size={14} /> {mediaData?.links?.length || 0}</span> },
               ].map(tab => (
                 <button key={tab.id} onClick={() => setMediaTab(tab.id)}
                   style={{ padding: '10px 12px', border: 'none', background: 'none', fontSize: 13, fontWeight: mediaTab === tab.id ? 700 : 400, color: mediaTab === tab.id ? theme.header : '#65676b', borderBottom: mediaTab === tab.id ? `2px solid ${theme.header}` : '2px solid transparent', cursor: 'pointer' }}>
@@ -778,10 +779,10 @@ const ChatRoom = ({ darkMode }) => {
             </div>
             <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
               {mediaLoading ? (
-                <div style={{ textAlign: 'center', padding: 40 }}>Loading...</div>
+                <div style={{ textAlign: 'center', padding: 40 }}><Loader2 className="animate-spin margin-auto" /></div>
               ) : !mediaData || (mediaData.media.length === 0 && mediaData.links.length === 0) ? (
-                <div style={{ textAlign: 'center', padding: 40, color: '#65676b' }}>
-                  <div style={{ fontSize: 40, marginBottom: 8 }}>📭</div>
+                <div style={{ textAlign: 'center', padding: 40, color: '#65676b', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <div style={{ marginBottom: 8 }}><Mailbox size={40} strokeWidth={1} /></div>
                   <p>No media or links yet.</p>
                 </div>
               ) : (
@@ -793,10 +794,10 @@ const ChatRoom = ({ darkMode }) => {
                         .map(m => (
                           <div key={m.id}
                             onClick={() => m.media_url && window.open(m.media_url, '_blank')}
-                            style={{ borderRadius: 10, overflow: 'hidden', background: '#f0f2f5', aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, cursor: m.media_url ? 'pointer' : 'default' }}>
+                            style={{ borderRadius: 10, overflow: 'hidden', background: '#f0f2f5', aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: m.media_url ? 'pointer' : 'default' }}>
                             {m.media_url && m.message_type === 'image'
                               ? <img src={m.media_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                              : m.message_type === 'video' ? '🎥' : '📄'}
+                              : m.message_type === 'video' ? <Video size={28} color="#94a3b8" /> : <FileText size={28} color="#94a3b8" />}
                           </div>
                         ))}
                     </div>
@@ -806,7 +807,7 @@ const ChatRoom = ({ darkMode }) => {
                       {mediaData.links.map((l, i) => (
                         <a key={i} href={l.url} target="_blank" rel="noreferrer"
                           style={{ display: 'block', padding: '10px 14px', background: '#f0f2f5', borderRadius: 12, color: theme.header, fontSize: 13, textDecoration: 'none', wordBreak: 'break-all' }}>
-                          🔗 {l.url}
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><LinkIcon size={14} /> {l.url}</span>
                           <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>{l.sender} · {new Date(l.created_at).toLocaleDateString()}</div>
                         </a>
                       ))}

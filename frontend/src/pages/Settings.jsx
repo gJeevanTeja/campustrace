@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../services/api';
+import { Moon, Bell, Volume2, Mail, Smartphone, School, LogOut, ArrowLeft } from 'lucide-react';
 import BottomNav from '../components/BottomNav';
 
 const Settings = ({ darkMode, setDarkMode }) => {
@@ -16,11 +17,11 @@ const Settings = ({ darkMode, setDarkMode }) => {
 
   const dm = darkMode;
   const colors = {
-    bg: dm ? '#0f172a' : '#f8fafc',
-    card: dm ? '#1e293b' : '#ffffff',
-    text: dm ? '#e2e8f0' : '#1e293b',
+    bg: dm ? '#121212' : '#f8fafc',
+    card: dm ? '#1e1e1e' : '#ffffff',
+    text: dm ? '#e2e8f0' : '#1e1e1e',
     muted: dm ? '#94a3b8' : '#64748b',
-    border: dm ? '#334155' : '#e2e8f0',
+    border: dm ? '#333333' : '#e2e8f0',
     accent: '#3b82f6',
   };
 
@@ -39,7 +40,7 @@ const Settings = ({ darkMode, setDarkMode }) => {
         setDarkMode(!darkMode);
       }
       // Also save to backend
-      try { await authAPI.updateSettings({ dark_mode: !darkMode }); } catch {}
+      try { await authAPI.updateSettings({ dark_mode: !darkMode }); } catch { }
       return;
     }
 
@@ -67,7 +68,7 @@ const Settings = ({ darkMode, setDarkMode }) => {
   const SettingRow = ({ icon, title, subtitle, value, onToggle, disabled }) => (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0', borderBottom: `1px solid ${colors.border}`, opacity: disabled ? 0.5 : 1 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ width: 40, height: 40, borderRadius: 10, background: dm ? '#334155' : '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{icon}</div>
+        <div style={{ width: 40, height: 40, borderRadius: 10, background: dm ? '#333333' : '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{icon}</div>
         <div>
           <p style={{ margin: 0, fontWeight: 600, color: colors.text, fontSize: 14 }}>{title}</p>
           {subtitle && <p style={{ margin: 0, fontSize: 12, color: colors.muted, marginTop: 2 }}>{subtitle}</p>}
@@ -86,12 +87,12 @@ const Settings = ({ darkMode, setDarkMode }) => {
   return (
     <div style={{ minHeight: '100vh', background: colors.bg, paddingBottom: 80 }}>
       {toast && (
-        <div style={{ position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)', background: '#1e293b', color: '#fff', padding: '10px 20px', borderRadius: 20, fontSize: 13, zIndex: 9999, boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>{toast}</div>
+        <div style={{ position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)', background: '#1e1e1e', color: '#fff', padding: '10px 20px', borderRadius: 20, fontSize: 13, zIndex: 9999, boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>{toast}</div>
       )}
 
       {/* Header */}
-      <div style={{ background: dm ? '#1e293b' : '#fff', padding: '16px 20px', borderBottom: `1px solid ${colors.border}`, display: 'flex', alignItems: 'center', gap: 12, position: 'sticky', top: 0, zIndex: 10 }}>
-        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: colors.text, padding: 0 }}>←</button>
+      <div style={{ background: dm ? '#1e1e1e' : '#fff', padding: '16px 20px', borderBottom: `1px solid ${colors.border}`, display: 'flex', alignItems: 'center', gap: 12, position: 'sticky', top: 0, zIndex: 10 }}>
+        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: colors.text, padding: 0, display: 'flex' }}><ArrowLeft size={20} /></button>
         <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: colors.text }}>Settings</h1>
         {saving && <span style={{ marginLeft: 'auto', fontSize: 12, color: colors.muted }}>Saving...</span>}
       </div>
@@ -102,7 +103,7 @@ const Settings = ({ darkMode, setDarkMode }) => {
         <p style={{ color: colors.muted, fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 24, marginBottom: 4 }}>Appearance</p>
         <div style={{ background: colors.card, borderRadius: 16, padding: '0 16px', boxShadow: dm ? 'none' : '0 1px 4px rgba(0,0,0,0.06)' }}>
           {/* ✅ FIX: dark mode value comes from prop, not local settings state */}
-          <SettingRow icon="🌙" title="Dark Mode" subtitle="Switch between light and dark theme"
+          <SettingRow icon={<Moon size={20} />} title="Dark Mode" subtitle="Switch between light and dark theme"
             value={darkMode}
             onToggle={() => handleToggle('dark_mode')} />
         </div>
@@ -110,22 +111,22 @@ const Settings = ({ darkMode, setDarkMode }) => {
         {/* Notifications */}
         <p style={{ color: colors.muted, fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 24, marginBottom: 4 }}>Notifications</p>
         <div style={{ background: colors.card, borderRadius: 16, padding: '0 16px', boxShadow: dm ? 'none' : '0 1px 4px rgba(0,0,0,0.06)' }}>
-          <SettingRow icon="🔔" title="Push Notifications" subtitle="Receive alerts for new items and claims"
+          <SettingRow icon={<Bell size={20} />} title="Push Notifications" subtitle="Receive alerts for new items and claims"
             value={settings.notifications_enabled} onToggle={() => handleToggle('notifications_enabled')} />
-          <SettingRow icon="🔊" title="Notification Sound" subtitle="Play sound when notifications arrive"
+          <SettingRow icon={<Volume2 size={20} />} title="Notification Sound" subtitle="Play sound when notifications arrive"
             value={settings.notification_sound} onToggle={() => handleToggle('notification_sound')}
             disabled={!settings.notifications_enabled} />
-          <SettingRow icon="📧" title="Email Notifications" subtitle="Get email alerts for important updates"
+          <SettingRow icon={<Mail size={20} />} title="Email Notifications" subtitle="Get email alerts for important updates"
             value={settings.email_notifications} onToggle={() => handleToggle('email_notifications')} />
         </div>
 
         {/* About */}
         <p style={{ color: colors.muted, fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 24, marginBottom: 4 }}>About</p>
         <div style={{ background: colors.card, borderRadius: 16, padding: '0 16px', boxShadow: dm ? 'none' : '0 1px 4px rgba(0,0,0,0.06)' }}>
-          {[{ icon: '📱', label: 'App Version', value: '1.0.0' }, { icon: '🏫', label: 'CampusTrace', value: 'Lost & Found Portal' }].map((item, i) => (
+          {[{ icon: <Smartphone size={20} />, label: 'App Version', value: '1.0.0' }, { icon: <School size={20} />, label: 'CampusTrace', value: 'Lost & Found Portal' }].map((item, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0', borderBottom: i === 0 ? `1px solid ${colors.border}` : 'none' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 10, background: dm ? '#334155' : '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{item.icon}</div>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: dm ? '#333333' : '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{item.icon}</div>
                 <p style={{ margin: 0, fontWeight: 600, color: colors.text, fontSize: 14 }}>{item.label}</p>
               </div>
               <span style={{ fontSize: 13, color: colors.muted }}>{item.value}</span>
@@ -134,8 +135,8 @@ const Settings = ({ darkMode, setDarkMode }) => {
         </div>
 
         <button onClick={() => { localStorage.clear(); navigate('/login'); }}
-          style={{ width: '100%', marginTop: 24, padding: '14px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 12, color: '#dc2626', fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>
-          🚪 Sign Out
+          style={{ width: '100%', marginTop: 24, padding: '14px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 12, color: '#dc2626', fontSize: 15, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <LogOut size={18} /> Sign Out
         </button>
       </div>
 

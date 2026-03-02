@@ -16,7 +16,7 @@ const Signup = ({ darkMode: dm }) => {
 
   const [form, setForm] = useState({
     name: '', username: '', email: '', phone: '', department: '',
-    section: '', college_year: '', college_name: '', password: '', confirm_password: '',
+    section: '', college_year: '', password: '', confirm_password: '',
     terms_accepted: false,
   });
   const [errors, setErrors] = useState({});
@@ -25,18 +25,18 @@ const Signup = ({ darkMode: dm }) => {
   const [usernameStatus, setUsernameStatus] = useState(''); // ''|'checking'|'available'|'taken'
   const usernameTimer = useRef(null);
 
-  const bg = dm ? '#0f172a' : 'linear-gradient(135deg,#eff6ff 0%,#f0fdf4 100%)';
-  const card = dm ? '#1e293b' : '#ffffff';
-  const text = dm ? '#e2e8f0' : '#1e293b';
+  const bg = dm ? '#121212' : '#f0f4ff';
+  const card = dm ? '#1e1e1e' : '#ffffff';
+  const text = dm ? '#e2e8f0' : '#1e1e1e';
   const muted = dm ? '#94a3b8' : '#64748b';
-  const border = dm ? '#334155' : '#e2e8f0';
-  const inp = dm ? '#0f172a' : '#f8fafc';
+  const border = dm ? '#333333' : '#e2e8f0';
+  const inp = dm ? '#121212' : '#f8fafc';
 
   const inputStyle = (field) => ({
-    width: '100%', padding: '12px 16px', borderRadius: 12, boxSizing: 'border-box',
-    border: `1.5px solid ${errors[field] ? '#ef4444' : border}`,
+    width: '100%', padding: '22px 14px 10px', borderRadius: 8, boxSizing: 'border-box',
+    border: `1px solid ${errors[field] ? '#ef4444' : border}`,
     background: errors[field] ? (dm ? '#2d1515' : '#fff5f5') : inp,
-    color: text, fontSize: 14, outline: 'none',
+    color: text, fontSize: 15, outline: 'none', transition: 'all 0.2s ease',
     WebkitBoxShadow: `0 0 0px 1000px ${errors[field] ? (dm ? '#2d1515' : '#fff5f5') : inp} inset`,
     WebkitTextFillColor: text,
   });
@@ -72,8 +72,6 @@ const Signup = ({ darkMode: dm }) => {
     }, 500);
   };
 
-
-
   const validate = () => {
     const e = {};
     if (!form.name.trim() || form.name.trim().length < 2) e.name = 'Full name must be at least 2 characters';
@@ -85,7 +83,6 @@ const Signup = ({ darkMode: dm }) => {
     else if (!'6789'.includes(form.phone[0])) e.phone = 'Enter a valid Indian mobile number (starts with 6-9)';
     if (!form.department) e.department = 'Please select a department';
     if (!form.section.trim()) e.section = 'Section is required';
-    if (!form.college_name.trim()) e.college_name = 'Please type your college name';
     if (!form.college_year) e.college_year = 'Please select a year';
     if (!form.password || form.password.length < 8) e.password = 'Password must be at least 8 characters';
     else if (!/[A-Z]/.test(form.password)) e.password = 'Password needs at least one uppercase letter';
@@ -113,7 +110,7 @@ const Signup = ({ darkMode: dm }) => {
         const fe = {};
         Object.entries(d.errors || d).forEach(([k, v]) => {
           const msg = Array.isArray(v) ? v[0] : String(v);
-          const known = ['name', 'username', 'email', 'phone', 'department', 'section', 'college_year', 'college_name', 'password', 'confirm_password', 'terms_accepted'];
+          const known = ['name', 'username', 'email', 'phone', 'department', 'section', 'college_year', 'password', 'confirm_password', 'terms_accepted'];
           if (known.includes(k)) fe[k] = msg;
           else if (['non_field_errors', 'detail'].includes(k)) setGlobalError(Array.isArray(v) ? v[0] : String(v));
         });
@@ -143,19 +140,80 @@ const Signup = ({ darkMode: dm }) => {
     if (!window.google) { const s = document.createElement('script'); s.src = 'https://accounts.google.com/gsi/client'; s.onload = load; document.head.appendChild(s); } else { load(); }
   };
 
-  const uIcon = usernameStatus === 'available' ? '✅' : usernameStatus === 'taken' ? '❌' : usernameStatus === 'checking' ? '⏳' : '';
+  const uIcon = usernameStatus === 'available' ? 'Available' : usernameStatus === 'taken' ? 'Taken' : usernameStatus === 'checking' ? '...' : '';
 
   return (
-    <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px 16px' }}>
-      <div style={{ width: '100%', maxWidth: 460, background: card, borderRadius: 24, padding: '32px 28px', boxShadow: '0 8px 40px rgba(0,0,0,.10)' }}>
+    <div style={{ minHeight: '100vh', background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px 16px', position: 'relative' }}>
+      <style>{`
+        .float-group { position: relative; width: 100%; margin-bottom: 20px; }
+        .float-input { transition: all 0.2s ease; }
+        .float-input:hover { border-color: ${dm ? '#4b5563' : '#cbd5e1'} !important; }
+        .float-input:focus, .float-input:focus-within { border-color: #2563eb !important; box-shadow: 0 0 0 3px rgba(37,99,235,0.15) !important; }
+        .float-label {
+          position: absolute; left: 14px; top: 16px; font-size: 15px; color: ${muted};
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none;
+        }
+        .float-input:focus ~ .float-label, .float-input.has-value ~ .float-label, .float-input:-webkit-autofill ~ .float-label {
+          top: 6px; font-size: 11px; font-weight: 700; color: #2563eb;
+        }
+        .float-input.has-value:not(:focus) ~ .float-label { color: ${muted}; }
+        
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-3px); }
+        }
+        .min-btn { transition: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55); transform: translateY(0); }
+        .min-btn:hover:not(:disabled) { 
+          opacity: 0.95; 
+          transform: scale(1.02) translateY(-2px); 
+          box-shadow: 0 6px 16px rgba(37,99,235,0.25) !important; 
+        }
+        .min-btn:active:not(:disabled) {
+          transform: scale(0.97) translateY(0);
+        }
+      `}</style>
+      {/* Switch Role Button */}
+      <div style={{ width: '100%', maxWidth: 460, display: 'flex', justifyContent: 'flex-start', marginBottom: '16px' }}>
+        <Link to="/welcome"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            padding: '10px 16px',
+            background: dm ? '#333333' : '#ffffff',
+            color: text,
+            borderRadius: '12px',
+            fontSize: 14,
+            textDecoration: 'none',
+            fontWeight: 600,
+            transition: 'all 0.2s ease',
+            border: `1.5px solid ${border}`,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+            zIndex: 10
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 6px 16px rgba(37,99,235,0.15)';
+            e.currentTarget.style.background = '#2563eb';
+            e.currentTarget.style.color = '#ffffff';
+            e.currentTarget.style.borderColor = '#2563eb';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)';
+            e.currentTarget.style.background = dm ? '#333333' : '#ffffff';
+            e.currentTarget.style.color = text;
+            e.currentTarget.style.borderColor = border;
+          }}
+        >
+          ← Switch Role
+        </Link>
+      </div>
 
-        <button onClick={() => navigate('/login')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: muted, marginBottom: 18, padding: 0, fontSize: 14 }}>← Back</button>
+      <div style={{ width: '100%', maxWidth: 460, boxSizing: 'border-box', background: card, borderRadius: 16, padding: '36px 28px', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
 
-        <div style={{ marginBottom: 22 }}>
-          <h1 style={{ fontSize: 26, fontWeight: 800, color: '#1e40af', margin: 0 }}>CampusTrace</h1>
-          <h2 style={{ fontSize: 20, fontWeight: 700, color: text, margin: '6px 0 3px' }}>Create your account</h2>
-          <p style={{ color: muted, fontSize: 14, margin: '0 0 10px' }}>Join our campus community today.</p>
-          <Link to="/welcome" style={{ fontSize: 12, color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>← Switch Role (Student/Staff)</Link>
+        <div style={{ marginBottom: 28, textAlign: 'center' }}>
+          <h1 style={{ fontSize: 28, fontWeight: 800, color: text, margin: '0 0 8px' }}>Create an account</h1>
+          <p style={{ color: muted, fontSize: 14, margin: 0 }}>Join the CampusTrace community today</p>
         </div>
 
         {/* Google sign-up */}
@@ -175,7 +233,7 @@ const Signup = ({ darkMode: dm }) => {
         </div>
 
         {globalError && (
-          <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 12, padding: '11px 14px', marginBottom: 14, color: '#dc2626', fontSize: 14 }}>⚠️ {globalError}</div>
+          <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '11px 14px', marginBottom: 14, color: '#dc2626', fontSize: 14 }}>{globalError}</div>
         )}
 
         <form onSubmit={handleSubmit} noValidate autoComplete="off">
@@ -184,119 +242,108 @@ const Signup = ({ darkMode: dm }) => {
           <input type="password" style={{ display: 'none' }} autoComplete="new-password" />
 
           {/* Full Name */}
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ display: 'block', fontWeight: 600, color: text, marginBottom: 5, fontSize: 14 }}>Full Name *</label>
+          <div className="float-group">
             <input name="name" value={form.name} onChange={handleChange}
-              placeholder="Enter your full name" autoComplete="off" style={inputStyle('name')} />
+              autoComplete="off" style={inputStyle('name')} className={`float-input ${form.name ? 'has-value' : ''}`} />
+            <label className="float-label">Full Name *</label>
             {errors.name && <p style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{errors.name}</p>}
           </div>
 
           {/* Username — optional, with live check */}
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ display: 'block', fontWeight: 600, color: text, marginBottom: 5, fontSize: 14 }}>
-              Username <span style={{ color: muted, fontWeight: 400, fontSize: 12 }}>(optional)</span>
-            </label>
+          <div className="float-group">
             <div style={{ position: 'relative' }}>
-              <input value={form.username} onChange={handleUsername} placeholder="e.g. john_doe"
+              <input value={form.username} onChange={handleUsername}
                 autoComplete="off"
-                style={{ ...inputStyle('username'), paddingRight: 36 }} />
+                style={{ ...inputStyle('username'), paddingRight: 36 }}
+                className={`float-input ${form.username ? 'has-value' : ''}`} />
+              <label className="float-label">Username <span style={{ fontWeight: 400 }}>(optional)</span></label>
               {uIcon && <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 16 }}>{uIcon}</span>}
             </div>
-            {usernameStatus === 'available' && form.username && <p style={{ color: '#16a34a', fontSize: 12, marginTop: 4 }}>✅ Username is available!</p>}
+            {usernameStatus === 'available' && form.username && <p style={{ color: '#16a34a', fontSize: 12, marginTop: 4 }}>Username is available!</p>}
             {errors.username && <p style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{errors.username}</p>}
           </div>
 
           {/* Email */}
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ display: 'block', fontWeight: 600, color: text, marginBottom: 5, fontSize: 14 }}>University Email *</label>
+          <div className="float-group">
             <input name="email" type="email" value={form.email} onChange={handleChange}
-              placeholder="you@university.edu" autoComplete="off" style={inputStyle('email')} />
+              autoComplete="off" style={inputStyle('email')} className={`float-input ${form.email ? 'has-value' : ''}`} />
+            <label className="float-label">University Email *</label>
             {errors.email && <p style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{errors.email}</p>}
           </div>
 
           {/* Phone — +91 prefix with counter */}
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ display: 'block', fontWeight: 600, color: text, marginBottom: 5, fontSize: 14 }}>
-              Phone Number * <span style={{ color: muted, fontWeight: 400, fontSize: 12 }}>(10 digits, India)</span>
-            </label>
-            <div style={{ display: 'flex', alignItems: 'center', border: `1.5px solid ${errors.phone ? '#ef4444' : border}`, borderRadius: 12, background: errors.phone ? (dm ? '#2d1515' : '#fff5f5') : inp, overflow: 'hidden' }}>
-              <span style={{ padding: '12px 10px 12px 14px', fontWeight: 700, fontSize: 14, borderRight: `1px solid ${border}`, background: dm ? '#1e293b' : '#f1f5f9', whiteSpace: 'nowrap', color: text }}>🇮🇳 +91</span>
-              <input value={form.phone} onChange={handlePhone} placeholder="9876543210"
-                maxLength={10} inputMode="numeric" autoComplete="off"
-                style={{ flex: 1, border: 'none', background: 'transparent', padding: '12px 14px', fontSize: 14, outline: 'none', color: text }} />
-              {form.phone.length > 0 && (
-                <span style={{ padding: '0 12px', fontSize: 12, color: form.phone.length === 10 ? '#16a34a' : '#f59e0b', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                  {form.phone.length}/10
-                </span>
-              )}
+          <div className="float-group">
+            <div className={`float-input ${form.phone ? 'has-value' : ''}`} style={{ display: 'flex', alignItems: 'center', padding: '0', border: `1px solid ${errors.phone ? '#ef4444' : border}`, overflow: 'hidden' }}>
+              <span style={{ padding: '22px 10px 10px 14px', fontWeight: 600, fontSize: 14, borderRight: `1px solid ${border}`, background: dm ? '#1e1e1e' : '#f1f5f9', whiteSpace: 'nowrap', color: text }}>+91</span>
+              <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
+                <input value={form.phone} onChange={handlePhone}
+                  maxLength={10} inputMode="numeric" autoComplete="off"
+                  style={{ width: '100%', border: 'none', background: 'transparent', padding: '22px 14px 10px', fontSize: 15, outline: 'none', color: text }} />
+                <label className="float-label" style={{ top: 16 }}>Phone Number * <span style={{ fontWeight: 400 }}>(10 digits)</span></label>
+                {form.phone.length > 0 && (
+                  <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: form.phone.length === 10 ? '#16a34a' : '#f59e0b', fontWeight: 600 }}>
+                    {form.phone.length}/10
+                  </span>
+                )}
+              </div>
             </div>
             {errors.phone && <p style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{errors.phone}</p>}
           </div>
 
-          {/* College Selection */}
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ display: 'block', fontWeight: 600, color: text, marginBottom: 5, fontSize: 14 }}>College / University *</label>
-            <input name="college_name" value={form.college_name} onChange={handleChange}
-              placeholder="e.g. Malla Reddy University" autoComplete="organization" style={inputStyle('college_name')} />
-            {errors.college_name && <p style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{errors.college_name}</p>}
-          </div>
-
           {/* Department */}
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ display: 'block', fontWeight: 600, color: text, marginBottom: 5, fontSize: 14 }}>Department *</label>
+          <div className="float-group">
             <select name="department" value={form.department} onChange={handleChange}
+              className={`float-input ${form.department ? 'has-value' : ''}`}
               style={{ ...inputStyle('department'), appearance: 'none', cursor: 'pointer' }}>
-              <option value="">Select Department</option>
-              {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+              <option value="" disabled style={{ display: 'none' }}></option>
+              {DEPARTMENTS.map(d => <option key={d} value={d} style={{ color: text }}>{d}</option>)}
             </select>
+            <label className="float-label">Department *</label>
             {errors.department && <p style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{errors.department}</p>}
           </div>
 
           {/* Section + Year */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
-            <div>
-              <label style={{ display: 'block', fontWeight: 600, color: text, marginBottom: 5, fontSize: 14 }}>Section *</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div className="float-group">
               <input name="section" value={form.section} onChange={handleChange}
-                placeholder="e.g. Beta" autoComplete="off" style={inputStyle('section')} />
+                autoComplete="off" style={inputStyle('section')} className={`float-input ${form.section ? 'has-value' : ''}`} />
+              <label className="float-label">Section *</label>
               {errors.section && <p style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{errors.section}</p>}
             </div>
-            <div>
-              <label style={{ display: 'block', fontWeight: 600, color: text, marginBottom: 5, fontSize: 14 }}>Year *</label>
+            <div className="float-group">
               <select name="college_year" value={form.college_year} onChange={handleChange}
+                className={`float-input ${form.college_year ? 'has-value' : ''}`}
                 style={{ ...inputStyle('college_year'), appearance: 'none', cursor: 'pointer' }}>
-                <option value="">Select Year</option>
-                {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                <option value="" disabled style={{ display: 'none' }}></option>
+                {YEARS.map(y => <option key={y} value={y} style={{ color: text }}>{y}</option>)}
               </select>
+              <label className="float-label">Year *</label>
               {errors.college_year && <p style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{errors.college_year}</p>}
             </div>
           </div>
 
           {/* Password — autofill disabled */}
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ display: 'block', fontWeight: 600, color: text, marginBottom: 5, fontSize: 14 }}>
-              Password * <span style={{ color: muted, fontWeight: 400, fontSize: 12 }}>(8+ chars, 1 uppercase, 1 number)</span>
-            </label>
+          <div className="float-group">
             <input name="password" type="password" value={form.password} onChange={handleChange}
-              placeholder="Minimum 8 characters"
               autoComplete="new-password"
               readOnly onFocus={e => e.target.removeAttribute('readOnly')}
-              style={inputStyle('password')} />
+              style={inputStyle('password')} className={`float-input ${form.password ? 'has-value' : ''}`} />
+            <label className="float-label">Password * <span style={{ fontWeight: 400 }}>(8+ chars, 1 uppercase, 1 number)</span></label>
             {errors.password && <p style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{errors.password}</p>}
           </div>
 
           {/* Confirm Password */}
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ display: 'block', fontWeight: 600, color: text, marginBottom: 5, fontSize: 14 }}>Confirm Password *</label>
+          <div className="float-group">
             <input name="confirm_password" type="password" value={form.confirm_password} onChange={handleChange}
-              placeholder="Re-enter your password"
               autoComplete="new-password"
               readOnly onFocus={e => e.target.removeAttribute('readOnly')}
-              style={inputStyle('confirm_password')} />
+              style={inputStyle('confirm_password')} className={`float-input ${form.confirm_password ? 'has-value' : ''}`} />
+            <label className="float-label">Confirm Password *</label>
             {errors.confirm_password && <p style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{errors.confirm_password}</p>}
           </div>
 
           {/* Terms */}
-          <div style={{ marginBottom: 20, padding: 14, background: dm ? '#0f172a' : '#f8fafc', borderRadius: 12, border: `1.5px solid ${errors.terms_accepted ? '#ef4444' : border}` }}>
+          <div style={{ marginBottom: 20, padding: 14, background: dm ? '#121212' : '#f8fafc', borderRadius: 8, border: `1px solid ${errors.terms_accepted ? '#ef4444' : border}` }}>
             <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
               <input type="checkbox" name="terms_accepted" checked={form.terms_accepted} onChange={handleChange}
                 style={{ width: 18, height: 18, marginTop: 2, accentColor: '#2563eb', flexShrink: 0, cursor: 'pointer' }} />
@@ -312,15 +359,26 @@ const Signup = ({ darkMode: dm }) => {
           </div>
 
           <button type="submit" disabled={loading}
-            style={{ width: '100%', padding: '14px', borderRadius: 12, border: 'none', background: loading ? '#93c5fd' : 'linear-gradient(135deg,#1e40af,#3b82f6)', color: '#fff', fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer' }}>
-            {loading ? '⏳ Creating Account...' : '🎓 Create Account'}
+            style={{
+              width: '100%',
+              padding: '12px',
+              borderRadius: 8,
+              border: 'none',
+              background: loading ? '#93c5fd' : '#2563eb',
+              color: 'white',
+              fontSize: 15,
+              fontWeight: 600,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s',
+            }}>
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
-
-          <p style={{ textAlign: 'center', marginTop: 18, color: muted, fontSize: 14 }}>
-            Already have an account?{' '}
-            <Link to="/login" style={{ color: '#1e40af', fontWeight: 700, textDecoration: 'none' }}>Sign in</Link>
-          </p>
         </form>
+
+        <p style={{ textAlign: 'center', marginTop: 24, fontSize: 14, color: muted }}>
+          Already part of the campus? <Link to="/login" style={{ color: '#2563eb', fontWeight: 700, textDecoration: 'none' }}>Sign In here</Link>
+        </p>
+
       </div>
     </div>
   );

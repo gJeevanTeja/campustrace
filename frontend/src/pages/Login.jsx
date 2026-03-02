@@ -24,19 +24,15 @@ const Login = ({ darkMode: dm }) => {
   useEffect(() => { setError(''); }, [form.email, form.password, otpId, otpCode]);
 
   // Colors
-  const bg = dm ? '#0f172a' : '#f0f4ff';
-  const card = dm ? '#1e293b' : '#ffffff';
-  const text = dm ? '#e2e8f0' : '#1e293b';
+  const bg = dm ? '#121212' : '#f0f4ff';
+  const card = dm ? '#1e1e1e' : '#ffffff';
+  const text = dm ? '#e2e8f0' : '#1e1e1e';
   const muted = dm ? '#94a3b8' : '#64748b';
-  const border = dm ? '#334155' : '#e2e8f0';
-  const inp = dm ? '#0f172a' : '#f8fafc';
+  const border = dm ? '#333333' : '#e2e8f0';
+  const inp = dm ? '#121212' : '#f8fafc';
 
   const redirectAfterLogin = (user) => {
-    if (user?.role === 'super_admin') {
-      window.location.href = '/super-admin-dashboard';
-    } else if (user?.role === 'college_admin') {
-      window.location.href = '/admin-dashboard';
-    } else if (user?.role === 'moderator') {
+    if (['super_admin', 'college_admin', 'moderator'].includes(user?.role)) {
       window.location.href = '/admin';
     } else {
       window.location.href = '/';
@@ -44,9 +40,9 @@ const Login = ({ darkMode: dm }) => {
   };
 
   const inputBase = {
-    width: '100%', padding: '13px 16px 13px 44px', borderRadius: 12,
-    border: `1.5px solid ${border}`, background: inp, color: text,
-    fontSize: 15, outline: 'none', boxSizing: 'border-box',
+    width: '100%', padding: '12px 14px', borderRadius: 8,
+    border: `1px solid ${border}`, background: inp, color: text,
+    fontSize: 14, outline: 'none', boxSizing: 'border-box',
     WebkitBoxShadow: `0 0 0px 1000px ${inp} inset`,
     WebkitTextFillColor: text,
   };
@@ -127,7 +123,6 @@ const Login = ({ darkMode: dm }) => {
       });
       localStorage.setItem('access_token', data.tokens.access);
       localStorage.setItem('refresh_token', data.tokens.refresh);
-      localStorage.setItem('user', JSON.stringify(data.user));
       redirectAfterLogin(data.user);
     } catch (err) {
       if (!err.response) {
@@ -158,7 +153,6 @@ const Login = ({ darkMode: dm }) => {
             });
             localStorage.setItem('access_token', data.tokens.access);
             localStorage.setItem('refresh_token', data.tokens.refresh);
-            localStorage.setItem('user', JSON.stringify(data.user));
             redirectAfterLogin(data.user);
           } catch (err) {
             setError(err.response?.data?.error || 'Google sign-in failed.');
@@ -185,35 +179,96 @@ const Login = ({ darkMode: dm }) => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px 16px' }}>
-      <div style={{ width: '100%', maxWidth: 420, background: card, borderRadius: 24, padding: '36px 28px', boxShadow: '0 8px 40px rgba(0,0,0,0.12)' }}>
+    <div style={{ minHeight: '100vh', background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px 16px', position: 'relative' }}>
+      <style>{`
+        .float-group { position: relative; margin-bottom: 20px; width: 100%; }
+        .float-input {
+          width: 100%; padding: 22px 14px 10px; border-radius: 8px;
+          border: 1px solid ${border}; background: ${inp}; color: ${text};
+          font-size: 15px; outline: none; box-sizing: border-box; transition: all 0.2s ease;
+        }
+        .float-input:hover { border-color: ${dm ? '#4b5563' : '#cbd5e1'} !important; }
+        .float-input:focus { border-color: #2563eb !important; box-shadow: 0 0 0 3px rgba(37,99,235,0.15) !important; }
+        .float-label {
+          position: absolute; left: 14px; top: 16px; font-size: 15px; color: ${muted};
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none;
+        }
+        .float-input:focus ~ .float-label, .float-input.has-value ~ .float-label, .float-input:-webkit-autofill ~ .float-label {
+          top: 6px; font-size: 11px; font-weight: 700; color: #2563eb;
+        }
+        .float-input.has-value:not(:focus) ~ .float-label { color: ${muted}; }
+        
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-3px); }
+        }
+        .min-btn { transition: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55); transform: translateY(0); }
+        .min-btn:hover:not(:disabled) { 
+          opacity: 0.95; 
+          transform: scale(1.02) translateY(-2px); 
+          box-shadow: 0 6px 16px rgba(37,99,235,0.25) !important; 
+        }
+        .min-btn:active:not(:disabled) {
+          transform: scale(0.97) translateY(0);
+        }
+      `}</style>
+      {/* Switch Role Button */}
+      <div style={{ width: '100%', maxWidth: 420, display: 'flex', justifyContent: 'flex-start', marginBottom: '16px' }}>
+        <Link to="/welcome"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            padding: '10px 16px',
+            background: dm ? '#333333' : '#ffffff',
+            color: text,
+            borderRadius: '12px',
+            fontSize: 14,
+            textDecoration: 'none',
+            fontWeight: 600,
+            transition: 'all 0.2s ease',
+            border: `1.5px solid ${border}`,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+            zIndex: 10
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 6px 16px rgba(37,99,235,0.15)';
+            e.currentTarget.style.background = '#2563eb';
+            e.currentTarget.style.color = '#ffffff';
+            e.currentTarget.style.borderColor = '#2563eb';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)';
+            e.currentTarget.style.background = dm ? '#333333' : '#ffffff';
+            e.currentTarget.style.color = text;
+            e.currentTarget.style.borderColor = border;
+          }}
+        >
+          ← Switch Role
+        </Link>
+      </div>
 
-        {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg,#2563eb,#7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', boxShadow: '0 8px 24px rgba(37,99,235,0.3)', fontSize: 32 }}>📍</div>
-          <h2 style={{ fontWeight: 800, color: text, margin: '0 0 3px', fontSize: 22 }}>CampusTrace</h2>
-          <p style={{ color: muted, fontSize: 13, margin: 0 }}>Secure access to your university portal</p>
-          <div style={{ marginTop: 12 }}>
-            <Link to="/welcome" style={{ fontSize: 12, color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>← Switch Role (Student/Staff)</Link>
-          </div>
+      <div style={{ width: '100%', maxWidth: 420, boxSizing: 'border-box', background: card, borderRadius: 16, padding: '36px 28px', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
+
+        <div style={{ marginBottom: 28, textAlign: 'center' }}>
+          <h1 style={{ fontSize: 28, fontWeight: 800, color: text, margin: '0 0 8px' }}>Welcome back</h1>
+          <p style={{ color: muted, fontSize: 14, margin: 0 }}>Sign in to continue to CampusTrace</p>
         </div>
 
         {/* Tab Switch */}
-        <div style={{ display: 'flex', background: dm ? '#0f172a' : '#f1f5f9', borderRadius: 12, padding: 4, marginBottom: 24 }}>
-          {[['password', '🔒 Password'], ['otp', '📱 OTP Login']].map(([t, lbl]) => (
+        <div style={{ display: 'flex', background: dm ? '#121212' : '#f1f5f9', borderRadius: 8, padding: 4, marginBottom: 24 }}>
+          {[['password', 'Password'], ['otp', 'OTP Login']].map(([t, lbl]) => (
             <button key={t} onClick={() => switchTab(t)}
               style={{
-                flex: 1, padding: '9px', borderRadius: 9, border: 'none', cursor: 'pointer',
+                flex: 1, padding: '8px', borderRadius: 6, border: 'none', cursor: 'pointer',
                 fontWeight: 600, fontSize: 13, transition: 'all .2s',
                 background: tab === t ? card : 'transparent',
                 color: tab === t ? '#2563eb' : muted,
-                boxShadow: tab === t ? '0 2px 8px rgba(0,0,0,.10)' : 'none',
+                boxShadow: tab === t ? '0 1px 3px rgba(0,0,0,.10)' : 'none',
               }}>{lbl}</button>
           ))}
         </div>
-
-        <h4 style={{ fontWeight: 700, margin: '0 0 4px', color: text }}>Welcome back</h4>
-        <p style={{ color: muted, fontSize: 13, margin: '0 0 18px' }}>Sign in to continue</p>
 
         {/* Alerts */}
         {error && (
@@ -234,56 +289,62 @@ const Login = ({ darkMode: dm }) => {
             <input type="text" style={{ display: 'none' }} autoComplete="username" />
             <input type="password" style={{ display: 'none' }} autoComplete="new-password" />
 
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ fontSize: 13, fontWeight: 600, color: text, marginBottom: 6, display: 'block' }}>University Email</label>
-              <div style={{ position: 'relative' }}>
-                <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 16 }}>✉️</span>
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-                  placeholder="name@university.edu"
-                  required
-                  autoComplete="off"
-                  style={inputBase}
-                />
-              </div>
+            <div className="float-group">
+              <input
+                type="email"
+                value={form.email}
+                onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
+                required
+                autoComplete="off"
+                className={`float-input ${form.email ? 'has-value' : ''}`}
+              />
+              <label className="float-label">University Email</label>
             </div>
 
-            <div style={{ marginBottom: 24 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                <label style={{ fontSize: 13, fontWeight: 600, color: text }}>Password</label>
-                <Link to="/forgot-password" style={{ fontSize: 13, color: '#2563eb', textDecoration: 'none' }}>Forgot?</Link>
-              </div>
-              <div style={{ position: 'relative' }}>
-                <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 16 }}>🔒</span>
-                <input
-                  type={showPass ? 'text' : 'password'}
-                  value={form.password}
-                  onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
-                  placeholder="••••••••"
-                  required
-                  autoComplete="new-password"
-                  readOnly
-                  onFocus={e => e.target.removeAttribute('readOnly')}
-                  style={{ ...inputBase, paddingRight: 46 }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPass(!showPass)}
-                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: muted }}
-                >
-                  {showPass ? '🙈' : '👁️'}
-                </button>
-              </div>
+            <div className="float-group" style={{ marginBottom: 8 }}>
+              <input
+                type={showPass ? 'text' : 'password'}
+                value={form.password}
+                onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
+                required
+                autoComplete="new-password"
+                readOnly
+                onFocus={e => e.target.removeAttribute('readOnly')}
+                className={`float-input ${form.password ? 'has-value' : ''}`}
+                style={{ paddingRight: 50 }}
+              />
+              <label className="float-label">Password</label>
+              <button
+                type="button"
+                onClick={() => setShowPass(!showPass)}
+                style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: muted }}
+              >
+                {showPass ? 'Hide' : 'Show'}
+              </button>
+            </div>
+
+            <div style={{ textAlign: 'right', marginBottom: 24 }}>
+              <Link to="/forgot-password" style={{ fontSize: 13, color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>Forgot Password?</Link>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              style={{ width: '100%', padding: '14px', borderRadius: 12, border: 'none', background: loading ? '#93c5fd' : 'linear-gradient(135deg,#2563eb,#7c3aed)', color: '#fff', fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer' }}
+              className="min-btn"
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: 8,
+                border: 'none',
+                background: loading ? '#93c5fd' : '#2563eb',
+                color: 'white',
+                fontSize: 15,
+                fontWeight: 600,
+                cursor: loading ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s'
+              }}
             >
-              {loading ? '⏳ Signing in...' : 'Sign In'}
+              {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
         )}
@@ -292,31 +353,26 @@ const Login = ({ darkMode: dm }) => {
         {tab === 'otp' && !otpSent && (
           <form onSubmit={handleSendOTP}>
             <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-              {[['email', '📧 Email'], ['phone', '📱 Phone']].map(([t, lbl]) => (
+              {[['email', 'Email'], ['phone', 'Phone']].map(([t, lbl]) => (
                 <button key={t} type="button" onClick={() => setOtpType(t)}
-                  style={{ flex: 1, padding: '10px', borderRadius: 10, border: `1.5px solid ${otpType === t ? '#2563eb' : border}`, background: otpType === t ? (dm ? '#1e3a5f' : '#eff6ff') : inp, color: otpType === t ? '#2563eb' : muted, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+                  style={{ flex: 1, padding: '8px', borderRadius: 8, border: `1px solid ${otpType === t ? '#2563eb' : border}`, background: otpType === t ? (dm ? '#1e3a5f' : '#eff6ff') : inp, color: otpType === t ? '#2563eb' : muted, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
                   {lbl}
                 </button>
               ))}
             </div>
-            <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 13, fontWeight: 600, color: text, display: 'block', marginBottom: 6 }}>
-                {otpType === 'email' ? 'Registered Email' : 'Registered Phone (10 digits)'}
-              </label>
-              <div style={{ position: 'relative' }}>
-                <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 16 }}>{otpType === 'email' ? '✉️' : '📱'}</span>
-                <input
-                  value={otpId}
-                  onChange={e => setOtpId(e.target.value)}
-                  placeholder={otpType === 'email' ? 'you@email.com' : '9876543210'}
-                  required
-                  style={inputBase}
-                />
-              </div>
+            <div className="float-group">
+              <input
+                value={otpId}
+                onChange={e => setOtpId(e.target.value)}
+                required
+                className={`float-input ${otpId ? 'has-value' : ''}`}
+              />
+              <label className="float-label">{otpType === 'email' ? 'Registered Email' : 'Registered Phone (10 digits)'}</label>
             </div>
             <button type="submit" disabled={loading}
-              style={{ width: '100%', padding: '14px', borderRadius: 12, border: 'none', background: loading ? '#94a3b8' : 'linear-gradient(135deg,#7c3aed,#2563eb)', color: '#fff', fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer' }}>
-              {loading ? '⏳ Sending...' : '📨 Send OTP'}
+              className="min-btn"
+              style={{ width: '100%', padding: '12px', borderRadius: 8, border: 'none', background: loading ? '#94a3b8' : '#2563eb', color: '#fff', fontSize: 15, fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer' }}>
+              {loading ? 'Sending...' : 'Send OTP'}
             </button>
           </form>
         )}
@@ -325,24 +381,24 @@ const Login = ({ darkMode: dm }) => {
         {tab === 'otp' && otpSent && (
           <form onSubmit={handleVerifyOTP}>
             <div style={{ textAlign: 'center', marginBottom: 20 }}>
-              <div style={{ fontSize: 44, marginBottom: 8 }}>📩</div>
               <p style={{ fontWeight: 600, color: text, margin: '0 0 4px' }}>Enter the 6-digit OTP</p>
               <p style={{ color: muted, fontSize: 13, margin: 0 }}>Sent to {otpId}</p>
             </div>
             <input
               value={otpCode}
               onChange={e => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              placeholder="000000"
               maxLength={6}
               inputMode="numeric"
-              style={{ ...inputBase, paddingLeft: 16, textAlign: 'center', fontSize: 28, fontWeight: 800, letterSpacing: 14, marginBottom: 16 }}
+              style={{ ...inputBase, paddingLeft: 16, textAlign: 'center', fontSize: 24, fontWeight: 600, letterSpacing: 10, marginBottom: 16 }}
+              className={`float-input ${otpCode ? 'has-value' : ''}`}
             />
             <button type="submit" disabled={loading || otpCode.length !== 6}
-              style={{ width: '100%', padding: '14px', borderRadius: 12, border: 'none', background: otpCode.length === 6 ? 'linear-gradient(135deg,#7c3aed,#2563eb)' : '#94a3b8', color: '#fff', fontSize: 15, fontWeight: 700, cursor: otpCode.length === 6 ? 'pointer' : 'not-allowed', marginBottom: 10 }}>
-              {loading ? '⏳ Verifying...' : '✅ Verify & Login'}
+              className="min-btn"
+              style={{ width: '100%', padding: '12px', borderRadius: 8, border: 'none', background: otpCode.length === 6 ? '#2563eb' : '#94a3b8', color: '#fff', fontSize: 15, fontWeight: 600, cursor: otpCode.length === 6 ? 'pointer' : 'not-allowed', marginBottom: 10 }}>
+              {loading ? 'Verifying...' : 'Verify & Login'}
             </button>
             <button type="button" onClick={() => { setOtpSent(false); setOtpCode(''); setSuccess(''); }}
-              style={{ width: '100%', padding: '12px', borderRadius: 12, border: `1.5px solid ${border}`, background: 'none', color: muted, fontSize: 14, cursor: 'pointer' }}>
+              style={{ width: '100%', padding: '10px', borderRadius: 8, border: `1px solid ${border}`, background: 'none', color: muted, fontSize: 13, cursor: 'pointer' }}>
               ← Change {otpType}
             </button>
           </form>
@@ -371,7 +427,7 @@ const Login = ({ darkMode: dm }) => {
           Don't have an account?{' '}
           <Link to="/signup" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none' }}>Create an account</Link>
         </p>
-        <p style={{ textAlign: 'center', marginTop: 24, fontSize: 11, color: muted }}>© 2025 CAMPUSTRACE SYSTEMS</p>
+        <p style={{ textAlign: 'center', marginTop: 24, fontSize: 12, color: muted }}>© {new Date().getFullYear()} CAMPUSTRACE</p>
       </div>
     </div>
   );

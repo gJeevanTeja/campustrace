@@ -6,12 +6,13 @@ from .views import (
     ForgotPasswordView, ResetPasswordView, UpdateLocationView,
     SettingsView, SendOTPView, VerifyOTPView, GoogleAuthView,
     CheckUsernameView, AdminUserListView, AdminUserActionView,
-    AdminUserActivityView,
+    AdminUserActivityView, RegisterAdminView,
 )
 
 urlpatterns = [
     # Standard auth
     path('register/', RegisterView.as_view(), name='register'),
+    path('register-admin/', RegisterAdminView.as_view(), name='register-admin'),
     path('login/', LoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token-refresh'),

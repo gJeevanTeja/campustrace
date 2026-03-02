@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { itemsAPI } from '../services/api';
+import { useTheme } from '../context/ThemeContext';
+import { Sun, Moon } from 'lucide-react';
 import BottomNav from '../components/BottomNav';
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
@@ -15,14 +17,14 @@ const BAR_COLORS = { lost: '#ef4444', found: '#10b981', claimed: '#f59e0b', retu
 // ─── Tiny stat card ──────────────────────────────────────────────────────
 const StatCard = ({ emoji, label, value, color, bg }) => (
   <div style={{
-    background: bg, borderRadius: 16, padding: '16px 14px',
-    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-    flex: '1 1 120px', minWidth: 100,
-    boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
+    background: bg, borderRadius: 16, padding: '20px 16px',
+    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+    flex: '1 1 200px', minWidth: 140,
+    boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
   }}>
-    <span style={{ fontSize: 28 }}>{emoji}</span>
-    <span style={{ fontSize: 26, fontWeight: 800, color }}>{value}</span>
-    <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600, textAlign: 'center', lineHeight: 1.3 }}>{label}</span>
+    <span style={{ fontSize: 32 }}>{emoji}</span>
+    <span style={{ fontSize: 28, fontWeight: 800, color }}>{value}</span>
+    <span style={{ fontSize: 13, color: '#64748b', fontWeight: 600, textAlign: 'center', lineHeight: 1.3 }}>{label}</span>
   </div>
 );
 
@@ -42,12 +44,12 @@ const CustomTooltip = ({ active, payload, label, dm }) => {
   if (!active || !payload?.length) return null;
   return (
     <div style={{
-      background: dm ? '#1e293b' : '#fff',
-      border: `1px solid ${dm ? '#334155' : '#e2e8f0'}`,
+      background: dm ? '#1e1e1e' : '#fff',
+      border: `1px solid ${dm ? '#333333' : '#e2e8f0'}`,
       borderRadius: 10, padding: '8px 14px', fontSize: 13,
       boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
     }}>
-      {label && <p style={{ margin: '0 0 4px', fontWeight: 700, color: dm ? '#e2e8f0' : '#1e293b' }}>{label}</p>}
+      {label && <p style={{ margin: '0 0 4px', fontWeight: 700, color: dm ? '#e2e8f0' : '#1e1e1e' }}>{label}</p>}
       {payload.map((p, i) => (
         <p key={i} style={{ margin: 0, color: p.color || p.fill }}>
           {p.name}: <strong>{p.value}</strong>
@@ -61,22 +63,22 @@ const CustomTooltip = ({ active, payload, label, dm }) => {
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
-const Dashboard = ({ darkMode }) => {
-  const dm = darkMode;
+const Dashboard = ({ darkMode: dm }) => {
+  const { setDarkMode } = useTheme();
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [activeTab,  setActiveTab]  = useState('user');
-  const [userStats,  setUserStats]  = useState(null);
+  const [activeTab, setActiveTab] = useState('user');
+  const [userStats, setUserStats] = useState(null);
   const [adminStats, setAdminStats] = useState(null);
-  const [loading,    setLoading]    = useState(true);
-  const [error,      setError]      = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const bg     = dm ? '#0f172a' : '#f0f4ff';
-  const card   = dm ? '#1e293b' : '#ffffff';
-  const text   = dm ? '#e2e8f0' : '#1e293b';
-  const muted  = dm ? '#94a3b8' : '#64748b';
-  const border = dm ? '#334155' : '#e2e8f0';
+  const bg = dm ? '#121212' : '#f0f4ff';
+  const card = dm ? '#1e1e1e' : '#ffffff';
+  const text = dm ? '#e2e8f0' : '#1e1e1e';
+  const muted = dm ? '#94a3b8' : '#64748b';
+  const border = dm ? '#333333' : '#e2e8f0';
 
   // ── monthly data builder ─────────────────────────────────────
   const buildMonthlyData = (items) => {
@@ -94,8 +96,8 @@ const Dashboard = ({ darkMode }) => {
       const d = new Date(item.created_at || item.date_posted);
       months.forEach(m => {
         if (d.getFullYear() === m.year && d.getMonth() === m.monthNum) {
-          if (item.type === 'lost')      m.lost++;
-          if (item.type === 'found')     m.found++;
+          if (item.type === 'lost') m.lost++;
+          if (item.type === 'found') m.found++;
           if (item.status === 'claimed') m.claimed++;
         }
       });
@@ -109,17 +111,17 @@ const Dashboard = ({ darkMode }) => {
     setLoading(true);
     setError('');
     try {
-      const myRes   = await itemsAPI.getMyItems();
+      const myRes = await itemsAPI.getMyItems();
       const myItems = Array.isArray(myRes.data) ? myRes.data : (myRes.data?.results || []);
 
       setUserStats({
-        lost:     myItems.filter(i => i.type === 'lost').length,
-        found:    myItems.filter(i => i.type === 'found').length,
-        claimed:  myItems.filter(i => i.status === 'claimed').length,
+        lost: myItems.filter(i => i.type === 'lost').length,
+        found: myItems.filter(i => i.type === 'found').length,
+        claimed: myItems.filter(i => i.status === 'claimed').length,
         returned: myItems.filter(i => i.status === 'returned').length,
-        active:   myItems.filter(i => i.status === 'active').length,
-        total:    myItems.length,
-        items:    myItems,
+        active: myItems.filter(i => i.status === 'active').length,
+        total: myItems.length,
+        items: myItems,
       });
 
       if (user?.role === 'admin' || user?.is_staff) {
@@ -127,13 +129,13 @@ const Dashboard = ({ darkMode }) => {
           const allRes = await itemsAPI.getAll({ page_size: 1000 });
           const all = Array.isArray(allRes.data) ? allRes.data : (allRes.data?.results || []);
           setAdminStats({
-            total:       all.length,
-            lost:        all.filter(i => i.type === 'lost').length,
-            found:       all.filter(i => i.type === 'found').length,
-            claimed:     all.filter(i => i.status === 'claimed').length,
-            returned:    all.filter(i => i.status === 'returned').length,
-            active:      all.filter(i => i.status === 'active').length,
-            fraud:       0,
+            total: all.length,
+            lost: all.filter(i => i.type === 'lost').length,
+            found: all.filter(i => i.type === 'found').length,
+            claimed: all.filter(i => i.status === 'claimed').length,
+            returned: all.filter(i => i.status === 'returned').length,
+            active: all.filter(i => i.status === 'active').length,
+            fraud: 0,
             monthlyData: buildMonthlyData(all),
           });
         } catch {
@@ -154,16 +156,16 @@ const Dashboard = ({ darkMode }) => {
 
   // ── chart data ────────────────────────────────────────────────
   const userPieData = userStats ? [
-    { name: 'Lost',     value: userStats.lost     },
-    { name: 'Found',    value: userStats.found    },
-    { name: 'Claimed',  value: userStats.claimed  },
+    { name: 'Lost', value: userStats.lost },
+    { name: 'Found', value: userStats.found },
+    { name: 'Claimed', value: userStats.claimed },
     { name: 'Returned', value: userStats.returned },
   ].filter(d => d.value > 0) : [];
 
   const adminPieData = adminStats ? [
-    { name: 'Lost',     value: adminStats.lost     },
-    { name: 'Found',    value: adminStats.found    },
-    { name: 'Claimed',  value: adminStats.claimed  },
+    { name: 'Lost', value: adminStats.lost },
+    { name: 'Found', value: adminStats.found },
+    { name: 'Claimed', value: adminStats.claimed },
     { name: 'Returned', value: adminStats.returned },
   ].filter(d => d.value > 0) : [];
 
@@ -197,8 +199,8 @@ const Dashboard = ({ darkMode }) => {
               style={{
                 padding: '10px 18px', border: 'none', borderRadius: '10px 10px 0 0',
                 cursor: 'pointer', fontWeight: 700, fontSize: 13, transition: 'all 0.2s',
-                background: activeTab === tab.id ? (dm ? '#1e293b' : '#f0f4ff') : 'rgba(255,255,255,0.15)',
-                color:      activeTab === tab.id ? '#2563eb' : 'rgba(255,255,255,0.85)',
+                background: activeTab === tab.id ? (dm ? '#1e1e1e' : '#f0f4ff') : 'rgba(255,255,255,0.15)',
+                color: activeTab === tab.id ? '#2563eb' : 'rgba(255,255,255,0.85)',
               }}>
               {tab.label}
             </button>
@@ -207,7 +209,7 @@ const Dashboard = ({ darkMode }) => {
       </div>
 
       {/* Body */}
-      <div style={{ padding: '16px 16px 0', maxWidth: 600, margin: '0 auto' }}>
+      <div style={{ padding: '24px 20px', maxWidth: 1100, margin: '0 auto' }}>
 
         {loading && (
           <div style={{ textAlign: 'center', padding: 60, color: muted }}>
@@ -226,11 +228,11 @@ const Dashboard = ({ darkMode }) => {
         {!loading && activeTab === 'user' && userStats && (
           <>
             <SectionTitle dm={dm}>Overview</SectionTitle>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
-              <StatCard emoji="😔" label="Items Lost"  value={userStats.lost}     color="#ef4444" bg={dm ? '#2d1b1b' : '#fef2f2'} />
-              <StatCard emoji="🎉" label="Items Found" value={userStats.found}    color="#10b981" bg={dm ? '#1b2d25' : '#f0fdf4'} />
-              <StatCard emoji="✅" label="Claimed"     value={userStats.claimed}  color="#f59e0b" bg={dm ? '#2d2510' : '#fffbeb'} />
-              <StatCard emoji="📦" label="Returned"    value={userStats.returned} color="#3b82f6" bg={dm ? '#1b2340' : '#eff6ff'} />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 12 }}>
+              <StatCard emoji="😔" label="Items Lost" value={userStats.lost} color="#ef4444" bg={dm ? '#2d1b1b' : '#fef2f2'} />
+              <StatCard emoji="🎉" label="Items Found" value={userStats.found} color="#10b981" bg={dm ? '#1b2d25' : '#f0fdf4'} />
+              <StatCard emoji="✅" label="Claimed" value={userStats.claimed} color="#f59e0b" bg={dm ? '#2d2510' : '#fffbeb'} />
+              <StatCard emoji="📦" label="Returned" value={userStats.returned} color="#3b82f6" bg={dm ? '#1b2340' : '#eff6ff'} />
             </div>
 
             <div style={{ background: dm ? '#1e3a5f' : '#eff6ff', border: `1px solid ${dm ? '#2563eb44' : '#bfdbfe'}`, borderRadius: 14, padding: '12px 16px', marginBottom: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -310,16 +312,14 @@ const Dashboard = ({ darkMode }) => {
             ) : (
               <>
                 <SectionTitle dm={dm}>Platform Overview</SectionTitle>
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
-                  <StatCard emoji="📋" label="Total Items" value={adminStats.total}    color="#6366f1" bg={dm ? '#1e1b4b' : '#eef2ff'} />
-                  <StatCard emoji="😔" label="Lost"        value={adminStats.lost}     color="#ef4444" bg={dm ? '#2d1b1b' : '#fef2f2'} />
-                  <StatCard emoji="🎉" label="Found"       value={adminStats.found}    color="#10b981" bg={dm ? '#1b2d25' : '#f0fdf4'} />
-                  <StatCard emoji="✅" label="Claimed"     value={adminStats.claimed}  color="#f59e0b" bg={dm ? '#2d2510' : '#fffbeb'} />
-                </div>
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
-                  <StatCard emoji="📦" label="Returned"     value={adminStats.returned} color="#3b82f6" bg={dm ? '#1b2340' : '#eff6ff'} />
-                  <StatCard emoji="🟢" label="Active"       value={adminStats.active}   color="#10b981" bg={dm ? '#1b2d25' : '#f0fdf4'} />
-                  <StatCard emoji="⚠️" label="Fraud/Failed" value={adminStats.fraud}    color="#dc2626" bg={dm ? '#2d1b1b' : '#fef2f2'} />
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 12 }}>
+                  <StatCard emoji="📋" label="Total Items" value={adminStats.total} color="#6366f1" bg={dm ? '#1e1b4b' : '#eef2ff'} />
+                  <StatCard emoji="😔" label="Lost" value={adminStats.lost} color="#ef4444" bg={dm ? '#2d1b1b' : '#fef2f2'} />
+                  <StatCard emoji="🎉" label="Found" value={adminStats.found} color="#10b981" bg={dm ? '#1b2d25' : '#f0fdf4'} />
+                  <StatCard emoji="✅" label="Claimed" value={adminStats.claimed} color="#f59e0b" bg={dm ? '#2d2510' : '#fffbeb'} />
+                  <StatCard emoji="📦" label="Returned" value={adminStats.returned} color="#3b82f6" bg={dm ? '#1b2340' : '#eff6ff'} />
+                  <StatCard emoji="🟢" label="Active" value={adminStats.active} color="#10b981" bg={dm ? '#1b2d25' : '#f0fdf4'} />
+                  <StatCard emoji="⚠️" label="Fraud/Failed" value={adminStats.fraud} color="#dc2626" bg={dm ? '#2d1b1b' : '#fef2f2'} />
                 </div>
 
                 {adminStats.total > 0 && (
@@ -330,7 +330,7 @@ const Dashboard = ({ darkMode }) => {
                         {((adminStats.returned / adminStats.total) * 100).toFixed(1)}%
                       </span>
                     </div>
-                    <div style={{ background: dm ? '#334155' : '#e2e8f0', borderRadius: 99, height: 8, overflow: 'hidden' }}>
+                    <div style={{ background: dm ? '#333333' : '#e2e8f0', borderRadius: 99, height: 8, overflow: 'hidden' }}>
                       <div style={{ background: 'linear-gradient(90deg, #2563eb, #10b981)', width: `${(adminStats.returned / adminStats.total) * 100}%`, height: '100%', borderRadius: 99, transition: 'width 1s ease' }} />
                     </div>
                   </div>
@@ -367,13 +367,13 @@ const Dashboard = ({ darkMode }) => {
                     <div style={{ background: card, borderRadius: 16, padding: '16px 8px 8px', border: `1px solid ${border}`, marginBottom: 4 }}>
                       <ResponsiveContainer width="100%" height={220}>
                         <BarChart data={adminStats.monthlyData} barSize={14}>
-                          <CartesianGrid strokeDasharray="3 3" stroke={dm ? '#334155' : '#f1f5f9'} />
+                          <CartesianGrid strokeDasharray="3 3" stroke={dm ? '#333333' : '#f1f5f9'} />
                           <XAxis dataKey="month" tick={{ fontSize: 11, fill: muted }} axisLine={false} tickLine={false} />
                           <YAxis tick={{ fontSize: 11, fill: muted }} axisLine={false} tickLine={false} />
                           <Tooltip content={<CustomTooltip dm={dm} />} />
                           <Legend wrapperStyle={{ fontSize: 12 }} />
-                          <Bar dataKey="lost"    name="Lost"    fill={BAR_COLORS.lost}    radius={[4, 4, 0, 0]} />
-                          <Bar dataKey="found"   name="Found"   fill={BAR_COLORS.found}   radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="lost" name="Lost" fill={BAR_COLORS.lost} radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="found" name="Found" fill={BAR_COLORS.found} radius={[4, 4, 0, 0]} />
                           <Bar dataKey="claimed" name="Claimed" fill={BAR_COLORS.claimed} radius={[4, 4, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>

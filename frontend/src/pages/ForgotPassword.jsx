@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authAPI } from '../services/api';
+import { Key, AlertTriangle, Mail, Send, ArrowLeft } from 'lucide-react';
 
 const ForgotPassword = ({ darkMode }) => {
-  const [email,   setEmail]   = useState('');
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [error,   setError]   = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const dm = darkMode;
   const colors = {
-    bg:     dm ? '#0f172a' : '#ffffff',
-    text:   dm ? '#e2e8f0' : '#1e293b',
-    muted:  dm ? '#94a3b8' : '#64748b',
-    border: dm ? '#334155' : '#e2e8f0',
-    input:  dm ? '#0f172a' : '#f8fafc',
+    bg: dm ? '#121212' : '#ffffff',
+    text: dm ? '#e2e8f0' : '#1e1e1e',
+    muted: dm ? '#94a3b8' : '#64748b',
+    border: dm ? '#333333' : '#e2e8f0',
+    input: dm ? '#121212' : '#f8fafc',
     accent: '#2563eb',
   };
 
@@ -31,8 +32,8 @@ const ForgotPassword = ({ darkMode }) => {
     } catch (err) {
       const data = err.response?.data;
       // Backend returns { email: ["..."] } or { error: "..." } or { message: "..." }
-      if (data?.email)    setError(Array.isArray(data.email) ? data.email[0] : data.email);
-      else if (data?.error)   setError(data.error);
+      if (data?.email) setError(Array.isArray(data.email) ? data.email[0] : data.email);
+      else if (data?.error) setError(data.error);
       else if (data?.message) setError(data.message);
       else setError('Failed to send reset email. Please try again.');
     } finally {
@@ -45,14 +46,14 @@ const ForgotPassword = ({ darkMode }) => {
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 32 }}>
-        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: colors.text, marginRight: 12 }}>←</button>
+        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: colors.text, marginRight: 12, display: 'flex' }}><ArrowLeft size={22} /></button>
         <h2 style={{ fontWeight: 800, color: colors.accent, margin: 0 }}>CampusTrace</h2>
       </div>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingBottom: 60 }}>
 
-        <div style={{ width: 70, height: 70, background: '#eff6ff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 34, marginBottom: 24, alignSelf: 'center' }}>
-          🔑
+        <div style={{ width: 70, height: 70, background: '#eff6ff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24, alignSelf: 'center', color: '#2563eb' }}>
+          <Key size={34} />
         </div>
 
         <h3 style={{ fontWeight: 800, marginBottom: 8, textAlign: 'center', color: colors.text, fontSize: 22 }}>Forgot Password?</h3>
@@ -61,14 +62,14 @@ const ForgotPassword = ({ darkMode }) => {
         </p>
 
         {error && (
-          <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 12, padding: '12px 16px', marginBottom: 16, color: '#dc2626', fontSize: 14 }}>
-            ⚠️ {error}
+          <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 12, padding: '12px 16px', marginBottom: 16, color: '#dc2626', fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <AlertTriangle size={18} /> {error}
           </div>
         )}
 
         {message && (
-          <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 12, padding: '16px', marginBottom: 16, textAlign: 'center' }}>
-            <div style={{ fontSize: 32, marginBottom: 8 }}>📧</div>
+          <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 12, padding: '16px', marginBottom: 16, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ marginBottom: 8, color: '#16a34a' }}><Mail size={32} /></div>
             <p style={{ color: '#16a34a', fontWeight: 600, margin: '0 0 4px', fontSize: 15 }}>{message}</p>
             <p style={{ color: '#16a34a', fontSize: 13, margin: 0 }}>Check your inbox and click the reset link.</p>
             <p style={{ color: '#64748b', fontSize: 12, margin: '8px 0 0' }}>Didn't get it? Check your spam folder.</p>
@@ -91,15 +92,15 @@ const ForgotPassword = ({ darkMode }) => {
               />
             </div>
             <button type="submit" disabled={loading}
-              style={{ width: '100%', padding: '14px', borderRadius: 12, border: 'none', background: loading ? '#93c5fd' : colors.accent, color: '#fff', fontSize: 16, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer' }}>
-              {loading ? '📤 Sending...' : 'Send Reset Link'}
+              style={{ width: '100%', padding: '14px', borderRadius: 12, border: 'none', background: loading ? '#93c5fd' : colors.accent, color: '#fff', fontSize: 16, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              {loading ? <><Send size={18} className="animate-pulse" /> Sending...</> : 'Send Reset Link'}
             </button>
           </form>
         )}
 
         <div style={{ textAlign: 'center', marginTop: 24 }}>
-          <Link to="/login" style={{ color: colors.accent, fontWeight: 600, textDecoration: 'none', fontSize: 14 }}>
-            ← Back to Login
+          <Link to="/login" style={{ color: colors.accent, fontWeight: 600, textDecoration: 'none', fontSize: 14, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <ArrowLeft size={16} /> Back to Login
           </Link>
         </div>
       </div>

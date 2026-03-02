@@ -13,10 +13,10 @@ import {
 
 const StatCard = ({ title, value, icon, trend, dm }) => (
     <div style={{
-        background: dm ? '#1e293b' : '#fff',
+        background: dm ? '#1e1e1e' : '#fff',
         padding: '24px',
         borderRadius: '16px',
-        border: `1px solid ${dm ? '#334155' : '#e2e8f0'}`,
+        border: `1px solid ${dm ? '#333333' : '#e2e8f0'}`,
         boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
     }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -62,21 +62,6 @@ const AdminDashboard = ({ darkMode }) => {
         }
     };
 
-    const exportData = async (format) => {
-        try {
-            const { data } = await adminAPI.exportAnalytics(format);
-            const url = window.URL.createObjectURL(new Blob([data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `analytics-report.${format === 'excel' ? 'xlsx' : format}`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-        } catch (err) {
-            alert('Failed to download report.');
-        }
-    };
-
     if (loading) return (
         <AdminLayout darkMode={dm}>
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
@@ -90,14 +75,6 @@ const AdminDashboard = ({ darkMode }) => {
 
     return (
         <AdminLayout darkMode={dm}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-                <h2 style={{ margin: 0 }}>College Analytics</h2>
-                <div style={{ display: 'flex', gap: 12 }}>
-                    <button onClick={() => exportData('csv')} style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid #ccc', cursor: 'pointer' }}>CSV</button>
-                    <button onClick={() => exportData('excel')} style={{ padding: '8px 16px', borderRadius: 8, background: '#2563eb', color: '#fff', border: 'none', cursor: 'pointer' }}>Excel</button>
-                    <button onClick={() => exportData('pdf')} style={{ padding: '8px 16px', borderRadius: 8, background: '#ef4444', color: '#fff', border: 'none', cursor: 'pointer' }}>PDF</button>
-                </div>
-            </div>
             {error && (
                 <div style={{
                     background: '#fee2e2', color: '#dc2626', padding: '16px',
@@ -138,7 +115,7 @@ const AdminDashboard = ({ darkMode }) => {
                 />
                 <StatCard
                     title="Avg. Return Time"
-                    value={stats?.avg_return_time || 'N/A'}
+                    value={`${stats?.avg_return_time_hours || 0}h`}
                     icon={<Clock size={24} />}
                     dm={dm}
                 />
@@ -147,33 +124,41 @@ const AdminDashboard = ({ darkMode }) => {
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px' }}>
                 {/* Charts - Will populate with real data once available */}
                 <div style={{
-                    background: dm ? '#1e293b' : '#fff',
+                    background: dm ? '#1e1e1e' : '#fff',
                     padding: '24px',
                     borderRadius: '16px',
-                    border: `1px solid ${dm ? '#334155' : '#e2e8f0'}`
+                    border: `1px solid ${dm ? '#333333' : '#e2e8f0'}`
                 }}>
                     <h4 style={{ margin: '0 0 24px', fontSize: 16, fontWeight: 700 }}>Reporting Activity</h4>
                     <div style={{ height: 300 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={stats?.category_stats || []}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={dm ? '#334155' : '#f1f5f9'} />
-                                <XAxis dataKey="category__name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: dm ? '#94a3b8' : '#64748b' }} />
+                            <BarChart data={[
+                                { name: 'Mon', reports: 12 },
+                                { name: 'Tue', reports: 19 },
+                                { name: 'Wed', reports: 15 },
+                                { name: 'Thu', reports: 22 },
+                                { name: 'Fri', reports: 30 },
+                                { name: 'Sat', reports: 10 },
+                                { name: 'Sun', reports: 8 },
+                            ]}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={dm ? '#333333' : '#f1f5f9'} />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: dm ? '#94a3b8' : '#64748b' }} />
                                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: dm ? '#94a3b8' : '#64748b' }} />
                                 <Tooltip
-                                    contentStyle={{ background: dm ? '#1e293b' : '#fff', borderRadius: 12, border: `1px solid ${dm ? '#334155' : '#e2e8f0'}` }}
+                                    contentStyle={{ background: dm ? '#1e1e1e' : '#fff', borderRadius: 12, border: `1px solid ${dm ? '#333333' : '#e2e8f0'}` }}
                                     itemStyle={{ fontSize: 12, fontWeight: 600 }}
                                 />
-                                <Bar dataKey="count" fill="#2563eb" radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="reports" fill="#2563eb" radius={[4, 4, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
                 <div style={{
-                    background: dm ? '#1e293b' : '#fff',
+                    background: dm ? '#1e1e1e' : '#fff',
                     padding: '24px',
                     borderRadius: '16px',
-                    border: `1px solid ${dm ? '#334155' : '#e2e8f0'}`
+                    border: `1px solid ${dm ? '#333333' : '#e2e8f0'}`
                 }}>
                     <h4 style={{ margin: '0 0 24px', fontSize: 16, fontWeight: 700 }}>Distribution</h4>
                     <div style={{ height: 300 }}>
@@ -222,7 +207,7 @@ const AdminDashboard = ({ darkMode }) => {
                         <Package size={20} />
                         <div>
                             <p style={{ margin: 0, fontSize: 12, opacity: 0.8, fontWeight: 600 }}>Most Lost Category</p>
-                            <p style={{ margin: 0, fontSize: 15, fontWeight: 800 }}>{stats?.top_category || 'Electronics'}</p>
+                            <p style={{ margin: 0, fontSize: 15, fontWeight: 800 }}>{stats?.most_lost_category || 'Electronics'}</p>
                         </div>
                     </div>
                 </div>

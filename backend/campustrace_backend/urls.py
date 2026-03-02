@@ -7,9 +7,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('users.urls')),
     path('api/items/', include('items.urls')),
-    path('api/analytics/', include('analytics.urls')),
     path('api/chat/', include('chat.urls')),
     path('api/notifications/', include('notifications.urls')),
-    path('api/administration/', include('administration.urls')),
     path('api/admin/', include('colleges.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

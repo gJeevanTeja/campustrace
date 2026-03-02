@@ -4,17 +4,17 @@ import { itemsAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import BottomNav from '../components/BottomNav';
 import ItemCard from '../components/ItemCard';
-import { Shield } from 'lucide-react';
+import { Shield, Bell, Sun, Moon, MapPin, Monitor, Key, Wallet, Book, Shirt, Package, Search, AlertCircle, CheckCircle, Inbox, Loader2 } from 'lucide-react';
 
 import { useNotifications } from '../context/NotificationContext';
 
 const CATEGORIES = [
-  { id: 'electronics', label: 'Electronics', icon: '🖥️' },
-  { id: 'keys', label: 'Keys', icon: '🔑' },
-  { id: 'wallet', label: 'Wallets', icon: '👛' },
-  { id: 'books', label: 'Books', icon: '📚' },
-  { id: 'clothing', label: 'Clothing', icon: '👕' },
-  { id: 'other', label: 'Other', icon: '📦' },
+  { id: 'electronics', label: 'Electronics', icon: <Monitor size={22} strokeWidth={1.5} /> },
+  { id: 'keys', label: 'Keys', icon: <Key size={22} strokeWidth={1.5} /> },
+  { id: 'wallet', label: 'Wallets', icon: <Wallet size={22} strokeWidth={1.5} /> },
+  { id: 'books', label: 'Books', icon: <Book size={22} strokeWidth={1.5} /> },
+  { id: 'clothing', label: 'Clothing', icon: <Shirt size={22} strokeWidth={1.5} /> },
+  { id: 'other', label: 'Other', icon: <Package size={22} strokeWidth={1.5} /> },
 ];
 
 const Home = ({ darkMode, setDarkMode }) => {
@@ -25,11 +25,11 @@ const Home = ({ darkMode, setDarkMode }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const bg = darkMode ? '#0f172a' : '#f8fafc';
-  const card = darkMode ? '#1e293b' : '#fff';
-  const text = darkMode ? '#e2e8f0' : '#1e293b';
+  const bg = darkMode ? '#121212' : '#f8fafc';
+  const card = darkMode ? '#1e1e1e' : '#fff';
+  const text = darkMode ? '#e2e8f0' : '#1e1e1e';
   const muted = darkMode ? '#94a3b8' : '#64748b';
-  const border = darkMode ? '#334155' : '#e2e8f0';
+  const border = darkMode ? '#333333' : '#e2e8f0';
 
   useEffect(() => {
     itemsAPI.getRecent()
@@ -49,119 +49,118 @@ const Home = ({ darkMode, setDarkMode }) => {
       {/* Header */}
       <div style={{
         background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
-        padding: '24px 16px 32px',
         color: '#fff',
         position: 'relative',
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, letterSpacing: -0.5 }}>
-              📍 CampusTrace
-            </h1>
-            <p style={{ margin: '4px 0 0', fontSize: 13, opacity: 0.85 }}>
-              Hello, {user?.name?.split(' ')[0] || 'there'} 👋
-            </p>
+        <div style={{ padding: '24px 24px 32px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+            <div>
+              <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, letterSpacing: -0.5, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <MapPin size={26} color="#ffffff" fill="rgba(255,255,255,0.2)" strokeWidth={2.5} /> CampusTrace
+              </h1>
+              <p style={{ margin: '4px 0 0', fontSize: 13, opacity: 0.85 }}>
+                Hello, {user?.name?.split(' ')[0] || 'there'}
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              {/* Notification bell */}
+              <button
+                onClick={() => navigate('/notifications')}
+                style={{
+                  background: 'rgba(255,255,255,0.2)',
+                  border: 'none', borderRadius: 12,
+                  padding: '8px 10px', cursor: 'pointer',
+                  color: '#fff', position: 'relative',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}
+              >
+                <Bell size={20} />
+                {unreadCount > 0 && (
+                  <span style={{
+                    position: 'absolute', top: 2, right: 2,
+                    background: '#ef4444', color: '#fff',
+                    borderRadius: '50%', minWidth: 16, height: 16,
+                    fontSize: 10, fontWeight: 700,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+              {/* Dark mode toggle */}
+              <button
+                onClick={() => {
+                  setDarkMode(!darkMode);
+                  localStorage.setItem('darkMode', !darkMode);
+                }}
+                style={{
+                  background: 'rgba(255,255,255,0.2)',
+                  border: 'none', borderRadius: 12,
+                  padding: '8px 10px', cursor: 'pointer',
+                  color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}
+              >
+                {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            {/* Notification bell */}
-            <button
-              onClick={() => navigate('/notifications')}
+
+          {/* Search bar */}
+          <form onSubmit={handleSearch}>
+            <div style={{
+              background: '#fff', borderRadius: 14,
+              display: 'flex', alignItems: 'center',
+              padding: '4px 4px 4px 16px',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.15)'
+            }}>
+              <Search size={18} color="#94a3b8" style={{ marginRight: 8 }} />
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search lost or found items..."
+                style={{
+                  flex: 1, border: 'none', outline: 'none',
+                  fontSize: 14, color: '#1e1e1e', background: 'transparent'
+                }}
+              />
+              <button
+                type="submit"
+                style={{
+                  background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+                  color: '#fff', border: 'none', borderRadius: 10,
+                  padding: '10px 18px', cursor: 'pointer',
+                  fontSize: 13, fontWeight: 600
+                }}
+              >
+                Search
+              </button>
+            </div>
+          </form>
+
+          {/* Admin Quick Access Banner */}
+          {(user?.role === 'super_admin' || user?.role === 'college_admin' || user?.role === 'moderator') && (
+            <div
+              onClick={() => navigate('/admin')}
               style={{
-                background: 'rgba(255,255,255,0.2)',
-                border: 'none', borderRadius: 12,
-                padding: '8px 10px', cursor: 'pointer',
-                color: '#fff', fontSize: 18, position: 'relative'
+                marginTop: 18, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: 14, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                cursor: 'pointer', backdropFilter: 'blur(8px)'
               }}
             >
-              🔔
-              {unreadCount > 0 && (
-                <span style={{
-                  position: 'absolute', top: 2, right: 2,
-                  background: '#ef4444', color: '#fff',
-                  borderRadius: '50%', minWidth: 16, height: 16,
-                  fontSize: 10, fontWeight: 700,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              )}
-            </button>
-            {/* Dark mode toggle */}
-            <button
-              onClick={() => {
-                setDarkMode(!darkMode);
-                localStorage.setItem('darkMode', !darkMode);
-              }}
-              style={{
-                background: 'rgba(255,255,255,0.2)',
-                border: 'none', borderRadius: 12,
-                padding: '8px 10px', cursor: 'pointer',
-                color: '#fff', fontSize: 18
-              }}
-            >
-              {darkMode ? '☀️' : '🌙'}
-            </button>
-          </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ background: '#fff', color: '#2563eb', padding: 6, borderRadius: 8, display: 'flex' }}>
+                  <Shield size={16} />
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 700 }}>Go to Admin Panel</span>
+              </div>
+              <span style={{ fontSize: 18 }}>→</span>
+            </div>
+          )}
         </div>
-
-        {/* Search bar */}
-        <form onSubmit={handleSearch}>
-          <div style={{
-            background: '#fff', borderRadius: 14,
-            display: 'flex', alignItems: 'center',
-            padding: '4px 4px 4px 16px',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.15)'
-          }}>
-            <span style={{ fontSize: 18, marginRight: 8 }}>🔍</span>
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search lost or found items..."
-              style={{
-                flex: 1, border: 'none', outline: 'none',
-                fontSize: 14, color: '#1e293b', background: 'transparent'
-              }}
-            />
-            <button
-              type="submit"
-              style={{
-                background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
-                color: '#fff', border: 'none', borderRadius: 10,
-                padding: '10px 18px', cursor: 'pointer',
-                fontSize: 13, fontWeight: 600
-              }}
-            >
-              Search
-            </button>
-          </div>
-        </form>
-
-        {/* Admin Quick Access Banner */}
-        {(() => {
-          const authUser = JSON.parse(localStorage.getItem("user")) || user;
-          return authUser && (authUser.role === 'college_admin' || authUser.role === 'super_admin') ? (
-            <button
-              onClick={() => {
-                if (authUser.role === "super_admin") {
-                  navigate("/super-admin-dashboard");
-                } else {
-                  navigate("/admin-dashboard");
-                }
-              }}
-              style={{
-                marginTop: 18, background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)',
-                borderRadius: 14, padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                cursor: 'pointer', backdropFilter: 'blur(10px)', color: '#fff', fontSize: 15, fontWeight: 800, width: '100%'
-              }}
-            >
-              <Shield size={18} /> Admin Panel
-            </button>
-          ) : null;
-        })()}
       </div>
 
       {/* Quick Actions */}
-      <div style={{ padding: '16px 16px 0' }}>
+      <div style={{ padding: '24px 20px', maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
           <button
             onClick={() => navigate('/report?type=lost')}
@@ -172,7 +171,7 @@ const Home = ({ darkMode, setDarkMode }) => {
               boxShadow: '0 4px 16px rgba(239,68,68,0.3)'
             }}
           >
-            <div style={{ fontSize: 28, marginBottom: 6 }}>😔</div>
+            <div style={{ marginBottom: 6 }}><AlertCircle size={28} strokeWidth={2} /></div>
             <div style={{ fontWeight: 700, fontSize: 15 }}>Lost Something?</div>
             <div style={{ fontSize: 12, opacity: 0.9, marginTop: 2 }}>Report a lost item</div>
           </button>
@@ -185,7 +184,7 @@ const Home = ({ darkMode, setDarkMode }) => {
               boxShadow: '0 4px 16px rgba(22,163,74,0.3)'
             }}
           >
-            <div style={{ fontSize: 28, marginBottom: 6 }}>🎉</div>
+            <div style={{ marginBottom: 6 }}><CheckCircle size={28} strokeWidth={2} /></div>
             <div style={{ fontWeight: 700, fontSize: 15 }}>Found Something?</div>
             <div style={{ fontSize: 12, opacity: 0.9, marginTop: 2 }}>Report a found item</div>
           </button>
@@ -210,7 +209,7 @@ const Home = ({ darkMode, setDarkMode }) => {
                   boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
                 }}
               >
-                <span style={{ fontSize: 22 }}>{cat.icon}</span>
+                <div style={{ marginBottom: 2 }}>{cat.icon}</div>
                 {cat.label}
               </button>
             ))}
@@ -231,13 +230,13 @@ const Home = ({ darkMode, setDarkMode }) => {
 
           {loading ? (
             <div style={{ textAlign: 'center', padding: 40, color: muted }}>
-              <div style={{ fontSize: 32, marginBottom: 8 }}>⏳</div>
+              <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center' }}><Loader2 size={32} /></div>
               Loading items...
             </div>
           ) : recent.length === 0 ? (
             <div style={{ textAlign: 'center', padding: 40, color: muted }}>
-              <div style={{ fontSize: 48 }}>📭</div>
-              <p style={{ marginTop: 8 }}>No items yet. Be the first to report!</p>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}><Inbox size={48} strokeWidth={1.5} /></div>
+              <p style={{ margin: 0 }}>No items yet. Be the first to report!</p>
             </div>
           ) : (
             recent.slice(0, 6).map(item => (
@@ -248,7 +247,7 @@ const Home = ({ darkMode, setDarkMode }) => {
       </div>
 
       <BottomNav darkMode={darkMode} />
-    </div>
+    </div >
   );
 };
 

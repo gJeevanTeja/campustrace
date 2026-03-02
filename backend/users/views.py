@@ -20,7 +20,7 @@ from .serializers import (
     UserSerializer, RegisterSerializer, LoginSerializer,
     UpdateProfileSerializer, ChangePasswordSerializer,
     ForgotPasswordSerializer, ResetPasswordSerializer,
-    OTPRequestSerializer, OTPVerifySerializer
+    OTPRequestSerializer, OTPVerifySerializer, AdminRegisterSerializer
 )
 from .permissions import IsSuperAdmin, IsCollegeAdmin, IsAdminOrModerator
 
@@ -99,6 +99,25 @@ class RegisterView(APIView):
                         status=status.HTTP_400_BAD_REQUEST)
 
 
+class RegisterAdminView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = AdminRegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            tokens = get_tokens_for_user(user)
+            return Response({
+                'message': 'College Admin registration successful!',
+                'tokens': tokens,
+                'user': UserSerializer(user, context={'request': request}).data,
+            }, status=status.HTTP_201_CREATED)
+
+        errors = serializer.errors
+        msg = next(iter(errors.values()))
+        if isinstance(msg, list): msg = msg[0]
+        return Response({'message': str(msg), 'errors': errors},
+                        status=status.HTTP_400_BAD_REQUEST)
 
 
 class LoginView(APIView):

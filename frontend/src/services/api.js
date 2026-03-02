@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-// ─── API Configuration ──────────────────────────────────────────────────────
+// ─── IP Configuration ──────────────────────────────────────────────────────
+// ✅ Set in .env: REACT_APP_API_IP=192.168.137.1
+// PC browser:  http://192.168.137.1:3000
+// Mobile:      http://192.168.137.1:3000  (same WiFi)
+
 const API_IP = process.env.REACT_APP_API_IP || 'localhost';
 const BASE_URL = `http://${API_IP}:8000/api/`;
 const WS_BASE = `ws://${API_IP}:8000`;
@@ -11,17 +15,11 @@ const api = axios.create({
   timeout: 15000,
 });
 
-// ── Attach JWT token & Handle FormData headers ──────────────────────
+// ── Attach JWT token ──────────────────────────────────────────────
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token');
     if (token) config.headers.Authorization = `Bearer ${token}`;
-
-    // Automatically let the browser set boundaries for FormData
-    if (config.data instanceof FormData) {
-      delete config.headers['Content-Type'];
-    }
-
     return config;
   },
   (error) => Promise.reject(error)
@@ -97,7 +95,9 @@ export const authAPI = {
   resetPassword: (data) => api.post('auth/reset-password/', data),
   getProfile: () => api.get('auth/profile/'),
   updateProfile: (data) => api.patch('auth/profile/', data),
-  updateAvatar: (formData) => api.post('auth/profile/avatar/', formData),
+  updateAvatar: (formData) => api.post('auth/profile/avatar/', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
   changePassword: (data) => api.post('auth/change-password/', data),
   updateLocation: (lat, lng) => api.post('auth/update-location/', { latitude: lat, longitude: lng }),
   getSettings: () => api.get('auth/settings/'),
@@ -109,13 +109,6 @@ export const authAPI = {
   googleAuth: (data) => api.post('auth/google/', data),
   getColleges: () => api.get('admin/manage/'),
   checkUsername: (username) => api.get(`auth/check-username/?username=${username}`),
-};
-
-export const adminRequestAPI = {
-  submitRequest: (formData) => api.post('administration/requests/', formData),
-  getRequests: () => api.get('administration/requests/'),
-  approveRequest: (id, collegeId) => api.post(`administration/requests/${id}/approve/`, { college_id: collegeId }),
-  rejectRequest: (id) => api.post(`administration/requests/${id}/reject/`),
 };
 
 // ── Items ─────────────────────────────────────────────────────────
@@ -135,7 +128,7 @@ export const itemsAPI = {
         form.append(k, v);
       }
     });
-    return api.post('items/', form);
+    return api.post('items/', form, { headers: { 'Content-Type': 'multipart/form-data' } });
   },
   update: (id, data) => api.put(`items/${id}/`, data),
   delete: (id) => api.delete(`items/${id}/`),
@@ -144,12 +137,8 @@ export const itemsAPI = {
   addPhotos: (id, photos) => {
     const form = new FormData();
     photos.forEach(p => form.append('photos', p));
-    return api.post(`items/${id}/photos/`, form);
+    return api.post(`items/${id}/photos/`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
   },
-  verifyClaim: (id, answers) => api.post(`items/${id}/verify-claim/`, { answers }),
-  confirmReturn: (itemId, claimCode) => api.post(`items/${itemId}/confirm-return/`, { claim_code: claimCode }),
-  approveClaim: (claimId) => api.post(`items/claim/${claimId}/approve/`),
-  rejectClaim: (claimId) => api.post(`items/claim/${claimId}/reject/`),
 };
 
 // ── Notifications ─────────────────────────────────────────────────
@@ -207,25 +196,23 @@ export const chatAPI = {
 // ── Admin ─────────────────────────────────────────────────────────
 export const adminAPI = {
   // Analytics
-  getAnalytics: () => api.get('analytics/college/'),
-  getGlobalAnalytics: () => api.get('analytics/global/'),
-  exportAnalytics: (format) => api.get(`analytics/export/?format=${format}`, { responseType: 'blob' }),
+  getAnalytics: () => api.get('admin/analytics/'),
 
   // Colleges (Super Admin)
   getColleges: () => api.get('admin/manage/'),
-  createCollege: (formData) => api.post('admin/manage/', formData),
+  createCollege: (formData) => api.post('admin/manage/', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   updateCollege: (id, data) => api.patch(`admin/manage/${id}/`, data),
   deleteCollege: (id) => api.delete(`admin/manage/${id}/`),
 
   // Blocks
   getBlocks: () => api.get('admin/blocks/'),
-  createBlock: (formData) => api.post('admin/blocks/', formData),
+  createBlock: (formData) => api.post('admin/blocks/', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   updateBlock: (id, data) => api.patch(`admin/blocks/${id}/`, data),
   deleteBlock: (id) => api.delete(`admin/blocks/${id}/`),
 
   // Categories
   getCategories: () => api.get('admin/categories/'),
-  createCategory: (formData) => api.post('admin/categories/', formData),
+  createCategory: (formData) => api.post('admin/categories/', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   updateCategory: (id, data) => api.patch(`admin/categories/${id}/`, data),
   deleteCategory: (id) => api.delete(`admin/categories/${id}/`),
 
@@ -234,6 +221,8 @@ export const adminAPI = {
   userAction: (id, action) => api.patch(`auth/admin/users/${id}/${action}/`),
   getUserActivity: (id) => api.get(`auth/admin/users/${id}/activity/`),
 
+  // Auth & Onboarding
+  registerAdmin: (data) => api.post('auth/register-admin/', data),
 };
 
 // ── WebSocket helpers ─────────────────────────────────────────────

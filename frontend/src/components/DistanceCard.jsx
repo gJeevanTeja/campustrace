@@ -34,10 +34,10 @@ const DistanceCard = ({ itemLat, itemLng, darkMode }) => {
   const [weather, setWeather]     = useState(null);
   const [status, setStatus]       = useState('loading'); // loading | ready | denied | nocoords
 
-  const card   = darkMode ? '#1e293b' : '#fff';
-  const text   = darkMode ? '#e2e8f0' : '#1e293b';
+  const card   = darkMode ? '#1e1e1e' : '#fff';
+  const text   = darkMode ? '#e2e8f0' : '#1e1e1e';
   const muted  = darkMode ? '#94a3b8' : '#64748b';
-  const border = darkMode ? '#334155' : '#e2e8f0';
+  const border = darkMode ? '#333333' : '#e2e8f0';
 
   useEffect(() => {
     if (!itemLat || !itemLng) { setStatus('nocoords'); return; }
@@ -142,7 +142,7 @@ const DistanceCard = ({ itemLat, itemLng, darkMode }) => {
       {travel && status === 'ready' && (
         <div style={{
           display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
-          background: darkMode ? '#0f172a' : '#f8fafc'
+          background: darkMode ? '#121212' : '#f8fafc'
         }}>
           {[
             { icon: '🚶', label: 'Walk', time: travel.walk },

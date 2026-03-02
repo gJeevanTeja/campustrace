@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { itemsAPI } from '../services/api';
+import { useTheme } from '../context/ThemeContext';
+import { SlidersHorizontal, Search, Plus } from 'lucide-react';
 import BottomNav from '../components/BottomNav';
 import ItemCard from '../components/ItemCard';
 
@@ -11,6 +13,7 @@ const BrowseItems = () => {
   const [loading, setLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { darkMode, setDarkMode } = useTheme();
 
   const type = searchParams.get('type') || 'all';
   const category = searchParams.get('category') || 'all';
@@ -44,20 +47,22 @@ const BrowseItems = () => {
   return (
     <div className="page-wrapper">
       {/* Header */}
-      <div style={{ background: 'white', padding: '20px 16px 0', borderBottom: '1px solid #f1f5f9' }}>
+      <div style={{ background: darkMode ? '#121212' : 'white', padding: '20px 16px 0', borderBottom: `1px solid ${darkMode ? '#333333' : '#f1f5f9'}` }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-          <h4 style={{ fontWeight: 800, margin: 0 }}>Browse Items</h4>
-          <button onClick={() => navigate('/filters')} style={{
-            background: '#f1f5f9', border: 'none', borderRadius: 10, padding: '8px 14px',
-            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600, fontSize: 14
-          }}>
-            <i className="bi bi-sliders"></i> Filter
-          </button>
+          <h4 style={{ fontWeight: 800, margin: 0, color: darkMode ? '#e2e8f0' : '#1e1e1e' }}>Browse Items</h4>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <button onClick={() => navigate('/filters')} style={{
+              background: darkMode ? '#333333' : '#f1f5f9', border: 'none', borderRadius: 10, padding: '8px 14px',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600, fontSize: 14, color: darkMode ? '#e2e8f0' : '#1e1e1e'
+            }}>
+              <SlidersHorizontal size={16} /> Filter
+            </button>
+          </div>
         </div>
 
         {/* Search */}
         <div style={{ position: 'relative', marginBottom: 14 }}>
-          <i className="bi bi-search" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}></i>
+          <Search size={18} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
           <input
             value={search}
             onChange={e => setFilter('search', e.target.value)}
@@ -98,8 +103,8 @@ const BrowseItems = () => {
         {loading ? (
           <div className="spinner-ct"><div className="spinner-border text-primary"></div></div>
         ) : items.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#94a3b8' }}>
-            <i className="bi bi-search" style={{ fontSize: 56 }}></i>
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#94a3b8', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Search size={56} strokeWidth={1} />
             <h5 style={{ marginTop: 16, color: '#64748b' }}>No items found</h5>
             <p style={{ fontSize: 14 }}>Try adjusting your filters or search terms</p>
           </div>
@@ -120,7 +125,7 @@ const BrowseItems = () => {
         boxShadow: '0 4px 16px rgba(37,99,235,0.4)', cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50
       }}>
-        <i className="bi bi-plus"></i>
+        <Plus size={32} />
       </button>
 
       <BottomNav />

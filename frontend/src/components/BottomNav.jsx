@@ -15,12 +15,7 @@ const BottomNav = ({ darkMode }) => {
     { path: '/browse', icon: '🔍', label: 'Browse' },
     { path: '/report', icon: '➕', label: 'Report', special: true },
     { path: '/chat', icon: '💬', label: 'Chat' },
-    { path: '/profile', icon: '👤', label: 'Profile' },
-    {
-      path: (user?.role === 'student' || !user?.role) ? '/dashboard' : '/admin',
-      icon: '📊',
-      label: 'Stats'
-    }
+    { path: '/profile', icon: '👤', label: 'Profile' }
   ];
 
   const isActive = (path) => {
@@ -31,8 +26,8 @@ const BottomNav = ({ darkMode }) => {
   return (
     <div style={{
       position: 'fixed', bottom: 0, left: 0, right: 0,
-      background: dm ? '#1e293b' : '#ffffff',
-      borderTop: `1px solid ${dm ? '#334155' : '#e2e8f0'}`,
+      background: dm ? '#1e1e1e' : '#ffffff',
+      borderTop: `1px solid ${dm ? '#333333' : '#e2e8f0'}`,
       display: 'flex', justifyContent: 'space-around', alignItems: 'center',
       paddingBottom: 'env(safe-area-inset-bottom, 4px)',
       height: 54,
@@ -81,24 +76,12 @@ const BottomNav = ({ darkMode }) => {
                   fontSize: '10px', fontWeight: 'bold',
                   minWidth: '16px', height: '16px', borderRadius: '8px',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  padding: '0 4px', border: `2px solid ${dm ? '#1e293b' : '#ffffff'}`
+                  padding: '0 4px', border: `2px solid ${dm ? '#1e1e1e' : '#ffffff'}`
                 }}>
                   {unreadChatCount}
                 </div>
               )}
 
-              {tab.label === 'Stats' && unreadCount > 0 && (
-                <div style={{
-                  position: 'absolute', top: -5, right: -8,
-                  background: '#ef4444', color: 'white',
-                  fontSize: '10px', fontWeight: 'bold',
-                  minWidth: '16px', height: '16px', borderRadius: '8px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  padding: '0 4px', border: `2px solid ${dm ? '#1e293b' : '#ffffff'}`
-                }}>
-                  {unreadCount}
-                </div>
-              )}
             </div>
 
             <span style={{

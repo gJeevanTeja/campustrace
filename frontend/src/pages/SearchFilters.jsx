@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { IdCard, BookOpen, Laptop, Wallet, Briefcase, MoreHorizontal, Library, Home, Coffee, GraduationCap, Car, X, Search, CheckCircle, Check, Calendar } from 'lucide-react';
 
 const CATEGORIES = [
-  { id: 'id_card', label: 'ID Card', icon: '🪪' },
-  { id: 'books', label: 'Books', icon: '📚' },
-  { id: 'electronics', label: 'Electronics', icon: '💻' },
-  { id: 'wallet', label: 'Wallet', icon: '👛' },
-  { id: 'accessories', label: 'Accessories', icon: '👜' },
-  { id: 'other', label: 'Others', icon: '···' },
+  { id: 'id_card', label: 'ID Card', icon: <IdCard size={20} /> },
+  { id: 'books', label: 'Books', icon: <BookOpen size={20} /> },
+  { id: 'electronics', label: 'Electronics', icon: <Laptop size={20} /> },
+  { id: 'wallet', label: 'Wallet', icon: <Wallet size={20} /> },
+  { id: 'accessories', label: 'Accessories', icon: <Briefcase size={20} /> },
+  { id: 'other', label: 'Others', icon: <MoreHorizontal size={20} /> },
 ];
 
 const LOCATIONS = [
-  { id: 'library', label: 'Library', sub: 'Central Reading Hall & Labs', icon: '📖' },
-  { id: 'hostel', label: 'Hostel', sub: 'Blocks A, B, and C Areas', icon: '🏠' },
-  { id: 'canteen', label: 'Canteen', sub: 'Main Cafeteria & Food Court', icon: '🍽️' },
-  { id: 'classroom', label: 'Classroom Block', sub: 'Academic Wing 1-4', icon: '🎓' },
-  { id: 'parking', label: 'Parking Area', sub: 'Visitor & Student Parking Zones', icon: '🅿️' },
+  { id: 'library', label: 'Library', sub: 'Central Reading Hall & Labs', icon: <Library size={20} /> },
+  { id: 'hostel', label: 'Hostel', sub: 'Blocks A, B, and C Areas', icon: <Home size={20} /> },
+  { id: 'canteen', label: 'Canteen', sub: 'Main Cafeteria & Food Court', icon: <Coffee size={20} /> },
+  { id: 'classroom', label: 'Classroom Block', sub: 'Academic Wing 1-4', icon: <GraduationCap size={20} /> },
+  { id: 'parking', label: 'Parking Area', sub: 'Visitor & Student Parking Zones', icon: <Car size={20} /> },
 ];
 
 const SearchFilters = () => {
@@ -51,8 +52,8 @@ const SearchFilters = () => {
     <div style={{ background: 'white', minHeight: '100vh' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 16px', borderBottom: '1px solid #f1f5f9' }}>
-        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer' }}>
-          <i className="bi bi-x-lg"></i>
+        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex' }}>
+          <X size={20} />
         </button>
         <h5 style={{ margin: 0, fontWeight: 700 }}>Search Filters</h5>
         <button onClick={reset} style={{ background: 'none', border: 'none', color: '#2563eb', fontWeight: 600, cursor: 'pointer' }}>Reset</button>
@@ -72,7 +73,7 @@ const SearchFilters = () => {
                 fontWeight: 600, fontSize: 14, color: itemType === t ? '#2563eb' : '#64748b',
                 display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center'
               }}>
-                <i className={`bi bi-${t === 'lost' ? 'search' : 'check-circle'}`}></i>
+                {t === 'lost' ? <Search size={18} /> : <CheckCircle size={18} />}
                 {t.charAt(0).toUpperCase() + t.slice(1)} Items
               </button>
             ))}
@@ -94,7 +95,7 @@ const SearchFilters = () => {
                 fontWeight: 600, fontSize: 13,
                 color: selectedCats.includes(cat.id) ? '#2563eb' : '#374151'
               }}>
-                <span style={{ fontSize: 18 }}>{cat.icon}</span> {cat.label}
+                <span style={{ display: 'flex' }}>{cat.icon}</span> {cat.label}
               </button>
             ))}
           </div>
@@ -116,9 +117,9 @@ const SearchFilters = () => {
               background: selectedLocs.includes(loc.id) ? '#eff6ff' : 'white'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span style={{ fontSize: 20 }}>{loc.icon}</span>
+                <span style={{ display: 'flex', color: selectedLocs.includes(loc.id) ? '#2563eb' : '#64748b' }}>{loc.icon}</span>
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: 14, color: selectedLocs.includes(loc.id) ? '#2563eb' : '#1e293b' }}>
+                  <div style={{ fontWeight: 600, fontSize: 14, color: selectedLocs.includes(loc.id) ? '#2563eb' : '#1e1e1e' }}>
                     {loc.label}
                   </div>
                   <div style={{ fontSize: 12, color: '#94a3b8' }}>{loc.sub}</div>
@@ -129,7 +130,7 @@ const SearchFilters = () => {
                 background: selectedLocs.includes(loc.id) ? '#2563eb' : 'white',
                 display: 'flex', alignItems: 'center', justifyContent: 'center'
               }}>
-                {selectedLocs.includes(loc.id) && <i className="bi bi-check" style={{ color: 'white', fontSize: 12 }}></i>}
+                {selectedLocs.includes(loc.id) && <Check size={14} color="white" strokeWidth={3} />}
               </div>
             </div>
           ))}
@@ -145,7 +146,7 @@ const SearchFilters = () => {
               { id: 'today', label: 'Today' },
               { id: '3days', label: 'Last 3 Days' },
               { id: 'week', label: 'Last Week' },
-              { id: 'custom', label: '📅 Custom' },
+              { id: 'custom', label: <span style={{ display: 'flex', alignItems: 'center', gap: 6, justifySelf: 'center' }}><Calendar size={16} /> Custom</span> },
             ].map(t => (
               <button key={t.id} onClick={() => setTimeframe(t.id)} style={{
                 padding: '12px', borderRadius: 12,

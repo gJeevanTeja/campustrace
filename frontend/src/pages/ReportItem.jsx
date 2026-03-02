@@ -6,12 +6,13 @@
  *   3. location field always set to 'other' so backend validation passes
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { itemsAPI } from '../services/api';
 import BottomNav from '../components/BottomNav';
 import GoogleMapPicker from '../components/MapPicker';
 import { adminAPI } from '../services/api';
+import { Search, CheckCircle, AlertTriangle, Camera, Image as ImageIcon, Loader2, Megaphone } from 'lucide-react';
 
 const ReportItem = ({ darkMode }) => {
   const navigate = useNavigate();
@@ -37,14 +38,15 @@ const ReportItem = ({ darkMode }) => {
   const [categories, setCategories] = useState([]);
   const [blocks, setBlocks] = useState([]);
 
-  useState(() => {
+  useEffect(() => {
     // Fetch categories and blocks
     adminAPI.getCategories()
-      .then(({ data }) => setCategories(data.results || data || []))
-      .catch(() => { });
+      .then(({ data }) => setCategories(Array.isArray(data) ? data : data?.results || []))
+      .catch(() => setCategories([]));
+
     adminAPI.getBlocks()
-      .then(({ data }) => setBlocks(data.results || data || []))
-      .catch(() => { });
+      .then(({ data }) => setBlocks(Array.isArray(data) ? data : data?.results || []))
+      .catch(() => setBlocks([]));
   }, []);
 
   const [photos, setPhotos] = useState([]);
@@ -53,10 +55,10 @@ const ReportItem = ({ darkMode }) => {
   const [error, setError] = useState('');
 
   const dm = darkMode;
-  const bg = dm ? '#0f172a' : '#f8fafc';
-  const text = dm ? '#e2e8f0' : '#1e293b';
+  const bg = dm ? '#121212' : '#f8fafc';
+  const text = dm ? '#e2e8f0' : '#1e1e1e';
   const muted = dm ? '#94a3b8' : '#64748b';
-  const border = dm ? '#334155' : '#e2e8f0';
+  const border = dm ? '#333333' : '#e2e8f0';
   const isLost = form.type === 'lost';
   const accent = isLost ? '#ef4444' : '#16a34a';
   const gradient = `linear-gradient(135deg, ${accent}, ${isLost ? '#f97316' : '#059669'})`;
@@ -66,7 +68,7 @@ const ReportItem = ({ darkMode }) => {
     padding: '12px 14px',
     borderRadius: 12,
     border: `1.5px solid ${border}`,
-    background: dm ? '#0f172a' : '#f8fafc',
+    background: dm ? '#121212' : '#f8fafc',
     color: text,
     fontSize: 14,
     outline: 'none',
@@ -154,8 +156,8 @@ const ReportItem = ({ darkMode }) => {
             ←
           </button>
           <div>
-            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>
-              {isLost ? '😔 Report Lost Item' : '🎉 Report Found Item'}
+            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+              {isLost ? <><Search size={20} /> Report Lost Item</> : <><CheckCircle size={20} /> Report Found Item</>}
             </h1>
             <p style={{ margin: '2px 0 0', fontSize: 12, opacity: 0.85 }}>
               {isLost ? 'Help others return your item' : 'Help reunite someone with their item'}
@@ -174,8 +176,9 @@ const ReportItem = ({ darkMode }) => {
                 background: form.type === t ? '#fff' : 'rgba(255,255,255,0.2)',
                 color: form.type === t ? accent : '#fff',
                 fontWeight: 700, fontSize: 13, transition: 'all 0.2s',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6
               }}>
-              {t === 'lost' ? '😔 Lost' : '🎉 Found'}
+              {t === 'lost' ? <><Search size={16} /> Lost</> : <><CheckCircle size={16} /> Found</>}
             </button>
           ))}
         </div>
@@ -188,8 +191,9 @@ const ReportItem = ({ darkMode }) => {
           <div style={{
             background: '#fee2e2', color: '#dc2626', borderRadius: 12,
             padding: '12px 16px', marginBottom: 16, fontSize: 14,
+            display: 'flex', alignItems: 'center', gap: 6
           }}>
-            ⚠️ {error}
+            <AlertTriangle size={18} /> {error}
           </div>
         )}
 
@@ -219,7 +223,7 @@ const ReportItem = ({ darkMode }) => {
           </label>
           <select name="category_new" value={form.category_new} onChange={handleChange} style={inputStyle}>
             <option value="">Select category</option>
-            {categories.map(c => (
+            {(Array.isArray(categories) ? categories : []).map(c => (
               <option key={c.id} value={c.id}>
                 {c.icon} {c.name}
               </option>
@@ -234,7 +238,7 @@ const ReportItem = ({ darkMode }) => {
           </label>
           <select name="block" value={form.block} onChange={handleChange} style={inputStyle}>
             <option value="">Select campus location</option>
-            {blocks.map(b => (
+            {(Array.isArray(blocks) ? blocks : []).map(b => (
               <option key={b.id} value={b.id}>
                 {b.name}
               </option>
@@ -270,20 +274,22 @@ const ReportItem = ({ darkMode }) => {
             <label style={{
               flex: 1, border: `2px dashed ${accent}`, borderRadius: 12,
               padding: 14, textAlign: 'center', cursor: 'pointer',
-              background: dm ? '#0f172a' : '#f8fafc', color: accent, fontWeight: 600, fontSize: 13,
+              background: dm ? '#121212' : '#f8fafc', color: accent, fontWeight: 600, fontSize: 13,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6
             }}>
               <input type="file" accept="image/*" capture="environment"
                 style={{ display: 'none' }} onChange={handlePhotoChange} />
-              📷 Camera
+              <Camera size={18} /> Camera
             </label>
             <label style={{
               flex: 1, border: `2px dashed ${border}`, borderRadius: 12,
               padding: 14, textAlign: 'center', cursor: 'pointer',
-              background: dm ? '#0f172a' : '#f8fafc', color: muted, fontWeight: 600, fontSize: 13,
+              background: dm ? '#121212' : '#f8fafc', color: muted, fontWeight: 600, fontSize: 13,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6
             }}>
               <input type="file" accept="image/*" multiple
                 style={{ display: 'none' }} onChange={handlePhotoChange} />
-              🖼️ Gallery
+              <ImageIcon size={18} /> Gallery
             </label>
           </div>
 
@@ -359,10 +365,11 @@ const ReportItem = ({ darkMode }) => {
           color: '#fff', fontSize: 16, fontWeight: 700,
           cursor: loading ? 'not-allowed' : 'pointer',
           boxShadow: `0 4px 16px ${accent}40`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8
         }}>
           {loading
-            ? '⏳ Submitting...'
-            : isLost ? '📢 Report Lost Item' : '📢 Report Found Item'}
+            ? <><Loader2 size={20} className="animate-spin" /> Submitting...</>
+            : isLost ? <><Megaphone size={20} /> Report Lost Item</> : <><Megaphone size={20} /> Report Found Item</>}
         </button>
       </form>
 

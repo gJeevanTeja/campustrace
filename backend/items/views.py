@@ -4,9 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Item, ItemPhoto, ClaimRequest
-from django.utils import timezone
-from datetime import timedelta
+from .models import Item, ItemPhoto
 from .serializers import ItemSerializer, ItemCreateSerializer, ItemPhotoSerializer, haversine_distance
 
 
@@ -155,16 +153,8 @@ class ItemListCreateView(generics.ListCreateAPIView):
 
 
 class ItemDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset         = Item.objects.select_related('user', 'claimed_by').prefetch_related('photos')
     serializer_class = ItemSerializer
-
-    def get_queryset(self):
-        user = self.request.user
-        qs = Item.objects.select_related('user', 'claimed_by').prefetch_related('photos')
-        if user.is_authenticated and user.role != 'super_admin':
-            if user.college:
-                return qs.filter(college=user.college)
-            return qs.none()
-        return qs
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -173,13 +163,13 @@ class ItemDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         item = self.get_object()
-        if item.user != request.user and request.user.role not in ['super_admin', 'college_admin']:
+        if item.user != request.user and not request.user.is_staff:
             return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
         return super().update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         item = self.get_object()
-        if item.user != request.user and request.user.role not in ['super_admin', 'college_admin']:
+        if item.user != request.user and not request.user.is_staff:
             return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
         return super().destroy(request, *args, **kwargs)
 
@@ -187,11 +177,7 @@ class ItemDetailView(generics.RetrieveUpdateDestroyAPIView):
 class ClaimItemView(APIView):
     def post(self, request, pk):
         try:
-            user = request.user
             item = Item.objects.get(pk=pk)
-            # Isolation check
-            if user.role != 'super_admin' and item.college != user.college:
-                return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
         except Item.DoesNotExist:
             return Response({'error': 'Item not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -237,14 +223,11 @@ class AddItemPhotosView(APIView):
 
     def post(self, request, pk):
         try:
-            user = request.user
             item = Item.objects.get(pk=pk)
-            if item.user != user and user.role not in ['super_admin', 'college_admin']:
-                return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
-            if user.role != 'super_admin' and item.college != user.college:
-                return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
         except Item.DoesNotExist:
             return Response({'error': 'Item not found'}, status=status.HTTP_404_NOT_FOUND)
+        if item.user != request.user:
+            return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
 
         photos = request.FILES.getlist('photos')
         if not photos:
@@ -304,15 +287,9 @@ class NearbyItemsView(APIView):
             lng = float(request.query_params.get('lng', ''))
             km  = float(request.query_params.get('km', 2))
         except (ValueError, TypeError):
-            return Response({'error': 'lat and lng are required and must be numbers'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'lat and lng are required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        user = request.user
         all_items = Item.objects.filter(status='active').select_related('user').prefetch_related('photos')
-        if user.is_authenticated and user.role != 'super_admin':
-            if user.college:
-                all_items = all_items.filter(college=user.college)
-            else:
-                return Response([])
 
         nearby = []
         for item in all_items:
@@ -332,146 +309,3 @@ class NearbyItemsView(APIView):
             result.append(data)
 
         return Response(result)
-
-class VerifyClaimView(APIView):
-    def post(self, request, item_id):
-        try:
-            item = Item.objects.get(id=item_id)
-        except Item.DoesNotExist:
-            return Response({"error": "Item not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        previous_attempts = ClaimRequest.objects.filter(item=item, claimant=request.user).count()
-        if previous_attempts >= 2:
-            return Response({"error": "Maximum claim attempts reached for this item."}, status=status.HTTP_403_FORBIDDEN)
-
-        answers = request.data.get("answers", {})
-        correct_score = 0
-        desc = item.description.lower() if item.description else ""
-
-        # Score automatically by seeing if ANY of their answer text is present in the item description
-        for key, val in answers.items():
-            if val and val.lower() in desc:
-                correct_score += 1
-
-        claim = ClaimRequest.objects.create(
-            item=item,
-            claimant=request.user,
-            answers=answers,
-            correct_score=correct_score,
-            status='pending'
-        )
-
-        # Notify found person
-        try:
-            from notifications.models import Notification
-            Notification.objects.create(
-                user=item.user,  # Item reporter
-                item=item,
-                message="Someone is trying to claim your item. Please review their answers.",
-                notification_type='item_claimed'
-            )
-        except Exception as e:
-            print(f"[Verify claim notification error] {e}")
-
-        return Response({
-            "message": "Your claim has been submitted for review.",
-            "status": claim.status
-        })
-
-class ApproveClaimView(APIView):
-    def post(self, request, claim_id):
-        try:
-            claim = ClaimRequest.objects.get(id=claim_id)
-        except ClaimRequest.DoesNotExist:
-            return Response({"error": "Claim not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        if claim.item.user != request.user:
-            return Response({"error": "Only the item reporter can approve this claim."}, status=status.HTTP_403_FORBIDDEN)
-
-        import random
-        claim.status = 'approved'
-        claim.claim_code = str(random.randint(100000, 999999))
-        claim.save()
-
-        # Notify claimant
-        try:
-            from notifications.models import Notification
-            Notification.objects.create(
-                user=claim.claimant,
-                item=claim.item,
-                message="Your claim was approved! You can now view the claim code.",
-                notification_type='item_claimed'
-            )
-        except Exception as e:
-            pass
-
-        return Response({"message": "Claim approved.", "claim_code": claim.claim_code})
-
-
-class RejectClaimView(APIView):
-    def post(self, request, claim_id):
-        try:
-            claim = ClaimRequest.objects.get(id=claim_id)
-        except ClaimRequest.DoesNotExist:
-            return Response({"error": "Claim not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        if claim.item.user != request.user:
-            return Response({"error": "Only the item reporter can reject this claim."}, status=status.HTTP_403_FORBIDDEN)
-
-        claim.status = 'rejected'
-        claim.save()
-
-        # Notify claimant
-        try:
-            from notifications.models import Notification
-            Notification.objects.create(
-                user=claim.claimant,
-                item=claim.item,
-                message="Your claim was rejected by the finder.",
-                notification_type='item_claimed'
-            )
-        except Exception as e:
-            pass
-
-        return Response({"message": "Claim rejected."})
-
-class ConfirmReturnView(APIView):
-    def post(self, request, item_id):
-        try:
-            item = Item.objects.get(id=item_id)
-            claim = ClaimRequest.objects.get(item=item, is_returned=False, status='approved')
-        except (Item.DoesNotExist, ClaimRequest.DoesNotExist):
-            return Response({"error": "No active claim found for this item."}, status=status.HTTP_404_NOT_FOUND)
-
-        if timezone.now() > claim.created_at + timedelta(minutes=30):
-            return Response({"error": "Claim code expired"}, status=status.HTTP_400_BAD_REQUEST)
-
-        entered_code = request.data.get("claim_code")
-
-        if claim.claim_code == entered_code:
-            claim.is_returned = True
-            claim.item.status = "returned"
-            claim.item.save()
-            claim.save()
-
-            # Notify lost user
-            try:
-                from notifications.models import Notification
-                Notification.objects.create(
-                    user=claim.claimant,
-                    item=claim.item,
-                    message="Your item has been marked as returned.",
-                    notification_type='item_returned'
-                )
-                Notification.objects.create(
-                    user=claim.item.user,
-                    item=claim.item,
-                    message="Return process completed.",
-                    notification_type='item_returned'
-                )
-            except Exception as e:
-                pass
-
-            return Response({"message": "Item successfully returned."})
-
-        return Response({"error": "Invalid claim code."}, status=status.HTTP_400_BAD_REQUEST)

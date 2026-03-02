@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { itemsAPI } from '../services/api';
+import { ArrowLeft, Bookmark, Plus } from 'lucide-react';
 import BottomNav from '../components/BottomNav';
 import ItemCard from '../components/ItemCard';
 
 const MyItems = ({ darkMode }) => {
-  const [items,   setItems]   = useState([]);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     itemsAPI.getMyItems()
       .then(({ data }) => setItems(data.results || data))
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   }, []);
 
@@ -24,8 +25,8 @@ const MyItems = ({ darkMode }) => {
   return (
     <div className="page-wrapper">
       <div style={{ background: 'white', padding: '20px 16px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer' }}>
-          <i className="bi bi-arrow-left"></i>
+        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex' }}>
+          <ArrowLeft size={20} />
         </button>
         <h5 style={{ margin: 0, fontWeight: 700 }}>My Posts</h5>
         <span style={{ marginLeft: 'auto', fontSize: 13, color: '#64748b', fontWeight: 600 }}>
@@ -37,8 +38,8 @@ const MyItems = ({ darkMode }) => {
         {loading ? (
           <div className="spinner-ct"><div className="spinner-border text-primary"></div></div>
         ) : items.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#94a3b8' }}>
-            <i className="bi bi-bookmark" style={{ fontSize: 56 }}></i>
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#94a3b8', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Bookmark size={56} strokeWidth={1} />
             <h5 style={{ marginTop: 16, color: '#64748b' }}>No posts yet</h5>
             <p style={{ fontSize: 14, marginBottom: 24 }}>Items you report will appear here</p>
             <button onClick={() => navigate('/report')} className="btn-primary-ct">Report an Item</button>
@@ -62,7 +63,7 @@ const MyItems = ({ darkMode }) => {
         boxShadow: '0 4px 16px rgba(37,99,235,0.4)', cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50,
       }}>
-        <i className="bi bi-plus"></i>
+        <Plus size={32} />
       </button>
 
       <BottomNav darkMode={darkMode} />
