@@ -153,10 +153,11 @@ const Signup = ({ darkMode: dm }) => {
           position: absolute; left: 14px; top: 16px; font-size: 15px; color: ${muted};
           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none;
         }
-        .float-input:focus ~ .float-label, .float-input.has-value ~ .float-label, .float-input:-webkit-autofill ~ .float-label {
+        .float-input:focus ~ .float-label, .float-input.has-value ~ .float-label, .float-input:-webkit-autofill ~ .float-label,
+        .float-input:focus-within .float-label, .float-input.has-value .float-label {
           top: 6px; font-size: 11px; font-weight: 700; color: #2563eb;
         }
-        .float-input.has-value:not(:focus) ~ .float-label { color: ${muted}; }
+        .float-input.has-value:not(:focus) ~ .float-label, .float-input.has-value:not(:focus-within) .float-label { color: ${muted}; }
         
         @keyframes bounce {
           0%, 100% { transform: translateY(0); }
@@ -279,12 +280,7 @@ const Signup = ({ darkMode: dm }) => {
                 <input value={form.phone} onChange={handlePhone}
                   maxLength={10} inputMode="numeric" autoComplete="off"
                   style={{ width: '100%', border: 'none', background: 'transparent', padding: '22px 14px 10px', fontSize: 15, outline: 'none', color: text }} />
-                <label className="float-label" style={{ top: 16 }}>Phone Number * <span style={{ fontWeight: 400 }}>(10 digits)</span></label>
-                {form.phone.length > 0 && (
-                  <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: form.phone.length === 10 ? '#16a34a' : '#f59e0b', fontWeight: 600 }}>
-                    {form.phone.length}/10
-                  </span>
-                )}
+                <label className="float-label">Phone Number *</label>
               </div>
             </div>
             {errors.phone && <p style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{errors.phone}</p>}
@@ -328,7 +324,7 @@ const Signup = ({ darkMode: dm }) => {
               autoComplete="new-password"
               readOnly onFocus={e => e.target.removeAttribute('readOnly')}
               style={inputStyle('password')} className={`float-input ${form.password ? 'has-value' : ''}`} />
-            <label className="float-label">Password * <span style={{ fontWeight: 400 }}>(8+ chars, 1 uppercase, 1 number)</span></label>
+            <label className="float-label">Password *</label>
             {errors.password && <p style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{errors.password}</p>}
           </div>
 

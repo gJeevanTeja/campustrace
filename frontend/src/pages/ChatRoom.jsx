@@ -110,7 +110,9 @@ const ChatRoom = ({ darkMode }) => {
   const connectWS = useCallback(() => {
     if (wsRef.current) wsRef.current.close();
     const token = localStorage.getItem('access_token');
-    const host = process.env.REACT_APP_API_IP || window.location.hostname;
+    const host = (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+      ? window.location.hostname
+      : (process.env.REACT_APP_API_IP || 'localhost');
     const ws = new WebSocket(`ws://${host}:8000/ws/chat/${roomId}/?token=${token}`);
     wsRef.current = ws;
 

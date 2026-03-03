@@ -1,0 +1,11 @@
+{
+  "name": "Test User",
+  "email": "test.user.999@example.com",
+  "phone": "9876543999",
+  "department": "Computer Science",
+  "section": "A",
+  "college_year": "1st Year",
+  "password": "Password123",
+  "confirm_password": "Password123",
+  "terms_accepted": true
+}

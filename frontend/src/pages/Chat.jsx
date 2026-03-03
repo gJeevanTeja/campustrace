@@ -101,12 +101,7 @@ const Chat = () => {
       )}
 
       <div style={{ padding: '12px 0' }}>
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: 60, color: muted, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ marginBottom: 10 }}><Loader2 size={36} className="animate-spin" /></div>
-            <p>Loading conversations...</p>
-          </div>
-        ) : rooms.length === 0 ? (
+        {rooms.length === 0 ? (
           <div style={{ textAlign: 'center', padding: 70, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div style={{ marginBottom: 12 }}><MessageSquare size={64} strokeWidth={1} color={muted} /></div>
             <p style={{ color: text, fontWeight: 700, fontSize: 18, margin: '0 0 6px' }}>No conversations yet</p>

@@ -32,6 +32,7 @@ const Login = ({ darkMode: dm }) => {
   const inp = dm ? '#121212' : '#f8fafc';
 
   const redirectAfterLogin = (user) => {
+    localStorage.setItem('login_success', 'true');
     if (['super_admin', 'college_admin', 'moderator'].includes(user?.role)) {
       window.location.href = '/admin';
     } else {
@@ -64,8 +65,11 @@ const Login = ({ darkMode: dm }) => {
     } catch (err) {
       // Network error — backend unreachable
       if (!err.response) {
+        const host = (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+          ? window.location.hostname
+          : (process.env.REACT_APP_API_IP || 'localhost');
         setError(
-          `Cannot reach server at ${process.env.REACT_APP_API_IP || 'localhost'}:8000. ` +
+          `Cannot reach server at ${host}:8000. ` +
           'Make sure Django is running.'
         );
         return;

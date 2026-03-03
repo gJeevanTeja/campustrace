@@ -1,13 +1,20 @@
 import axios from 'axios';
 
 // ─── IP Configuration ──────────────────────────────────────────────────────
-// ✅ Set in .env: REACT_APP_API_IP=192.168.137.1
-// PC browser:  http://192.168.137.1:3000
-// Mobile:      http://192.168.137.1:3000  (same WiFi)
+// Dynamically determine API IP based on how the app is loaded in the browser.
+// Mobile devices connecting to the local IP will automatically use that IP.
+const API_IP = (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+  ? window.location.hostname
+  : (process.env.REACT_APP_API_IP || 'localhost');
 
-const API_IP = process.env.REACT_APP_API_IP || 'localhost';
-const BASE_URL = `http://${API_IP}:8000/api/`;
-const WS_BASE = `ws://${API_IP}:8000`;
+// For BASE_URL and WS_BASE, prefer the current hostname's IP if not on localhost.
+const BASE_URL = (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+  ? `http://${API_IP}:8000/api/`
+  : (process.env.REACT_APP_API_URL || `http://${API_IP}:8000/api/`);
+
+const WS_BASE = (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+  ? `ws://${API_IP}:8000`
+  : (process.env.REACT_APP_WS_URL || `ws://${API_IP}:8000`);
 
 const api = axios.create({
   baseURL: BASE_URL,

@@ -195,7 +195,9 @@ export const NotificationProvider = ({ children }) => {
     if (!token) return;
 
     // Use environment variable IP or fallback to localhost
-    const apiHost = process.env.REACT_APP_API_IP || 'localhost';
+    const apiHost = (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+      ? window.location.hostname
+      : (process.env.REACT_APP_API_IP || 'localhost');
     const ws = new WebSocket(`ws://${apiHost}:8000/ws/notifications/?token=${token}`);
 
     wsRef.current = ws;

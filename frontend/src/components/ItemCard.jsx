@@ -16,8 +16,21 @@ const ItemCard = ({ item, darkMode, onDelete }) => {
     }
   };
 
+  const cardBg = darkMode ? '#1e1e1e' : '#ffffff';
+  const textColor = darkMode ? '#e2e8f0' : '#1e1e1e';
+  const mutedColor = darkMode ? '#94a3b8' : '#64748b';
+  const borderColor = darkMode ? '#333333' : '#e2e8f0';
+
   return (
-    <div className="item-card" onClick={() => navigate(`/item/${item.id}`)}>
+    <div
+      className="item-card"
+      onClick={() => navigate(`/item/${item.id}`)}
+      style={{
+        background: cardBg,
+        borderColor: borderColor,
+        color: textColor
+      }}
+    >
 
       {/* ── Photo or grey placeholder (NO emoji icons) ── */}
       {item.image_url ? (
@@ -33,8 +46,12 @@ const ItemCard = ({ item, darkMode, onDelete }) => {
       <div className="item-card-img-placeholder"
         style={{
           display: item.image_url ? 'none' : 'flex',
-          background: item.type === 'lost' ? '#fee2e2' : '#dcfce7',
-          color: item.type === 'lost' ? '#ef4444' : '#16a34a',
+          background: item.type === 'lost'
+            ? (darkMode ? '#3f1d1d' : '#fee2e2')
+            : (darkMode ? '#143621' : '#dcfce7'),
+          color: item.type === 'lost'
+            ? (darkMode ? '#fca5a5' : '#ef4444')
+            : (darkMode ? '#86efac' : '#16a34a'),
           fontSize: 22, fontWeight: 800,
         }}>
         {item.title?.[0]?.toUpperCase() || '?'}
@@ -43,13 +60,27 @@ const ItemCard = ({ item, darkMode, onDelete }) => {
       {/* ── Content ── */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-          <span className={`badge-${item.type}`}>{item.type}</span>
+          <span
+            className={`badge-${item.type}`}
+            style={{
+              background: item.type === 'lost'
+                ? (darkMode ? '#3f1d1d' : '#fef2f2')
+                : (darkMode ? '#143621' : '#f0fdf4'),
+              color: item.type === 'lost'
+                ? (darkMode ? '#fca5a5' : '#dc2626')
+                : (darkMode ? '#86efac' : '#16a34a'),
+            }}
+          >
+            {item.type}
+          </span>
           {/* Delete button — only shown when onDelete prop is passed (MyItems page) */}
           {onDelete && (
             <button onClick={handleDelete}
               style={{
-                background: '#fee2e2', border: 'none', borderRadius: 6,
-                padding: '2px 8px', cursor: 'pointer', color: '#ef4444',
+                background: darkMode ? '#3f1d1d' : '#fee2e2',
+                border: 'none', borderRadius: 6,
+                padding: '2px 8px', cursor: 'pointer',
+                color: darkMode ? '#fca5a5' : '#ef4444',
                 fontSize: 12, fontWeight: 700, flexShrink: 0
               }}>
               🗑 Delete
@@ -58,13 +89,14 @@ const ItemCard = ({ item, darkMode, onDelete }) => {
         </div>
         <h6 style={{
           fontWeight: 700, fontSize: 15, marginBottom: 4,
-          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          color: textColor
         }}>
           {item.title}
         </h6>
         <div style={{
           display: 'flex', alignItems: 'center', gap: 4,
-          fontSize: 12, color: '#64748b', marginBottom: 4
+          fontSize: 12, color: mutedColor, marginBottom: 4
         }}>
           <i className="bi bi-geo-alt"></i>
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -73,7 +105,7 @@ const ItemCard = ({ item, darkMode, onDelete }) => {
         </div>
         <div style={{
           display: 'flex', alignItems: 'center', gap: 4,
-          fontSize: 11, color: '#64748b', marginBottom: 4
+          fontSize: 11, color: mutedColor, marginBottom: 4
         }}>
           <span>🕒</span>
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -84,9 +116,11 @@ const ItemCard = ({ item, darkMode, onDelete }) => {
           </span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 11, color: '#94a3b8' }}>{item.time_ago}</span>
+          <span style={{ fontSize: 11, color: mutedColor }}>{item.time_ago}</span>
           <span style={{
-            background: '#eff6ff', color: '#2563eb', fontSize: 11,
+            background: darkMode ? '#1e3a5f' : '#eff6ff',
+            color: darkMode ? '#60a5fa' : '#2563eb',
+            fontSize: 11,
             padding: '3px 8px', borderRadius: 6, fontWeight: 600
           }}>
             View Details

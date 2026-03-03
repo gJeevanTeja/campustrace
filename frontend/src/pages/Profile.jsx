@@ -150,11 +150,7 @@ const Profile = ({ darkMode: dm }) => {
 
   const inputStyle = { flex: 1, border: `1.5px solid #3b82f6`, borderRadius: 8, padding: '7px 10px', fontSize: 14, color: text, background: inp, outline: 'none' };
 
-  if (loading) return (
-    <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ textAlign: 'center' }}><div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}><User size={40} color={muted} /></div><p style={{ color: muted }}>Loading profile...</p></div>
-    </div>
-  );
+  // Removed full-page loading block to allow instant render
 
   const avatarSrc = p.avatar || p.avatar_url || p.google_picture;
   const displayItems = activeTab === 'posted' ? myItems : claimedItems;
