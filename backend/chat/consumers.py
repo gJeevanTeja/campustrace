@@ -64,6 +64,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }
         )
 
+        # AI Verification Intercept
+        sys_msgs = await self.process_ai_verification(self.room_id, self.user, message_text)
+        if sys_msgs:
+            for smsg in sys_msgs:
+                await self.channel_layer.group_send(
+                    self.room_group,
+                    {
+                        'type':            'chat_message',
+                        'id':              smsg['id'],
+                        'message':         smsg['message'],
+                        'message_type':    smsg['message_type'],
+                        'media_url':       None,
+                        'sender':          smsg['sender'],
+                        'sender_id':       smsg['sender_id'],
+                        'created_at':      smsg['created_at'],
+                        'is_forwarded':    False,
+                        'original_sender': None,
+                    }
+                )
+
         # ── Send push notification to the receiver's global socket ──
         receiver_id = await self.get_receiver_for_notification(self.room_id, self.user)
         if receiver_id:
@@ -158,6 +178,95 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }
         except ChatRoom.DoesNotExist:
             return None
+
+    @database_sync_to_async
+    def process_ai_verification(self, room_id, user, message_text):
+        from items.models import ClaimSession
+        from chat.models import ChatRoom, ChatMessage
+        from items.ai_utils import evaluate_single_answer
+        import random
+        from django.utils import timezone
+
+        try:
+            room = ChatRoom.objects.get(id=room_id)
+            claim = ClaimSession.objects.filter(item=room.item, claimant=user, status='pending').first()
+            if not claim:
+                return None
+        except ChatRoom.DoesNotExist:
+            return None
+
+        if not room.item.is_electronics():
+            return None
+
+        # Verify there are questions left
+        idx = claim.current_question_index
+        if idx >= len(claim.ai_questions):
+            return None
+
+        question = claim.ai_questions[idx]
+        
+        # Evaluate answer
+        score = evaluate_single_answer(room.item.image, question, message_text)
+        claim.ai_score += score
+        claim.current_question_index += 1
+        
+        # Save user answer
+        answers = claim.user_answers
+        answers[f"Q{idx+1}"] = {"question": question, "answer": message_text, "score": score}
+        claim.user_answers = answers
+        claim.save()
+
+        # Decide what's next
+        messages_to_send = []
+        messages_to_send.append("**System:** Answer recorded.")
+
+        if claim.current_question_index < len(claim.ai_questions):
+            next_q = claim.ai_questions[claim.current_question_index]
+            messages_to_send.append(f"**System:** Question {claim.current_question_index + 1}: {next_q}")
+        else:
+            # Verification finished
+            if claim.ai_score >= 2:
+                claim.status = 'verified'
+                claim.claim_code = str(random.randint(100000, 999999))
+                claim.save()
+                messages_to_send.append("**System:** Verification complete. Right owner verified by AI. You can view the claim code on the item page.")
+
+                # Notify finder
+                try:
+                    from notifications.models import Notification
+                    Notification.objects.create(
+                        user=room.item.user,
+                        item=room.item,
+                        message="AI verified the rightful owner for your item.",
+                        notification_type='item_claimed'
+                    )
+                except Exception as e:
+                    pass
+
+            else:
+                claim.status = 'failed'
+                claim.save()
+                messages_to_send.append(f"**System:** Verification failed. Score: {claim.ai_score}/{len(claim.ai_questions)}. The AI determined that the answers did not match the item details sufficiently.")
+
+        # Save system messages
+        system_msgs = []
+        for text in messages_to_send:
+            msg = ChatMessage.objects.create(
+                room=room,
+                sender=room.item.user, # Finder acts as system sender
+                message=text,
+                message_type='text'
+            )
+            system_msgs.append({
+                'id':           msg.id,
+                'message':      msg.message,
+                'message_type': msg.message_type,
+                'sender':       room.item.user.name,
+                'sender_id':    room.item.user.id,
+                'created_at':   msg.created_at.isoformat(),
+            })
+
+        return system_msgs
 
     @database_sync_to_async
     def get_receiver_for_notification(self, room_id, user):

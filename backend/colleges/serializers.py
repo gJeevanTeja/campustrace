@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import College, Block, Category
+from .models import College, Block, Category, CampusLocation
 
 class CollegeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -20,3 +20,8 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = '__all__'
         ordering = ['-priority', 'name']
+
+class CampusLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusLocation
+        fields = "__all__"

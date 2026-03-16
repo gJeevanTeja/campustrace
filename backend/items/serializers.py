@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Item, ItemPhoto, ClaimRequest
+from .models import Item, ItemPhoto, ClaimSession
 from users.serializers import UserSerializer
 import math
 
@@ -18,13 +18,13 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     return round(R * c, 2)
 
 
-class ClaimRequestSerializer(serializers.ModelSerializer):
+class ClaimSessionSerializer(serializers.ModelSerializer):
     claimant = UserSerializer(read_only=True)
 
     class Meta:
-        model = ClaimRequest
-        fields = ['id', 'item', 'claimant', 'answers', 'correct_score', 'status', 'created_at']
-        read_only_fields = ['id', 'item', 'claimant', 'correct_score', 'status', 'created_at']
+        model = ClaimSession
+        fields = ['id', 'item', 'claimant', 'status', 'ai_score', 'claim_code', 'attempts', 'created_at']
+        read_only_fields = ['id', 'item', 'claimant', 'ai_score', 'claim_code', 'attempts', 'created_at']
 
 
 class ItemPhotoSerializer(serializers.ModelSerializer):
@@ -80,16 +80,16 @@ class ItemSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         # Only show pending claims to the user who posted the item
         if request and request.user.is_authenticated and obj.user == request.user:
-            claims = ClaimRequest.objects.filter(item=obj, status='pending')
-            return ClaimRequestSerializer(claims, many=True).data
+            claims = ClaimSession.objects.filter(item=obj, status='pending')
+            return ClaimSessionSerializer(claims, many=True).data
         return []
 
     def get_my_claim(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
-            claim = ClaimRequest.objects.filter(item=obj, claimant=request.user).order_by('-created_at').first()
+            claim = ClaimSession.objects.filter(item=obj, claimant=request.user).order_by('-created_at').first()
             if claim:
-                return ClaimRequestSerializer(claim).data
+                return ClaimSessionSerializer(claim).data
         return None
 
     def get_time_ago(self, obj):
@@ -198,7 +198,7 @@ class ItemCreateSerializer(serializers.ModelSerializer):
         if not validated_data.get('image') and extra_photos:
             validated_data['image'] = extra_photos[0]
 
-        item = Item.objects.create(user=user, **validated_data)
+        item = Item.objects.create(**validated_data)
 
         if item.image:
             ItemPhoto.objects.create(item=item, photo=item.image, is_primary=True)

@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Item, ItemPhoto, ClaimRequest
+from .models import Item, ItemPhoto, ClaimSession
 from django.utils import timezone
 from datetime import timedelta
 from .serializers import ItemSerializer, ItemCreateSerializer, ItemPhotoSerializer, haversine_distance
@@ -334,32 +334,85 @@ class NearbyItemsView(APIView):
         return Response(result)
 
 class VerifyClaimView(APIView):
-    def post(self, request, item_id):
+    def post(self, request, pk):
         try:
-            item = Item.objects.get(id=item_id)
+            return self._post(request, pk)
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def _post(self, request, pk):
+        try:
+            item = Item.objects.get(id=pk)
         except Item.DoesNotExist:
             return Response({"error": "Item not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        previous_attempts = ClaimRequest.objects.filter(item=item, claimant=request.user).count()
-        if previous_attempts >= 2:
+        previous_attempts = ClaimSession.objects.filter(item=item, claimant=request.user).count()
+        if previous_attempts >= 3:
             return Response({"error": "Maximum claim attempts reached for this item."}, status=status.HTTP_403_FORBIDDEN)
 
-        answers = request.data.get("answers", {})
-        correct_score = 0
-        desc = item.description.lower() if item.description else ""
+        is_electronic = item.is_electronics()
 
-        # Score automatically by seeing if ANY of their answer text is present in the item description
-        for key, val in answers.items():
-            if val and val.lower() in desc:
-                correct_score += 1
+        if is_electronic:
+            # Generate questions using AI
+            from .ai_utils import generate_verification_questions
+            questions = generate_verification_questions(item.image) if item.image else [
+                "What is the brand?", "What is the color?", "Any unique marks?"
+            ]
 
-        claim = ClaimRequest.objects.create(
-            item=item,
-            claimant=request.user,
-            answers=answers,
-            correct_score=correct_score,
-            status='pending'
-        )
+            claim = ClaimSession.objects.create(
+                item=item,
+                claimant=request.user,
+                status='pending',
+                attempts=previous_attempts + 1,
+                ai_questions=questions
+            )
+        else:
+            # Bypass AI completely for non-electronic items
+            claim = ClaimSession.objects.create(
+                item=item,
+                claimant=request.user,
+                status='verified', # Open direct chat and unlock features
+                ai_score=3,
+                attempts=previous_attempts + 1,
+                ai_questions=[],
+                claim_code=None # Explicitly no claim code
+            )
+
+        # Create or get chat room
+        from chat.models import ChatRoom, ChatMessage
+        from django.db.models import Q
+        room = ChatRoom.objects.filter(
+            Q(participant1=request.user, participant2=item.user) |
+            Q(participant1=item.user, participant2=request.user),
+            item=item
+        ).first()
+
+        if not room:
+            room = ChatRoom.objects.create(item=item, participant1=request.user, participant2=item.user)
+
+        if is_electronic:
+            # Create first automated message with questions
+            q_text = questions[0]
+            sys_msg = f"**System:** Verifying ownership. Please answer the following 3 questions based on poverty details.\n\nQuestion 1: {q_text}"
+            
+            ChatMessage.objects.create(
+                room=room,
+                sender=item.user, # use finder as sender
+                message=sys_msg,
+                message_type='text'
+            )
+        else:
+            # Inform users of direct chat mode
+            sys_msg = f"**System:** Direct chat mode. Finder and Claimant are now connected. Please coordinate the return manually."
+            
+            ChatMessage.objects.create(
+                room=room,
+                sender=item.user,
+                message=sys_msg,
+                message_type='text'
+            )
 
         # Notify found person
         try:
@@ -367,80 +420,28 @@ class VerifyClaimView(APIView):
             Notification.objects.create(
                 user=item.user,  # Item reporter
                 item=item,
-                message="Someone is trying to claim your item. Please review their answers.",
+                message=f"{request.user.name} is claiming your item.",
                 notification_type='item_claimed'
             )
         except Exception as e:
             print(f"[Verify claim notification error] {e}")
 
         return Response({
-            "message": "Your claim has been submitted for review.",
-            "status": claim.status
+            "message": "ELECTRONICS_VERIFICATION_ENABLED" if is_electronic else "DIRECT_CHAT_MODE",
+            "status": claim.status,
+            "room_id": room.id,
+            "is_electronics": is_electronic
         })
 
-class ApproveClaimView(APIView):
-    def post(self, request, claim_id):
-        try:
-            claim = ClaimRequest.objects.get(id=claim_id)
-        except ClaimRequest.DoesNotExist:
-            return Response({"error": "Claim not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        if claim.item.user != request.user:
-            return Response({"error": "Only the item reporter can approve this claim."}, status=status.HTTP_403_FORBIDDEN)
-
-        import random
-        claim.status = 'approved'
-        claim.claim_code = str(random.randint(100000, 999999))
-        claim.save()
-
-        # Notify claimant
-        try:
-            from notifications.models import Notification
-            Notification.objects.create(
-                user=claim.claimant,
-                item=claim.item,
-                message="Your claim was approved! You can now view the claim code.",
-                notification_type='item_claimed'
-            )
-        except Exception as e:
-            pass
-
-        return Response({"message": "Claim approved.", "claim_code": claim.claim_code})
 
 
-class RejectClaimView(APIView):
-    def post(self, request, claim_id):
-        try:
-            claim = ClaimRequest.objects.get(id=claim_id)
-        except ClaimRequest.DoesNotExist:
-            return Response({"error": "Claim not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        if claim.item.user != request.user:
-            return Response({"error": "Only the item reporter can reject this claim."}, status=status.HTTP_403_FORBIDDEN)
-
-        claim.status = 'rejected'
-        claim.save()
-
-        # Notify claimant
-        try:
-            from notifications.models import Notification
-            Notification.objects.create(
-                user=claim.claimant,
-                item=claim.item,
-                message="Your claim was rejected by the finder.",
-                notification_type='item_claimed'
-            )
-        except Exception as e:
-            pass
-
-        return Response({"message": "Claim rejected."})
 
 class ConfirmReturnView(APIView):
     def post(self, request, item_id):
         try:
             item = Item.objects.get(id=item_id)
-            claim = ClaimRequest.objects.get(item=item, is_returned=False, status='approved')
-        except (Item.DoesNotExist, ClaimRequest.DoesNotExist):
+            claim = ClaimSession.objects.get(item=item, status='verified')
+        except (Item.DoesNotExist, ClaimSession.DoesNotExist):
             return Response({"error": "No active claim found for this item."}, status=status.HTTP_404_NOT_FOUND)
 
         if timezone.now() > claim.created_at + timedelta(minutes=30):
@@ -448,30 +449,40 @@ class ConfirmReturnView(APIView):
 
         entered_code = request.data.get("claim_code")
 
-        if claim.claim_code == entered_code:
-            claim.is_returned = True
-            claim.item.status = "returned"
-            claim.item.save()
-            claim.save()
+        is_electronic = item.is_electronics()
+        
+        # Check claim code ONLY if it is electronics
+        if is_electronic and claim.claim_code != entered_code:
+            return Response({"error": "Invalid claim code"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Notify lost user
-            try:
-                from notifications.models import Notification
-                Notification.objects.create(
-                    user=claim.claimant,
-                    item=claim.item,
-                    message="Your item has been marked as returned.",
-                    notification_type='item_returned'
-                )
-                Notification.objects.create(
-                    user=claim.item.user,
-                    item=claim.item,
-                    message="Return process completed.",
-                    notification_type='item_returned'
-                )
-            except Exception as e:
-                pass
+        # Confirm return
+        claim.status = 'completed'
+        claim.item.status = "returned"
+        claim.item.save()
+        claim.save()
 
-            return Response({"message": "Item successfully returned."})
+        # Award Gamification Points to Finder
+        finder = claim.item.user
+        finder.points += 50
+        finder.successful_returns += 1
+        finder.save(update_fields=['points', 'successful_returns'])
 
-        return Response({"error": "Invalid claim code."}, status=status.HTTP_400_BAD_REQUEST)
+        # Notify lost user
+        try:
+            from notifications.models import Notification
+            Notification.objects.create(
+                user=claim.claimant,
+                item=claim.item,
+                message="Your item has been marked as returned.",
+                notification_type='item_returned'
+            )
+            Notification.objects.create(
+                user=claim.item.user,
+                item=claim.item,
+                message="Return process completed.",
+                notification_type='item_returned'
+            )
+        except Exception as e:
+            print(f"[Return notification error] {e}")
+
+        return Response({"message": "Return confirmed successfully."})

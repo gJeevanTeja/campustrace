@@ -408,26 +408,40 @@ const ChatRoom = ({ darkMode }) => {
       );
     }
 
-    // Text — auto linkify URLs
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const parts = txt.split(urlRegex);
+    // Text — auto linkify URLs and parse simple bold
+    const renderTextWithFormatting = (textstr) => {
+      // split by \n
+      return textstr.split('\n').map((line, linIdx) => {
+        // split by simple bold **text**
+        const boldParts = line.split(/(\*\*.*?\*\*)/g);
+        const renderedLine = boldParts.map((bpart, idx) => {
+          if (bpart.startsWith('**') && bpart.endsWith('**')) {
+            return <strong key={idx}>{bpart.slice(2, -2)}</strong>;
+          }
+          // linkify
+          const urlRegex = /(https?:\/\/[^\s]+)/g;
+          const linkParts = bpart.split(urlRegex);
+          return linkParts.map((lpart, i2) =>
+            urlRegex.test(lpart) ? (
+              <a key={`l-${i2}`} href={lpart} target="_blank" rel="noreferrer"
+                style={{ color: isMe ? '#cfe8ff' : '#0084ff', textDecoration: 'underline' }}>
+                {lpart}
+              </a>
+            ) : lpart
+          );
+        });
+        return <React.Fragment key={linIdx}>{renderedLine}{linIdx < textstr.split('\n').length - 1 && <br />}</React.Fragment>;
+      });
+    };
+
     return (
-      <span style={{ wordBreak: 'break-word' }}>
+      <span style={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>
         {item.is_forwarded && (
           <span style={{ fontSize: 11, opacity: 0.7, display: 'block', marginBottom: 2 }}>
             ↪ Forwarded{item.original_sender ? ` from ${item.original_sender}` : ''}
           </span>
         )}
-        {parts.map((part, i) =>
-          urlRegex.test(part) ? (
-            <a key={i} href={part} target="_blank" rel="noreferrer"
-              style={{ color: isMe ? '#cfe8ff' : '#0084ff', textDecoration: 'underline' }}>
-              {part}
-            </a>
-          ) : (
-            <span key={i}>{part}</span>
-          )
-        )}
+        {renderTextWithFormatting(txt)}
       </span>
     );
   };

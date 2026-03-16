@@ -6,10 +6,22 @@ from django.db.models.functions import ExtractHour
 from django.utils import timezone
 from datetime import timedelta
 
-from .models import College, Block, Category
-from .serializers import CollegeSerializer, BlockSerializer, CategorySerializer
+from .models import College, Block, Category, CampusLocation
+from .serializers import CollegeSerializer, BlockSerializer, CategorySerializer, CampusLocationSerializer
 from users.permissions import IsSuperAdmin, IsCollegeAdmin, IsAdminOrModerator
 from items.models import Item
+
+def create_default_college_data(college):
+    # Categories
+    default_categories = ["ID Card", "Bags", "Helmet", "Keys", "Mobile Phones", "Other"]
+    for name in default_categories:
+        Category.objects.get_or_create(name=name, college=college)
+        
+    # Locations / Blocks
+    default_locations = ["Canteen", "Parking", "Gym Area", "Ground", "Main Gate", "Library", "Auditorium", "Other"]
+    for name in default_locations:
+        Block.objects.get_or_create(name=name, college=college)
+        CampusLocation.objects.get_or_create(name=name, college=college)
 
 class CollegeViewSet(viewsets.ModelViewSet):
     queryset = College.objects.all()
@@ -19,6 +31,10 @@ class CollegeViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             return [permissions.AllowAny()]
         return [IsSuperAdmin()]
+
+    def perform_create(self, serializer):
+        college = serializer.save()
+        create_default_college_data(college)
 
 class BlockViewSet(viewsets.ModelViewSet):
     queryset = Block.objects.all()
@@ -55,6 +71,17 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(college=self.request.user.college)
+
+from rest_framework import generics
+
+class CampusLocationListView(generics.ListAPIView):
+    serializer_class = CampusLocationSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if getattr(user, 'college', None):
+            return CampusLocation.objects.filter(college=user.college)
+        return CampusLocation.objects.none()
 
 class AdminAnalyticsView(APIView):
     permission_classes = [IsAdminOrModerator]

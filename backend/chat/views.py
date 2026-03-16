@@ -202,6 +202,79 @@ class ChatMessagesView(APIView):
             message=message_text, message_type=message_type,
         )
 
+        # 🤖 AI Claim Verification Hook
+        from items.models import ClaimSession
+        pending_claim = ClaimSession.objects.filter(
+            item=room.item, 
+            claimant=request.user, 
+            status='pending'
+        ).first()
+
+        if pending_claim and message_type == 'text':
+            import threading
+            def evaluate_in_background(claim_id, text_ans, message_room_id, request_user_name, request_user_id):
+                try:
+                    from items.models import ClaimSession
+                    from chat.models import ChatMessage, ChatRoom
+                    from notifications.models import Notification
+                    from items.ai_utils import evaluate_answers
+                    
+                    bg_claim = ClaimSession.objects.get(id=claim_id)
+                    bg_room = ChatRoom.objects.get(id=message_room_id)
+                    
+                    score = evaluate_answers(bg_claim.item.image, bg_claim.ai_questions, [text_ans])
+                    bg_claim.user_answers = {"raw_text": text_ans}
+                    bg_claim.ai_score = score
+                    
+                    sys_reply = ""
+                    if score >= 3:
+                        bg_claim.status = 'ai_verified'
+                        sys_reply = f"**System:** Verification passed (Score: {score}/4). Awaiting finder approval."
+                        try:
+                            Notification.objects.create(
+                                user=bg_room.item.user, item=bg_room.item,
+                                message=f"{request_user_name} passed AI verification for your item! Please review.",
+                                notification_type='item_claimed'
+                            )
+                        except Exception:
+                            pass
+                    else:
+                        if bg_claim.attempts >= 2:
+                            bg_claim.status = 'rejected'
+                            sys_reply = f"**System:** Verification failed (Score: {score}/4). Maximum attempts reached."
+                        else:
+                            bg_claim.attempts += 1
+                            sys_reply = f"**System:** Verification failed (Score: {score}/4). You have 1 attempt remaining. Please try answering again."
+                            
+                    bg_claim.save()
+                    
+                    sys_msg = ChatMessage.objects.create(
+                        room=bg_room, sender=bg_room.item.user,
+                        message=sys_reply, message_type='text'
+                    )
+                    from chat.views import _broadcast_ws
+                    _broadcast_ws(bg_room.id, {
+                        'type': 'chat_message',
+                        'id': sys_msg.id,
+                        'message': sys_msg.message,
+                        'message_type': 'text',
+                        'media_url': None,
+                        'sender': bg_room.item.user.name,
+                        'sender_id': bg_room.item.user.id,
+                        'created_at': sys_msg.created_at.isoformat(),
+                        'is_forwarded': False,
+                        'original_sender': None,
+                    })
+                except Exception as e:
+                    print(f"[AI Chat Hook Error] {e}")
+
+            threading.Thread(
+                target=evaluate_in_background,
+                args=(pending_claim.id, message_text, room.id, request.user.name, request.user.id),
+                daemon=True
+            ).start()
+
+
         from django.utils import timezone
         room.updated_at = timezone.now()
         room.save(update_fields=['updated_at'])

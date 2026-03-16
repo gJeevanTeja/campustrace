@@ -72,6 +72,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_known_lat = models.FloatField(null=True, blank=True)
     last_known_lng = models.FloatField(null=True, blank=True)
 
+    # Gamification
+    points             = models.IntegerField(default=0)
+    successful_returns = models.IntegerField(default=0)
+
     # Django Required
     is_active  = models.BooleanField(default=True)
     is_staff   = models.BooleanField(default=False)

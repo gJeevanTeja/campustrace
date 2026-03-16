@@ -52,7 +52,7 @@ class Item(models.Model):
     # Multi-College fields
     college = models.ForeignKey('colleges.College', on_delete=models.CASCADE, related_name='items', null=True, blank=True)
     category_new = models.ForeignKey('colleges.Category', on_delete=models.SET_NULL, null=True, blank=True, related_name='items')
-    block = models.ForeignKey('colleges.Block', on_delete=models.SET_NULL, null=True, blank=True, related_name='items')
+    block = models.ForeignKey('colleges.CampusLocation', on_delete=models.SET_NULL, null=True, blank=True, related_name='items')
     
     location_detail = models.CharField(max_length=200, blank=True, null=True)
     location_name = models.CharField(max_length=300, blank=True, null=True)  # GPS address text
@@ -91,6 +91,29 @@ class Item(models.Model):
             return 'Lost here'
         return 'Found here'
 
+    def is_electronics(self):
+        """Returns True if the item falls into a category requiring AI verification"""
+        ELECTRONICS_CATEGORIES = [
+            "Mobile Phones",
+            "Earbuds",
+            "Laptop",
+            "Tablet",
+            "Smartwatch",
+            "Camera",
+            "Headphones",
+            "Electronics"
+        ]
+        
+        # Check new dynamic category system first
+        if self.category_new and self.category_new.name in ELECTRONICS_CATEGORIES:
+            return True
+        
+        # Fallback to old legacy choices if needed
+        if self.category == "electronics":
+            return True
+            
+        return False
+
     def save(self, *args, **kwargs):
         # Generate reference number
         if not self.reference_number:
@@ -120,27 +143,30 @@ class ItemPhoto(models.Model):
         return f"Photo for {self.item.title} (primary={self.is_primary})"
 
 
-class ClaimRequest(models.Model):
-    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='claim_requests')
-    claimant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='claims_made')
-    answers = models.JSONField(default=dict)
-    correct_score = models.IntegerField(default=0)
+class ClaimSession(models.Model):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='claim_sessions')
+    claimant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='claims_sessions')
     status = models.CharField(
         max_length=20,
         choices=[
-            ('pending', 'Pending'),
-            ('approved', 'Approved'),
-            ('rejected', 'Rejected')
+            ("pending", "Pending"),
+            ("verified", "Verified"),
+            ("failed", "Failed"),
+            ("completed", "Completed"),
         ],
-        default='pending'
+        default="pending"
     )
+    ai_score = models.IntegerField(default=0)
+    current_question_index = models.IntegerField(default=0)
+    ai_questions = models.JSONField(default=list)
+    user_answers = models.JSONField(default=dict)
     claim_code = models.CharField(max_length=6, blank=True, null=True)
-    is_returned = models.BooleanField(default=False)
+    attempts = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'claim_requests'
+        db_table = 'claim_sessions'
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"Claim for {self.item.title} by {self.claimant.username}"
+        return f"Claim Session for {self.item.title} by {self.claimant.username}"

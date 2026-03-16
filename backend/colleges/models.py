@@ -17,8 +17,8 @@ class College(models.Model):
 class Block(models.Model):
     college = models.ForeignKey(College, on_delete=models.CASCADE, related_name='blocks')
     name = models.CharField(max_length=100)
-    latitude = models.FloatField()
-    longitude = models.FloatField()
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
     image = models.ImageField(upload_to='blocks/', blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -44,3 +44,10 @@ class Category(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.college.name})"
+
+class CampusLocation(models.Model):
+    name = models.CharField(max_length=100)
+    college = models.ForeignKey(College, on_delete=models.CASCADE, related_name='campus_locations')
+
+    def __str__(self):
+        return f"{self.name} - {self.college.name}"
