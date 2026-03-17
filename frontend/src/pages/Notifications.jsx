@@ -1,70 +1,64 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { notificationsAPI } from '../services/api';
-import BottomNav from '../components/BottomNav';
+import { 
+  Bell, 
+  Package, 
+  CheckCircle, 
+  RefreshCcw, 
+  Lock, 
+  User, 
+  Trash2, 
+  ChevronRight,
+  ShieldCheck,
+  Clock,
+  Inbox,
+  Sparkles
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-// ── Notification type config (NO "message" type — chat is its own tab) ──────
 const TYPE_CONFIG = {
-  new_item:         { emoji: '📦', label: 'New Item',      color: '#3b82f6', bg: '#eff6ff' },
-  item_claimed:     { emoji: '✅', label: 'Item Claimed',   color: '#10b981', bg: '#f0fdf4' },
-  item_found:       { emoji: '🎉', label: 'Item Found',     color: '#10b981', bg: '#f0fdf4' },
-  item_returned:    { emoji: '🔄', label: 'Returned',       color: '#8b5cf6', bg: '#f5f3ff' },
-  password_changed: { emoji: '🔐', label: 'Security',       color: '#f59e0b', bg: '#fffbeb' },
-  system:           { emoji: '🔔', label: 'System',         color: '#64748b', bg: '#f1f5f9' },
-  account:          { emoji: '👤', label: 'Account',        color: '#ec4899', bg: '#fdf2f8' },
-  default:          { emoji: '🔔', label: 'Notification',   color: '#64748b', bg: '#f1f5f9' },
+  new_item:         { icon: Package, label: 'New Item',      color: 'text-primary', bg: 'bg-primary/10' },
+  item_claimed:     { icon: CheckCircle, label: 'Item Claimed',   color: 'text-success', bg: 'bg-success/10' },
+  item_found:       { icon: Sparkles, label: 'Item Found',     color: 'text-success', bg: 'bg-success/10' },
+  item_returned:    { icon: RefreshCcw, label: 'Returned',       color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
+  password_changed: { icon: Lock, label: 'Security',       color: 'text-amber-500', bg: 'bg-amber-500/10' },
+  system:           { icon: Bell, label: 'System',         color: 'text-slate-500', bg: 'bg-slate-500/10' },
+  account:          { icon: User, label: 'Account',        color: 'text-rose-500', bg: 'bg-rose-500/10' },
+  default:          { icon: Bell, label: 'Event',         color: 'text-slate-500', bg: 'bg-slate-500/10' },
 };
 
-// Filter tabs — Messages intentionally excluded (use Chat tab for that)
 const FILTER_TABS = [
-  { id: 'all',       label: 'All',           emoji: '' },
-  { id: 'unread',    label: 'Unread',        emoji: '🔵' },
-  { id: 'new_item',  label: 'Items',         emoji: '📦' },
-  { id: 'claimed',   label: 'Claimed',       emoji: '✅' },
-  { id: 'security',  label: 'Security',      emoji: '🔐' },
+  { id: 'all',       label: 'All Activity' },
+  { id: 'unread',    label: 'Unread' },
+  { id: 'new_item',  label: 'Items' },
+  { id: 'claimed',   label: 'Claims' },
+  { id: 'security',  label: 'Security' },
 ];
 
-const Notifications = ({ darkMode }) => {
+const Notifications = () => {
   const navigate = useNavigate();
 
   const [notifications, setNotifications] = useState([]);
-  const [loading,       setLoading]       = useState(true);
-  const [filter,        setFilter]        = useState('all');
-  const [clearing,      setClearing]      = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
 
-  const dm     = darkMode;
-  const bg     = dm ? '#0f172a' : '#f8fafc';
-  const card   = dm ? '#1e293b' : '#ffffff';
-  const text   = dm ? '#e2e8f0' : '#1a1a1a';
-  const muted  = dm ? '#94a3b8' : '#64748b';
-  const border = dm ? '#334155' : '#e4e6ea';
-  const headerBg = 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)';
-
-  // ── Fetch ────────────────────────────────────────────────────────
   const fetchNotifications = useCallback(async () => {
     try {
       const { data } = await notificationsAPI.getAll();
       const list = Array.isArray(data) ? data : (data.results || []);
-      // Exclude chat/message type notifications — those belong in Chat
-      const filtered = list.filter(n =>
-        !['new_message', 'message', 'chat'].includes(n.notification_type)
-      );
+      const filtered = list.filter(n => !['new_message', 'message', 'chat'].includes(n.notification_type));
       setNotifications(filtered);
-    } catch {
-      setNotifications([]);
-    } finally {
-      setLoading(false);
-    }
+    } catch { setNotifications([]); }
+    finally { setLoading(false); }
   }, []);
 
   useEffect(() => {
     fetchNotifications();
-    // Poll every 30s for new notifications
     const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
   }, [fetchNotifications]);
 
-  // ── Actions ───────────────────────────────────────────────────────
   const handleMarkRead = async (id) => {
     try {
       await notificationsAPI.markRead(id);
@@ -88,22 +82,20 @@ const Notifications = ({ darkMode }) => {
   };
 
   const handleClearAll = async () => {
-    if (!window.confirm('Clear all notifications?')) return;
-    setClearing(true);
+    if (!window.confirm('Clear activity?')) return;
     try {
       await notificationsAPI.clearAll();
       setNotifications([]);
-    } catch {} finally {
-      setClearing(false);
-    }
+    } catch {}
   };
 
   const handleTap = (notif) => {
     if (!notif.is_read) handleMarkRead(notif.id);
-    if (notif.item_id) navigate(`/item/${notif.item_id}`);
+    const itemId = notif.item?.id || notif.item_id;
+    if (itemId) navigate(`/item/${itemId}`);
+    else if (['password_changed', 'account', 'system'].includes(notif.notification_type)) navigate('/profile');
   };
 
-  // ── Filter logic ──────────────────────────────────────────────────
   const getFiltered = () => {
     switch (filter) {
       case 'unread':   return notifications.filter(n => !n.is_read);
@@ -114,161 +106,123 @@ const Notifications = ({ darkMode }) => {
     }
   };
 
-  const displayed  = getFiltered();
+  const displayed = getFiltered();
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
-  // ── Time formatter ────────────────────────────────────────────────
-  const formatTime = (dateStr) => {
-    if (!dateStr) return '';
-    const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
-    if (diff < 60)    return 'Just now';
-    if (diff < 3600)  return `${Math.floor(diff / 60)}m ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-    if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
-    return new Date(dateStr).toLocaleDateString([], { month: 'short', day: 'numeric' });
-  };
-
-  const getTypeConfig = (type) => TYPE_CONFIG[type] || TYPE_CONFIG.default;
+  if (loading) return (
+     <div className="flex flex-col items-center justify-center min-h-[70vh] space-y-4">
+        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+        <p className="font-black text-text-secondary uppercase tracking-widest text-xs">Syncing Notifications...</p>
+     </div>
+  );
 
   return (
-    <div style={{ minHeight: '100vh', background: bg, paddingBottom: 80 }}>
-
-      {/* Header */}
-      <div style={{ background: headerBg, padding: '20px 16px 16px', color: '#fff' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 22 }}>🔔</span>
-              <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800 }}>Notifications</h1>
-              {unreadCount > 0 && (
-                <div style={{ background: '#ef4444', color: '#fff', borderRadius: 20, padding: '2px 8px', fontSize: 12, fontWeight: 700 }}>
-                  {unreadCount}
-                </div>
-              )}
-            </div>
-            <p style={{ margin: '4px 0 0', fontSize: 12, opacity: 0.8 }}>Tap any to see item details</p>
+    <div className="max-w-4xl mx-auto space-y-8 pb-32">
+       {/* Header */}
+       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pt-8">
+          <div className="space-y-1">
+             <h1 className="text-4xl font-black text-text-primary uppercase tracking-tighter flex items-center gap-3">
+                Inbox 
+                {unreadCount > 0 && <span className="bg-primary text-white text-[10px] h-6 w-6 flex items-center justify-center rounded-full border-2 border-white shadow-xl">{unreadCount}</span>}
+             </h1>
+             <p className="text-text-secondary font-medium uppercase text-[10px] tracking-widest flex items-center gap-2">
+                <ShieldCheck size={14} className="text-success" />
+                Real-time security alerts & updates
+             </p>
           </div>
-
-          <div style={{ display: 'flex', gap: 8 }}>
-            {unreadCount > 0 && (
-              <button onClick={handleMarkAllRead}
-                style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 8, padding: '6px 10px', color: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
-                ✓ All read
-              </button>
-            )}
-            {notifications.length > 0 && (
-              <button onClick={handleClearAll} disabled={clearing}
-                style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 8, padding: '6px 10px', color: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
-                🗑️ Clear
-              </button>
-            )}
+          <div className="flex items-center gap-3">
+             <button onClick={handleMarkAllRead} className="px-5 py-3 bg-white border border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary hover:text-white transition-all shadow-sm">
+                Mark all read
+             </button>
+             <button onClick={handleClearAll} className="p-3 bg-white border border-slate-100 rounded-2xl text-danger hover:bg-danger/10 transition-all shadow-sm">
+                <Trash2 size={20} />
+             </button>
           </div>
-        </div>
+       </header>
 
-        {/* Filter tabs — no Messages tab */}
-        <div style={{ display: 'flex', gap: 6, marginTop: 14, overflowX: 'auto', paddingBottom: 2 }}>
-          {FILTER_TABS.map(tab => {
-            const active = filter === tab.id;
-            return (
-              <button key={tab.id} onClick={() => setFilter(tab.id)}
-                style={{ flexShrink: 0, padding: '6px 14px', borderRadius: 20, border: 'none', cursor: 'pointer', background: active ? '#fff' : 'rgba(255,255,255,0.2)', color: active ? '#7c3aed' : '#fff', fontWeight: active ? 700 : 500, fontSize: 13, display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.15s' }}>
-                {tab.emoji && <span>{tab.emoji}</span>}
+       {/* Tabs */}
+       <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+           {FILTER_TABS.map(tab => (
+             <button 
+               key={tab.id}
+               onClick={() => setFilter(tab.id)}
+               className={`flex-shrink-0 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === tab.id ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'bg-white text-text-secondary border border-slate-100 hover:bg-slate-50'}`}
+             >
                 {tab.label}
-                {tab.id === 'all' && notifications.length > 0 && (
-                  <span style={{ background: active ? '#7c3aed' : 'rgba(255,255,255,0.3)', color: '#fff', borderRadius: 10, padding: '0 5px', fontSize: 11 }}>
-                    {notifications.length}
-                  </span>
-                )}
-                {tab.id === 'unread' && unreadCount > 0 && (
-                  <span style={{ background: '#ef4444', color: '#fff', borderRadius: 10, padding: '0 5px', fontSize: 11 }}>
-                    {unreadCount}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+             </button>
+           ))}
+       </div>
 
-      {/* Content */}
-      <div style={{ padding: '12px 0' }}>
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: 60, color: muted }}>
-            <div style={{ fontSize: 36, marginBottom: 10 }}>⏳</div>
-            <p>Loading notifications...</p>
-          </div>
-        ) : displayed.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: 70 }}>
-            <div style={{ fontSize: 60, marginBottom: 12 }}>🔕</div>
-            <p style={{ color: text, fontWeight: 700, fontSize: 18, margin: '0 0 6px' }}>
-              {filter === 'unread' ? 'All caught up!' : 'No notifications'}
-            </p>
-            <p style={{ color: muted, fontSize: 14 }}>
-              {filter === 'unread' ? "You've read everything." : "You'll be notified when something happens."}
-            </p>
-          </div>
-        ) : (
-          displayed.map(notif => {
-            const cfg     = getTypeConfig(notif.notification_type);
-            const unread  = !notif.is_read;
-            return (
-              <div key={notif.id} onClick={() => handleTap(notif)}
-                style={{
-                  display: 'flex', alignItems: 'flex-start', gap: 12,
-                  padding: '14px 16px', cursor: 'pointer',
-                  background: unread ? (dm ? '#1e293b' : '#f0f4ff') : card,
-                  borderBottom: `1px solid ${border}`,
-                  borderLeft: unread ? `4px solid ${cfg.color}` : '4px solid transparent',
-                  transition: 'background 0.15s',
-                }}>
-
-                {/* Icon */}
-                <div style={{
-                  width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
-                  background: dm ? `${cfg.color}25` : cfg.bg,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 20, border: `1.5px solid ${dm ? cfg.color + '40' : cfg.color + '30'}`,
-                }}>
-                  {cfg.emoji}
-                </div>
-
-                {/* Content */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                    <p style={{ margin: 0, fontSize: 14, lineHeight: 1.45, color: text, fontWeight: unread ? 600 : 400, flex: 1 }}>
-                      {notif.message}
-                    </p>
-                    <button onClick={(e) => handleDelete(notif.id, e)}
-                      style={{ background: 'none', border: 'none', color: muted, cursor: 'pointer', fontSize: 16, flexShrink: 0, padding: '0 0 0 4px', lineHeight: 1 }}>
-                      ×
-                    </button>
+       {/* Notifications List */}
+       <div className="space-y-4">
+          <AnimatePresence initial={false}>
+            {displayed.length === 0 ? (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-20 text-center space-y-6">
+                  <div className="w-24 h-24 bg-slate-100 rounded-[32px] flex items-center justify-center mx-auto text-slate-300">
+                     <Inbox size={48} />
                   </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 5 }}>
-                    <span style={{ fontSize: 11, background: dm ? `${cfg.color}25` : cfg.bg, color: cfg.color, padding: '2px 7px', borderRadius: 10, fontWeight: 600 }}>
-                      {cfg.label}
-                    </span>
-                    <span style={{ fontSize: 11, color: muted }}>{formatTime(notif.created_at)}</span>
-                    {unread && (
-                      <div style={{ width: 7, height: 7, borderRadius: '50%', background: cfg.color, flexShrink: 0 }} />
-                    )}
+                  <div className="space-y-2">
+                     <h3 className="text-xl font-black text-text-primary uppercase tracking-tighter">Pure Silence</h3>
+                     <p className="text-sm font-medium text-text-secondary">Your inbox is empty. We'll alert you of any activity.</p>
                   </div>
-
-                  {notif.item_id && (
-                    <p style={{ margin: '4px 0 0', fontSize: 12, color: '#3b82f6', fontWeight: 500 }}>
-                      Tap to view item →
-                    </p>
-                  )}
-                </div>
-              </div>
-            );
-          })
-        )}
-      </div>
-
-      <BottomNav darkMode={darkMode} />
+              </motion.div>
+            ) : (
+              displayed.map((notif, idx) => {
+                const cfg = TYPE_CONFIG[notif.notification_type] || TYPE_CONFIG.default;
+                return (
+                  <motion.div
+                    key={notif.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    onClick={() => handleTap(notif)}
+                    className={`relative p-6 rounded-[32px] border transition-all cursor-pointer group hover:shadow-2xl hover:scale-[1.01] active:scale-[0.99] ${notif.is_read ? 'bg-white border-slate-100' : 'bg-white border-primary/20 shadow-xl shadow-primary/5'}`}
+                  >
+                     <div className="flex gap-6 items-start">
+                        <div className={`w-14 h-14 rounded-2xl flex-shrink-0 flex items-center justify-center text-2xl shadow-sm ${cfg.bg} ${cfg.color}`}>
+                           <cfg.icon size={28} />
+                        </div>
+                        <div className="flex-1 space-y-2">
+                           <div className="flex items-center justify-between">
+                              <span className={`text-[9px] font-black uppercase tracking-[2px] ${cfg.color} opacity-80`}>{cfg.label}</span>
+                              <span className="text-[10px] font-bold text-text-secondary flex items-center gap-1">
+                                 <Clock size={10} /> {new Date(notif.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                           </div>
+                           <h4 className={`text-base font-bold leading-relaxed text-text-primary ${!notif.is_read ? 'pr-8' : ''}`}>
+                              {notif.message}
+                           </h4>
+                           <div className="flex items-center justify-between pt-2">
+                              <div className="flex items-center gap-2">
+                                 {notif.is_read ? (
+                                    <span className="text-[10px] font-black text-slate-300 uppercase">Read</span>
+                                 ) : (
+                                    <span className="flex items-center gap-1.5 text-[10px] font-black text-primary uppercase">
+                                       <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
+                                       New Activity
+                                    </span>
+                                 )}
+                              </div>
+                              <div className="flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                 <button onClick={(e) => handleDelete(notif.id, e)} className="p-2 text-text-secondary hover:text-danger transition-colors">
+                                    <Trash2 size={16} />
+                                 </button>
+                                 <ChevronRight size={16} className="text-primary" />
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                     {!notif.is_read && (
+                        <div className="absolute top-6 right-6 w-3 h-3 bg-primary rounded-full border-2 border-white shadow-lg" />
+                     )}
+                  </motion.div>
+                );
+              })
+            )}
+          </AnimatePresence>
+       </div>
     </div>
   );
 };
 
-export default Notifications;
+export default Notifications; 

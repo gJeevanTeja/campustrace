@@ -4,8 +4,8 @@ from items.serializers import ItemSerializer
 
 
 class NotificationSerializer(serializers.ModelSerializer):
-    item = ItemSerializer(read_only=True)
+    item_details = ItemSerializer(source='item', read_only=True)
 
     class Meta:
         model = Notification
-        fields = ['id', 'item', 'message', 'is_read', 'created_at']
+        fields = ('id', 'item_details', 'message', 'notification_type', 'is_read', 'created_at')

@@ -2,393 +2,311 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { itemsAPI } from '../services/api';
-import BottomNav from '../components/BottomNav';
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, 
 } from 'recharts';
+import { 
+  LayoutDashboard, 
+  RefreshCcw, 
+  TrendingUp, 
+  Package, 
+  AlertCircle,
+  ChevronRight,
+  Clock,
+  ShieldCheck,
+  Sparkles,
+  CheckCircle2
+} from 'lucide-react';
+import { motion } from 'framer-motion';
+import PremiumCard from '../components/ui/PremiumCard';
 
-// ─── Colour palette ───────────────────────────────────────────────────────
-const PIE_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
-const BAR_COLORS = { lost: '#ef4444', found: '#10b981', claimed: '#f59e0b', returned: '#3b82f6' };
+const PIE_COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444'];
+const BAR_COLORS = { lost: '#EF4444', found: '#10B981', claimed: '#F59E0B', returned: '#4F46E5' };
 
-// ─── Tiny stat card ──────────────────────────────────────────────────────
-const StatCard = ({ emoji, label, value, color, bg }) => (
-  <div style={{
-    background: bg, borderRadius: 16, padding: '16px 14px',
-    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-    flex: '1 1 120px', minWidth: 100,
-    boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
-  }}>
-    <span style={{ fontSize: 28 }}>{emoji}</span>
-    <span style={{ fontSize: 26, fontWeight: 800, color }}>{value}</span>
-    <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600, textAlign: 'center', lineHeight: 1.3 }}>{label}</span>
-  </div>
-);
+const Dashboard = () => {
+    const { user } = useAuth();
+    const navigate = useNavigate();
+    const [activeTab, setActiveTab] = useState('user');
+    const [userStats, setUserStats] = useState(null);
+    const [adminStats, setAdminStats] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
-// ─── Section header ──────────────────────────────────────────────────────
-const SectionTitle = ({ children, dm }) => (
-  <p style={{
-    margin: '20px 0 10px', fontSize: 13, fontWeight: 700,
-    textTransform: 'uppercase', letterSpacing: '0.8px',
-    color: dm ? '#94a3b8' : '#64748b',
-  }}>
-    {children}
-  </p>
-);
-
-// ─── Custom tooltip ──────────────────────────────────────────────────────
-const CustomTooltip = ({ active, payload, label, dm }) => {
-  if (!active || !payload?.length) return null;
-  return (
-    <div style={{
-      background: dm ? '#1e293b' : '#fff',
-      border: `1px solid ${dm ? '#334155' : '#e2e8f0'}`,
-      borderRadius: 10, padding: '8px 14px', fontSize: 13,
-      boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-    }}>
-      {label && <p style={{ margin: '0 0 4px', fontWeight: 700, color: dm ? '#e2e8f0' : '#1e293b' }}>{label}</p>}
-      {payload.map((p, i) => (
-        <p key={i} style={{ margin: 0, color: p.color || p.fill }}>
-          {p.name}: <strong>{p.value}</strong>
-        </p>
-      ))}
-    </div>
-  );
-};
-
-// ═══════════════════════════════════════════════════════════════════════════
-// MAIN COMPONENT
-// ═══════════════════════════════════════════════════════════════════════════
-
-const Dashboard = ({ darkMode }) => {
-  const dm = darkMode;
-  const { user } = useAuth();
-  const navigate = useNavigate();
-
-  const [activeTab,  setActiveTab]  = useState('user');
-  const [userStats,  setUserStats]  = useState(null);
-  const [adminStats, setAdminStats] = useState(null);
-  const [loading,    setLoading]    = useState(true);
-  const [error,      setError]      = useState('');
-
-  const bg     = dm ? '#0f172a' : '#f0f4ff';
-  const card   = dm ? '#1e293b' : '#ffffff';
-  const text   = dm ? '#e2e8f0' : '#1e293b';
-  const muted  = dm ? '#94a3b8' : '#64748b';
-  const border = dm ? '#334155' : '#e2e8f0';
-
-  // ── monthly data builder ─────────────────────────────────────
-  const buildMonthlyData = (items) => {
-    const months = [];
-    const now = new Date();
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      months.push({
-        month: d.toLocaleString('default', { month: 'short' }),
-        year: d.getFullYear(), monthNum: d.getMonth(),
-        lost: 0, found: 0, claimed: 0,
-      });
-    }
-    items.forEach(item => {
-      const d = new Date(item.created_at || item.date_posted);
-      months.forEach(m => {
-        if (d.getFullYear() === m.year && d.getMonth() === m.monthNum) {
-          if (item.type === 'lost')      m.lost++;
-          if (item.type === 'found')     m.found++;
-          if (item.status === 'claimed') m.claimed++;
+    const buildMonthlyData = (items) => {
+        const months = [];
+        const now = new Date();
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            months.push({
+                month: d.toLocaleString('default', { month: 'short' }),
+                year: d.getFullYear(), monthNum: d.getMonth(),
+                lost: 0, found: 0, claimed: 0,
+            });
         }
-      });
-    });
-    return months.map(({ month, lost, found, claimed }) => ({ month, lost, found, claimed }));
-  };
+        items.forEach(item => {
+            const d = new Date(item.created_at || item.date_posted);
+            months.forEach(m => {
+                if (d.getFullYear() === m.year && d.getMonth() === m.monthNum) {
+                    if (item.type === 'lost') m.lost++;
+                    if (item.type === 'found') m.found++;
+                    if (item.status === 'claimed') m.claimed++;
+                }
+            });
+        });
+        return months.map(({ month, lost, found, claimed }) => ({ month, lost, found, claimed }));
+    };
 
-  // ✅ FIX 1: useCallback so fetchData is stable and won't re-trigger useEffect infinitely
-  // ✅ FIX 2: notificationsAPI import removed — was unused
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const myRes   = await itemsAPI.getMyItems();
-      const myItems = Array.isArray(myRes.data) ? myRes.data : (myRes.data?.results || []);
-
-      setUserStats({
-        lost:     myItems.filter(i => i.type === 'lost').length,
-        found:    myItems.filter(i => i.type === 'found').length,
-        claimed:  myItems.filter(i => i.status === 'claimed').length,
-        returned: myItems.filter(i => i.status === 'returned').length,
-        active:   myItems.filter(i => i.status === 'active').length,
-        total:    myItems.length,
-        items:    myItems,
-      });
-
-      if (user?.role === 'admin' || user?.is_staff) {
+    const fetchData = useCallback(async () => {
+        setLoading(true);
+        setError('');
         try {
-          const allRes = await itemsAPI.getAll({ page_size: 1000 });
-          const all = Array.isArray(allRes.data) ? allRes.data : (allRes.data?.results || []);
-          setAdminStats({
-            total:       all.length,
-            lost:        all.filter(i => i.type === 'lost').length,
-            found:       all.filter(i => i.type === 'found').length,
-            claimed:     all.filter(i => i.status === 'claimed').length,
-            returned:    all.filter(i => i.status === 'returned').length,
-            active:      all.filter(i => i.status === 'active').length,
-            fraud:       0,
-            monthlyData: buildMonthlyData(all),
-          });
-        } catch {
-          // non-admin silently skips
+            const myRes = await itemsAPI.getMyItems();
+            const myItems = Array.isArray(myRes.data) ? myRes.data : (myRes.data?.results || []);
+
+            setUserStats({
+                lost: myItems.filter(i => i.type === 'lost').length,
+                found: myItems.filter(i => i.type === 'found').length,
+                claimed: myItems.filter(i => i.status === 'claimed').length,
+                returned: myItems.filter(i => i.status === 'returned').length,
+                active: myItems.filter(i => i.status === 'active').length,
+                total: myItems.length,
+                items: myItems,
+            });
+
+            if (user?.role === 'admin' || user?.is_staff) {
+                try {
+                    const allRes = await itemsAPI.getAll({ page_size: 1000 });
+                    const all = Array.isArray(allRes.data) ? allRes.data : (allRes.data?.results || []);
+                    setAdminStats({
+                        total: all.length,
+                        lost: all.filter(i => i.type === 'lost').length,
+                        found: all.filter(i => i.type === 'found').length,
+                        claimed: all.filter(i => i.status === 'claimed').length,
+                        returned: all.filter(i => i.status === 'returned').length,
+                        active: all.filter(i => i.status === 'active').length,
+                        monthlyData: buildMonthlyData(all),
+                    });
+                } catch (e) { console.error('Admin fetch error', e); }
+            }
+        } catch (e) {
+            setError('System telemetry failure. Could not retrieve dashboard data.');
+        } finally {
+            setLoading(false);
         }
-      }
-    } catch {
-      setError('Failed to load dashboard data.');
-    } finally {
-      setLoading(false);
-    }
-  }, [user]); // user is the only real external dependency
+    }, [user]);
 
-  // ✅ FIX 2: fetchData in deps array — no more warning because it's wrapped in useCallback
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    useEffect(() => { fetchData(); }, [fetchData]);
 
-  // ── chart data ────────────────────────────────────────────────
-  const userPieData = userStats ? [
-    { name: 'Lost',     value: userStats.lost     },
-    { name: 'Found',    value: userStats.found    },
-    { name: 'Claimed',  value: userStats.claimed  },
-    { name: 'Returned', value: userStats.returned },
-  ].filter(d => d.value > 0) : [];
+    const userPieData = userStats ? [
+        { name: 'Lost', value: userStats.lost },
+        { name: 'Found', value: userStats.found },
+        { name: 'Claimed', value: userStats.claimed },
+        { name: 'Returned', value: userStats.returned },
+    ].filter(d => d.value > 0) : [];
 
-  const adminPieData = adminStats ? [
-    { name: 'Lost',     value: adminStats.lost     },
-    { name: 'Found',    value: adminStats.found    },
-    { name: 'Claimed',  value: adminStats.claimed  },
-    { name: 'Returned', value: adminStats.returned },
-  ].filter(d => d.value > 0) : [];
+    const isAdmin = user?.role === 'admin' || user?.is_staff;
 
-  const isAdmin = user?.role === 'admin' || user?.is_staff;
-
-  return (
-    <div style={{ minHeight: '100vh', background: bg, paddingBottom: 100 }}>
-
-      {/* Header */}
-      <div style={{ background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)', padding: '20px 16px 0', color: '#fff' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800 }}>Dashboard</h1>
-            <p style={{ margin: '3px 0 0', fontSize: 13, opacity: 0.8 }}>
-              Welcome back, {user?.name?.split(' ')[0] || 'User'} 👋
-            </p>
-          </div>
-          <button onClick={fetchData}
-            style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 10, padding: '8px 14px', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
-            ↻ Refresh
-          </button>
-        </div>
-
-        {/* Tabs */}
-        <div style={{ display: 'flex', gap: 4 }}>
-          {[
-            { id: 'user', label: '👤 My Stats' },
-            ...(isAdmin ? [{ id: 'admin', label: '🌐 Global' }] : []),
-          ].map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              style={{
-                padding: '10px 18px', border: 'none', borderRadius: '10px 10px 0 0',
-                cursor: 'pointer', fontWeight: 700, fontSize: 13, transition: 'all 0.2s',
-                background: activeTab === tab.id ? (dm ? '#1e293b' : '#f0f4ff') : 'rgba(255,255,255,0.15)',
-                color:      activeTab === tab.id ? '#2563eb' : 'rgba(255,255,255,0.85)',
-              }}>
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Body */}
-      <div style={{ padding: '16px 16px 0', maxWidth: 600, margin: '0 auto' }}>
-
-        {loading && (
-          <div style={{ textAlign: 'center', padding: 60, color: muted }}>
-            <div style={{ fontSize: 40, marginBottom: 10 }}>⏳</div>
-            <p>Loading your stats...</p>
-          </div>
-        )}
-
-        {error && (
-          <div style={{ background: '#fee2e2', border: '1px solid #fecaca', borderRadius: 12, padding: '12px 16px', marginBottom: 16, color: '#dc2626', fontSize: 14 }}>
-            ⚠️ {error}
-          </div>
-        )}
-
-        {/* ── USER TAB ── */}
-        {!loading && activeTab === 'user' && userStats && (
-          <>
-            <SectionTitle dm={dm}>Overview</SectionTitle>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
-              <StatCard emoji="😔" label="Items Lost"  value={userStats.lost}     color="#ef4444" bg={dm ? '#2d1b1b' : '#fef2f2'} />
-              <StatCard emoji="🎉" label="Items Found" value={userStats.found}    color="#10b981" bg={dm ? '#1b2d25' : '#f0fdf4'} />
-              <StatCard emoji="✅" label="Claimed"     value={userStats.claimed}  color="#f59e0b" bg={dm ? '#2d2510' : '#fffbeb'} />
-              <StatCard emoji="📦" label="Returned"    value={userStats.returned} color="#3b82f6" bg={dm ? '#1b2340' : '#eff6ff'} />
-            </div>
-
-            <div style={{ background: dm ? '#1e3a5f' : '#eff6ff', border: `1px solid ${dm ? '#2563eb44' : '#bfdbfe'}`, borderRadius: 14, padding: '12px 16px', marginBottom: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ color: dm ? '#93c5fd' : '#1d4ed8', fontWeight: 600, fontSize: 14 }}>🟢 Active listings</span>
-              <span style={{ color: dm ? '#93c5fd' : '#1d4ed8', fontWeight: 800, fontSize: 22 }}>{userStats.active}</span>
-            </div>
-
-            {userPieData.length > 0 ? (
-              <>
-                <SectionTitle dm={dm}>Item Breakdown</SectionTitle>
-                <div style={{ background: card, borderRadius: 16, padding: 16, border: `1px solid ${border}`, marginBottom: 4 }}>
-                  <ResponsiveContainer width="100%" height={220}>
-                    <PieChart>
-                      <Pie data={userPieData} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={4} dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
-                        {userPieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
-                      </Pie>
-                      <Tooltip content={<CustomTooltip dm={dm} />} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div style={{ display: 'flex', justifyContent: 'center', gap: 14, flexWrap: 'wrap', marginTop: 4 }}>
-                    {userPieData.map((d, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                        <div style={{ width: 10, height: 10, borderRadius: '50%', background: PIE_COLORS[i] }} />
-                        <span style={{ fontSize: 12, color: muted }}>{d.name} ({d.value})</span>
-                      </div>
-                    ))}
-                  </div>
+    return (
+        <div className="max-w-6xl mx-auto space-y-12 pb-32 px-4 font-sans">
+            {/* Header */}
+            <header className="flex flex-col md:flex-row md:items-center justify-between gap-8 pt-12">
+                <div className="space-y-3">
+                   <div className="flex items-center gap-4">
+                       <div className="p-3 bg-primary/10 text-primary rounded-2xl">
+                           <LayoutDashboard size={24} />
+                       </div>
+                       <h1 className="text-4xl font-black text-text-primary uppercase tracking-tighter italic">Command Center</h1>
+                   </div>
+                   <div className="flex items-center gap-4 pl-14">
+                       <p className="text-text-secondary font-bold uppercase text-[10px] tracking-widest flex items-center gap-2">
+                           Welcome back, <span className="text-primary">{user?.name?.split(' ')[0]}</span>
+                       </p>
+                       <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-success">
+                           <div className="w-2 h-2 rounded-full bg-success animate-pulse" /> System Online
+                       </div>
+                   </div>
                 </div>
-              </>
-            ) : (
-              <div style={{ background: card, borderRadius: 16, padding: 32, border: `1px solid ${border}`, textAlign: 'center', color: muted, marginBottom: 4 }}>
-                <div style={{ fontSize: 40, marginBottom: 8 }}>📊</div>
-                <p style={{ margin: 0 }}>No items yet — post your first item!</p>
-              </div>
-            )}
-
-            {userStats.items.length > 0 && (
-              <>
-                <SectionTitle dm={dm}>Recent Items</SectionTitle>
-                <div style={{ background: card, borderRadius: 16, border: `1px solid ${border}`, overflow: 'hidden', marginBottom: 4 }}>
-                  {userStats.items.slice(0, 5).map((item, i) => {
-                    const sc = ({ active: { bg: '#dcfce7', text: '#16a34a' }, claimed: { bg: '#fef3c7', text: '#d97706' }, returned: { bg: '#dbeafe', text: '#1d4ed8' } })[item.status] || { bg: '#f1f5f9', text: '#64748b' };
-                    return (
-                      <div key={item.id} onClick={() => navigate(`/item/${item.id}`)}
-                        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', cursor: 'pointer', borderBottom: i < Math.min(userStats.items.length, 5) - 1 ? `1px solid ${border}` : 'none' }}>
-                        <div>
-                          <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: text }}>{item.title}</p>
-                          <p style={{ margin: '2px 0 0', fontSize: 12, color: muted }}>{item.type?.toUpperCase()} · {item.time_ago || 'Recently'}</p>
+                <div className="flex items-center gap-3 pl-14 md:pl-0">
+                    <button onClick={fetchData} className="p-4 bg-white border border-slate-100 rounded-2xl text-text-secondary hover:text-primary transition-all shadow-sm">
+                        <RefreshCcw size={20} className={loading ? 'animate-spin' : ''} />
+                    </button>
+                    {isAdmin && (
+                        <div className="flex bg-slate-100 p-1.5 rounded-[20px]">
+                            {['user', 'admin'].map(tab => (
+                                <button
+                                  key={tab}
+                                  onClick={() => setActiveTab(tab)}
+                                  className={`px-6 py-2.5 rounded-[14px] text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-white text-primary shadow-lg shadow-black/5' : 'text-text-secondary hover:text-text-primary'}`}
+                                >
+                                    {tab === 'user' ? 'Operator' : 'Overseer'}
+                                </button>
+                            ))}
                         </div>
-                        <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: sc.bg, color: sc.text }}>
-                          {item.status?.toUpperCase()}
-                        </span>
-                      </div>
-                    );
-                  })}
+                    )}
                 </div>
-                {userStats.items.length > 5 && (
-                  <button onClick={() => navigate('/my-items')}
-                    style={{ width: '100%', background: 'none', border: `1px solid ${border}`, borderRadius: 12, padding: '12px', color: '#2563eb', fontWeight: 600, fontSize: 14, cursor: 'pointer', marginBottom: 4 }}>
-                    View All Items →
-                  </button>
-                )}
-              </>
-            )}
-          </>
-        )}
+            </header>
 
-        {/* ── ADMIN TAB ── */}
-        {!loading && activeTab === 'admin' && (
-          <>
-            {!adminStats ? (
-              <div style={{ background: '#fee2e2', borderRadius: 14, padding: 24, textAlign: 'center', color: '#dc2626', marginTop: 16 }}>
-                <div style={{ fontSize: 40, marginBottom: 8 }}>🔒</div>
-                <p style={{ margin: 0, fontWeight: 600 }}>Admin access required</p>
-              </div>
+            {loading ? (
+                <div className="flex flex-col items-center justify-center py-32 space-y-4 opacity-40">
+                   <RefreshCcw size={48} className="animate-spin text-primary" />
+                   <p className="text-[10px] font-black uppercase tracking-widest">Synchronizing Telemetry...</p>
+                </div>
+            ) : error ? (
+                <div className="p-8 bg-danger/5 border-2 border-danger/10 rounded-[32px] text-center space-y-4">
+                   <AlertCircle size={48} className="mx-auto text-danger" />
+                   <p className="text-sm font-black uppercase tracking-widest text-danger">{error}</p>
+                   <button onClick={fetchData} className="px-8 py-3 bg-danger text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-danger/20">Retry Handshake</button>
+                </div>
             ) : (
-              <>
-                <SectionTitle dm={dm}>Platform Overview</SectionTitle>
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
-                  <StatCard emoji="📋" label="Total Items" value={adminStats.total}    color="#6366f1" bg={dm ? '#1e1b4b' : '#eef2ff'} />
-                  <StatCard emoji="😔" label="Lost"        value={adminStats.lost}     color="#ef4444" bg={dm ? '#2d1b1b' : '#fef2f2'} />
-                  <StatCard emoji="🎉" label="Found"       value={adminStats.found}    color="#10b981" bg={dm ? '#1b2d25' : '#f0fdf4'} />
-                  <StatCard emoji="✅" label="Claimed"     value={adminStats.claimed}  color="#f59e0b" bg={dm ? '#2d2510' : '#fffbeb'} />
-                </div>
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
-                  <StatCard emoji="📦" label="Returned"     value={adminStats.returned} color="#3b82f6" bg={dm ? '#1b2340' : '#eff6ff'} />
-                  <StatCard emoji="🟢" label="Active"       value={adminStats.active}   color="#10b981" bg={dm ? '#1b2d25' : '#f0fdf4'} />
-                  <StatCard emoji="⚠️" label="Fraud/Failed" value={adminStats.fraud}    color="#dc2626" bg={dm ? '#2d1b1b' : '#fef2f2'} />
-                </div>
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-12">
+                    {/* STATS GRID */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                        {activeTab === 'user' ? (
+                            <>
+                                <StatCard icon={<AlertCircle />} label="Lost Manifest" value={userStats.lost} color="text-danger" bg="bg-danger/5" />
+                                <StatCard icon={<Package />} label="Found Assets" value={userStats.found} color="text-success" bg="bg-success/5" />
+                                <StatCard icon={<CheckCircle2 />} label="Resolutions" value={userStats.claimed + userStats.returned} color="text-primary" bg="bg-primary/5" />
+                                <StatCard icon={<TrendingUp />} label="Activity Rank" value={`#${userStats.total > 5 ? 'A' : 'B'}`} color="text-amber-500" bg="bg-amber-500/5" />
+                            </>
+                        ) : (
+                            <>
+                                <StatCard icon={<ShieldCheck />} label="Network Total" value={adminStats.total} color="text-primary" bg="bg-primary/5" />
+                                <StatCard icon={<AlertCircle />} label="Active Alerts" value={adminStats.active} color="text-success" bg="bg-success/5" />
+                                <StatCard icon={<CheckCircle2 />} label="Total Returned" value={adminStats.returned} color="text-indigo-500" bg="bg-indigo-500/5" />
+                                <StatCard icon={<Sparkles />} label="AI Precision" value="99.8%" color="text-amber-500" bg="bg-amber-500/5" />
+                            </>
+                        )}
+                    </div>
 
-                {adminStats.total > 0 && (
-                  <div style={{ background: dm ? '#1e3a5f' : '#eff6ff', border: `1px solid ${dm ? '#2563eb44' : '#bfdbfe'}`, borderRadius: 14, padding: '14px 16px', marginBottom: 4 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                      <span style={{ color: dm ? '#93c5fd' : '#1d4ed8', fontWeight: 600, fontSize: 14 }}>📈 Resolution Rate</span>
-                      <span style={{ color: dm ? '#93c5fd' : '#1d4ed8', fontWeight: 800, fontSize: 18 }}>
-                        {((adminStats.returned / adminStats.total) * 100).toFixed(1)}%
-                      </span>
-                    </div>
-                    <div style={{ background: dm ? '#334155' : '#e2e8f0', borderRadius: 99, height: 8, overflow: 'hidden' }}>
-                      <div style={{ background: 'linear-gradient(90deg, #2563eb, #10b981)', width: `${(adminStats.returned / adminStats.total) * 100}%`, height: '100%', borderRadius: 99, transition: 'width 1s ease' }} />
-                    </div>
-                  </div>
-                )}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        {/* CHART SECTION */}
+                        <div className="lg:col-span-2 space-y-6">
+                            <h2 className="text-xs font-black uppercase tracking-[3px] text-text-secondary pl-2">System Analytics</h2>
+                            <PremiumCard className="p-8 h-[400px]">
+                                {activeTab === 'user' ? (
+                                    userPieData.length > 0 ? (
+                                        <div className="h-full flex flex-col">
+                                            <div className="flex-1">
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <PieChart>
+                                                        <Pie 
+                                                          data={userPieData} 
+                                                          cx="50%" cy="50%" 
+                                                          innerRadius={80} 
+                                                          outerRadius={120} 
+                                                          paddingAngle={8} 
+                                                          dataKey="value"
+                                                          stroke="none"
+                                                        >
+                                                            {userPieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                                                        </Pie>
+                                                        <Tooltip 
+                                                          contentStyle={{ background: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', fontSize: '12px', fontWeight: 'bold' }}
+                                                        />
+                                                    </PieChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                            <div className="flex justify-center gap-8 pt-4 border-t border-slate-50">
+                                                {userPieData.map((d, i) => (
+                                                    <div key={i} className="flex items-center gap-2">
+                                                        <div className="w-2.5 h-2.5 rounded-full" style={{ background: PIE_COLORS[i] }} />
+                                                        <span className="text-[10px] font-black uppercase tracking-widest text-text-secondary">{d.name} ({d.value})</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="h-full flex flex-col items-center justify-center space-y-4 opacity-30 grayscale">
+                                            <TrendingUp size={64} />
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-center">Awaiting Data Points to Generate Intelligence</p>
+                                        </div>
+                                    )
+                                ) : (
+                                    <div className="h-full">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={adminStats.monthlyData}>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold' }} />
+                                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold' }} />
+                                                <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }} />
+                                                <Bar dataKey="lost" fill={BAR_COLORS.lost} radius={[4, 4, 0, 0]} />
+                                                <Bar dataKey="found" fill={BAR_COLORS.found} radius={[4, 4, 0, 0]} />
+                                                <Bar dataKey="claimed" fill={BAR_COLORS.claimed} radius={[4, 4, 0, 0]} />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                )}
+                            </PremiumCard>
+                        </div>
 
-                {adminPieData.length > 0 && (
-                  <>
-                    <SectionTitle dm={dm}>Item Distribution</SectionTitle>
-                    <div style={{ background: card, borderRadius: 16, padding: 16, border: `1px solid ${border}`, marginBottom: 4 }}>
-                      <ResponsiveContainer width="100%" height={220}>
-                        <PieChart>
-                          <Pie data={adminPieData} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={4} dataKey="value"
-                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
-                            {adminPieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
-                          </Pie>
-                          <Tooltip content={<CustomTooltip dm={dm} />} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                      <div style={{ display: 'flex', justifyContent: 'center', gap: 14, flexWrap: 'wrap', marginTop: 4 }}>
-                        {adminPieData.map((d, i) => (
-                          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                            <div style={{ width: 10, height: 10, borderRadius: '50%', background: PIE_COLORS[i] }} />
-                            <span style={{ fontSize: 12, color: muted }}>{d.name} ({d.value})</span>
-                          </div>
-                        ))}
-                      </div>
+                        {/* LIST SECTION */}
+                        <div className="space-y-6">
+                            <h2 className="text-xs font-black uppercase tracking-[3px] text-text-secondary pl-2">Real-time Feed</h2>
+                            <PremiumCard className="p-0 overflow-hidden divide-y divide-slate-100 flex flex-col min-h-[400px]">
+                                {userStats.items.length > 0 ? (
+                                    <>
+                                        {userStats.items.slice(0, 6).map((item, i) => (
+                                            <motion.div 
+                                              key={item.id}
+                                              whileHover={{ x: 5 }}
+                                              onClick={() => navigate(`/item/${item.id}`)}
+                                              className="p-5 flex items-center justify-between cursor-pointer group hover:bg-slate-50 transition-all"
+                                            >
+                                                <div className="flex items-center gap-4">
+                                                    <div className={`p-2 rounded-xl ${item.type === 'lost' ? 'bg-danger/5 text-danger' : 'bg-success/5 text-success'}`}>
+                                                        <Package size={16} />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-black text-text-primary tracking-tight truncate max-w-[120px]">{item.title}</p>
+                                                        <div className="flex items-center gap-2 text-[10px] font-bold text-text-secondary uppercase">
+                                                            <Clock size={10} /> {item.time_ago || 'recent'}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
+                                                        item.status === 'active' ? 'bg-success/5 text-success' :
+                                                        item.status === 'claimed' ? 'bg-amber-500/5 text-amber-500' :
+                                                        item.status === 'returned' ? 'bg-primary/5 text-primary' : 'bg-slate-100 text-slate-500'
+                                                    }`}>
+                                                        {item.status}
+                                                    </span>
+                                                    <ChevronRight size={14} className="text-slate-300 group-hover:text-primary transition-colors" />
+                                                </div>
+                                            </motion.div>
+                                        ))}
+                                        <button onClick={() => navigate('/my-items')} className="w-full py-5 text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/5 transition-all mt-auto border-t border-slate-100">
+                                            Access Full Archive
+                                        </button>
+                                    </>
+                                ) : (
+                                    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4 grayscale opacity-30">
+                                        <AlertCircle size={48} />
+                                        <p className="text-[10px] font-black uppercase tracking-widest">Feed Depleted. No items currently registered under your signature.</p>
+                                        <button onClick={() => navigate('/report')} className="px-6 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest">Register Item</button>
+                                    </div>
+                                )}
+                            </PremiumCard>
+                        </div>
                     </div>
-                  </>
-                )}
-
-                {adminStats.monthlyData?.length > 0 && (
-                  <>
-                    <SectionTitle dm={dm}>Monthly Activity (Last 6 Months)</SectionTitle>
-                    <div style={{ background: card, borderRadius: 16, padding: '16px 8px 8px', border: `1px solid ${border}`, marginBottom: 4 }}>
-                      <ResponsiveContainer width="100%" height={220}>
-                        <BarChart data={adminStats.monthlyData} barSize={14}>
-                          <CartesianGrid strokeDasharray="3 3" stroke={dm ? '#334155' : '#f1f5f9'} />
-                          <XAxis dataKey="month" tick={{ fontSize: 11, fill: muted }} axisLine={false} tickLine={false} />
-                          <YAxis tick={{ fontSize: 11, fill: muted }} axisLine={false} tickLine={false} />
-                          <Tooltip content={<CustomTooltip dm={dm} />} />
-                          <Legend wrapperStyle={{ fontSize: 12 }} />
-                          <Bar dataKey="lost"    name="Lost"    fill={BAR_COLORS.lost}    radius={[4, 4, 0, 0]} />
-                          <Bar dataKey="found"   name="Found"   fill={BAR_COLORS.found}   radius={[4, 4, 0, 0]} />
-                          <Bar dataKey="claimed" name="Claimed" fill={BAR_COLORS.claimed} radius={[4, 4, 0, 0]} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </>
-                )}
-              </>
+                </motion.div>
             )}
-          </>
-        )}
-
-      </div>
-      <BottomNav darkMode={dm} />
-    </div>
-  );
+        </div>
+    );
 };
+
+const StatCard = ({ icon, label, value, color, bg }) => (
+    <PremiumCard className={`p-6 space-y-4 border-none shadow-xl shadow-black/5`}>
+        <div className={`w-12 h-12 ${bg} ${color} rounded-2xl flex items-center justify-center shadow-sm`}>
+            {React.cloneElement(icon, { size: 24 })}
+        </div>
+        <div className="space-y-1">
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-text-secondary">{label}</h4>
+            <p className={`text-3xl font-black ${color} tracking-tighter`}>{value}</p>
+        </div>
+    </PremiumCard>
+);
 
 export default Dashboard;

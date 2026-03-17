@@ -1,0 +1,23 @@
+Column                    Type                 Nullable   Default
+----------------------------------------------------------------------
+id                        bigint               NO         None
+questions                 text                 NO         None
+answers                   text                 NO         None
+ai_evaluation             character varying    NO         None
+score                     integer              NO         None
+score_details             text                 NO         None
+status                    character varying    NO         None
+current_q                 integer              NO         None
+created_at                timestamp with time zone NO         None
+completed_at              timestamp with time zone YES        None
+claimant_id               bigint               NO         None
+item_id                   bigint               NO         None
+ai_score                  integer              YES        0
+ai_result_label           character varying    YES        None
+ai_result                 character varying    YES        'PENDING'::character varying
+current_question_index    integer              YES        0
+ai_questions              jsonb                YES        '[]'::jsonb
+user_answers              jsonb                YES        '{}'::jsonb
+claim_code                character varying    YES        None
+attempts                  integer              YES        0
+approver_id               integer              YES        None

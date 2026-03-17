@@ -32,89 +32,71 @@ import CategoryManager from './pages/admin/CategoryManager';
 import AdminRequestForm from './pages/admin/AdminRequestForm';
 import AdminRequestManager from './pages/admin/AdminRequestManager';
 import AuthLanding from './pages/AuthLanding';
+import Leaderboard from './pages/Leaderboard';
+import AIVerification from './pages/AIVerification';
+import ResolutionManager from './pages/admin/ResolutionManager';
+import CollegeInfo from './pages/admin/CollegeInfo';
+
+import MainLayout from './components/layout/MainLayout';
 
 function AppRoutes() {
   const { darkMode, setDarkMode } = useTheme();
 
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <div className="app-container">
-        <Routes>
-          {/* Public */}
-          <Route path="/login" element={<Login darkMode={darkMode} />} />
-          <Route path="/signup" element={<Signup darkMode={darkMode} />} />
-          <Route path="/admin/request" element={<AdminRequestForm darkMode={darkMode} />} />
-          <Route path="/forgot-password" element={<ForgotPassword darkMode={darkMode} />} />
-          <Route path="/reset-password" element={<ResetPassword darkMode={darkMode} />} />
-          <Route path="/terms" element={<TermsPage darkMode={darkMode} />} />  {/* ← NEW */}
-          <Route path="/privacy" element={<TermsPage darkMode={darkMode} />} />  {/* ← NEW */}
-          <Route path="/dashboard" element={<Dashboard darkMode={darkMode} />} />
-          <Route path="/welcome" element={<AuthLanding darkMode={darkMode} />} />
+      <Routes>
+        {/* Public - No Layout */}
+        <Route path="/login" element={<Login darkMode={darkMode} />} />
+        <Route path="/signup" element={<Signup darkMode={darkMode} />} />
+        <Route path="/admin/request" element={<AdminRequestForm darkMode={darkMode} />} />
+        <Route path="/forgot-password" element={<ForgotPassword darkMode={darkMode} />} />
+        <Route path="/reset-password" element={<ResetPassword darkMode={darkMode} />} />
+        <Route path="/terms" element={<TermsPage darkMode={darkMode} />} />
+        <Route path="/privacy" element={<TermsPage darkMode={darkMode} />} />
+        <Route path="/dashboard" element={<Dashboard darkMode={darkMode} />} />
+        <Route path="/welcome" element={<AuthLanding darkMode={darkMode} />} />
 
-          {/* Admin Routes */}
-          <Route path="/admin" element={
-            <ProtectedRoute><AdminDashboard darkMode={darkMode} /></ProtectedRoute>
-          } />
-          <Route path="/admin-dashboard" element={
-            <ProtectedRoute><AdminDashboard darkMode={darkMode} /></ProtectedRoute>
-          } />
-          <Route path="/super-admin-dashboard" element={
-            <ProtectedRoute><AdminDashboard darkMode={darkMode} /></ProtectedRoute>
-          } />
-          <Route path="/admin/colleges" element={
-            <ProtectedRoute><CollegeManager darkMode={darkMode} /></ProtectedRoute>
-          } />
-          <Route path="/admin/users" element={
-            <ProtectedRoute><UserManager darkMode={darkMode} /></ProtectedRoute>
-          } />
-          <Route path="/admin/blocks" element={
-            <ProtectedRoute><BlockManager darkMode={darkMode} /></ProtectedRoute>
-          } />
-          <Route path="/admin/categories" element={
-            <ProtectedRoute><CategoryManager darkMode={darkMode} /></ProtectedRoute>
-          } />
-          <Route path="/admin/requests" element={
-            <ProtectedRoute><AdminRequestManager darkMode={darkMode} /></ProtectedRoute>
-          } />
+        {/* Protected & Admin - With MainLayout */}
+        <Route element={
+          <ProtectedRoute>
+            <MainLayout>
+              <Routes>
+                {/* Admin Routes */}
+                <Route path="/admin" element={<AdminDashboard darkMode={darkMode} />} />
+                <Route path="/admin-dashboard" element={<AdminDashboard darkMode={darkMode} />} />
+                <Route path="/super-admin-dashboard" element={<AdminDashboard darkMode={darkMode} />} />
+                <Route path="/admin/super" element={<AdminDashboard darkMode={darkMode} />} />
+                <Route path="/admin/colleges" element={<CollegeManager darkMode={darkMode} />} />
+                <Route path="/admin/users" element={<UserManager darkMode={darkMode} />} />
+                <Route path="/admin/blocks" element={<BlockManager darkMode={darkMode} />} />
+                <Route path="/admin/categories" element={<CategoryManager darkMode={darkMode} />} />
+                <Route path="/admin/requests" element={<AdminRequestManager darkMode={darkMode} />} />
+                <Route path="/admin/resolutions" element={<ResolutionManager darkMode={darkMode} />} />
+                <Route path="/admin/college-info" element={<CollegeInfo darkMode={darkMode} />} />
 
-          {/* Protected */}
-          <Route path="/" element={
-            <ProtectedRoute><Home darkMode={darkMode} setDarkMode={setDarkMode} /></ProtectedRoute>
-          } />
-          <Route path="/browse" element={
-            <ProtectedRoute><BrowseItems darkMode={darkMode} /></ProtectedRoute>
-          } />
-          <Route path="/report" element={
-            <ProtectedRoute><ReportItem darkMode={darkMode} /></ProtectedRoute>
-          } />
-          <Route path="/item/:id" element={
-            <ProtectedRoute><ItemDetails darkMode={darkMode} /></ProtectedRoute>
-          } />
-          <Route path="/filters" element={
-            <ProtectedRoute><SearchFilters darkMode={darkMode} /></ProtectedRoute>
-          } />
-          <Route path="/profile" element={
-            <ProtectedRoute><Profile darkMode={darkMode} /></ProtectedRoute>
-          } />
-          <Route path="/my-items" element={
-            <ProtectedRoute><MyItems darkMode={darkMode} /></ProtectedRoute>
-          } />
-          <Route path="/notifications" element={
-            <ProtectedRoute><Notifications darkMode={darkMode} /></ProtectedRoute>
-          } />
-          <Route path="/settings" element={
-            <ProtectedRoute><Settings darkMode={darkMode} setDarkMode={setDarkMode} /></ProtectedRoute>
-          } />
-          <Route path="/chat" element={
-            <ProtectedRoute><Chat darkMode={darkMode} /></ProtectedRoute>
-          } />
-          <Route path="/chat/:roomId" element={
-            <ProtectedRoute><ChatRoom darkMode={darkMode} /></ProtectedRoute>
-          } />
+                {/* Main Routes */}
+                <Route path="/" element={<Home darkMode={darkMode} setDarkMode={setDarkMode} />} />
+                <Route path="/browse" element={<BrowseItems darkMode={darkMode} />} />
+                <Route path="/report" element={<ReportItem darkMode={darkMode} />} />
+                <Route path="/item/:id" element={<ItemDetails darkMode={darkMode} />} />
+                <Route path="/filters" element={<SearchFilters darkMode={darkMode} />} />
+                <Route path="/profile" element={<Profile darkMode={darkMode} />} />
+                <Route path="/my-items" element={<MyItems darkMode={darkMode} />} />
+                <Route path="/notifications" element={<Notifications darkMode={darkMode} />} />
+                <Route path="/settings" element={<Settings darkMode={darkMode} setDarkMode={setDarkMode} />} />
+                <Route path="/chat" element={<Chat darkMode={darkMode} />} />
+                <Route path="/chat/:roomId" element={<ChatRoom darkMode={darkMode} />} />
+                <Route path="/leaderboard" element={<Leaderboard darkMode={darkMode} />} />
+                <Route path="/ai-verification/:id" element={<AIVerification darkMode={darkMode} />} />
+              </Routes>
+            </MainLayout>
+          </ProtectedRoute>
+        }>
+          <Route path="/*" element={<div />} /> {/* Outlet placeholder */}
+        </Route>
 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </div>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </BrowserRouter>
   );
 }

@@ -1,126 +1,98 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useNotifications } from '../context/NotificationContext';
-import { useAuth } from '../context/AuthContext';
+import { 
+    LayoutDashboard, 
+    Search, 
+    PlusCircle, 
+    MessageSquare, 
+    User
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const BottomNav = ({ darkMode }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { unreadCount, unreadChatCount } = useNotifications();
-  const dm = darkMode;
+const BottomNav = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { unreadChatCount } = useNotifications();
+    
+    
 
-  const { user } = useAuth();
-  const tabs = [
-    { path: '/', icon: '🏠', label: 'Home' },
-    { path: '/browse', icon: '🔍', label: 'Browse' },
-    { path: '/report', icon: '➕', label: 'Report', special: true },
-    { path: '/chat', icon: '💬', label: 'Chat' },
-    { path: '/profile', icon: '👤', label: 'Profile' },
-    {
-      path: (user?.role === 'student' || !user?.role) ? '/dashboard' : '/admin',
-      icon: '📊',
-      label: 'Stats'
-    }
-  ];
+    const tabs = [
+        { path: '/', icon: LayoutDashboard, label: 'Home' },
+        { path: '/browse', icon: Search, label: 'Browse' },
+        { path: '/report', icon: PlusCircle, label: 'Report', special: true },
+        { path: '/chat', icon: MessageSquare, label: 'Chat', count: unreadChatCount },
+        { path: '/profile', icon: User, label: 'Profile' },
+    ];
 
-  const isActive = (path) => {
-    if (path === '/') return location.pathname === '/';
-    return location.pathname.startsWith(path);
-  };
+    const isActive = (path) => {
+        if (path === '/') return location.pathname === '/';
+        return location.pathname.startsWith(path);
+    };
 
-  return (
-    <div style={{
-      position: 'fixed', bottom: 0, left: 0, right: 0,
-      background: dm ? '#1e293b' : '#ffffff',
-      borderTop: `1px solid ${dm ? '#334155' : '#e2e8f0'}`,
-      display: 'flex', justifyContent: 'space-around', alignItems: 'center',
-      paddingBottom: 'env(safe-area-inset-bottom, 4px)',
-      height: 54,
-      zIndex: 100,
-      boxShadow: '0 -1px 8px rgba(0,0,0,0.07)',
-    }}>
-      {tabs.map(tab => {
-        const active = isActive(tab.path);
-        if (tab.special) {
-          return (
-            <button
-              key={tab.path}
-              onClick={() => navigate(tab.path)}
-              style={{
-                width: 42, height: 42, borderRadius: '50%',
-                background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
-                border: 'none', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 18, boxShadow: '0 2px 8px rgba(59,130,246,0.4)',
-              }}
-            >
-              ➕
-            </button>
-          );
-        }
-        return (
-          <button
-            key={tab.path}
-            onClick={() => navigate(tab.path)}
-            style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center',
-              justifyContent: 'center', gap: 2,
-              background: 'none', border: 'none', cursor: 'pointer',
-              padding: '4px 10px', minWidth: 48,
-              position: 'relative',
-            }}
-          >
-            <div style={{ position: 'relative' }}>
-              <span style={{ fontSize: 18, lineHeight: 1 }}>{tab.icon}</span>
+    return (
+        <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-[420px] h-16 glass-effect bg-white/80 border border-white/40 rounded-[28px] shadow-2xl z-50 flex items-center justify-around px-3">
+            {tabs.map((tab) => {
+                const active = isActive(tab.path);
+                
+                if (tab.special) {
+                    return (
+                        <motion.button
+                            key={tab.path}
+                            whileHover={{ scale: 1.1, rotate: 90 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => navigate(tab.path)}
+                            className="w-12 h-12 rounded-2xl bg-primary-gradient text-white flex items-center justify-center shadow-lg shadow-primary/30 -mt-2 transition-all"
+                        >
+                            <PlusCircle size={24} strokeWidth={3} />
+                        </motion.button>
+                    );
+                }
 
-              {/* Overlays for Badges */}
-              {tab.label === 'Chat' && unreadChatCount > 0 && (
-                <div style={{
-                  position: 'absolute', top: -5, right: -8,
-                  background: '#ef4444', color: 'white',
-                  fontSize: '10px', fontWeight: 'bold',
-                  minWidth: '16px', height: '16px', borderRadius: '8px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  padding: '0 4px', border: `2px solid ${dm ? '#1e293b' : '#ffffff'}`
-                }}>
-                  {unreadChatCount}
-                </div>
-              )}
-
-              {tab.label === 'Stats' && unreadCount > 0 && (
-                <div style={{
-                  position: 'absolute', top: -5, right: -8,
-                  background: '#ef4444', color: 'white',
-                  fontSize: '10px', fontWeight: 'bold',
-                  minWidth: '16px', height: '16px', borderRadius: '8px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  padding: '0 4px', border: `2px solid ${dm ? '#1e293b' : '#ffffff'}`
-                }}>
-                  {unreadCount}
-                </div>
-              )}
-            </div>
-
-            <span style={{
-              fontSize: 9, fontWeight: active ? 700 : 500,
-              color: active ? '#3b82f6' : (dm ? '#64748b' : '#94a3b8'),
-              lineHeight: 1,
-            }}>
-              {tab.label}
-            </span>
-            {active && (
-              <div style={{
-                position: 'absolute', bottom: 0, left: '50%',
-                transform: 'translateX(-50%)',
-                width: 16, height: 2, borderRadius: 2,
-                background: '#3b82f6',
-              }} />
-            )}
-          </button>
-        );
-      })}
-    </div>
-  );
+                return (
+                    <button
+                        key={tab.path}
+                        onClick={() => navigate(tab.path)}
+                        className="relative flex flex-col items-center justify-center w-12 h-12 transition-all duration-300"
+                    >
+                        <AnimatePresence>
+                            {active && (
+                                <motion.div 
+                                    layoutId="bottom-nav-active"
+                                    className="absolute inset-x-0 inset-y-0 bg-primary/10 rounded-xl"
+                                    transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                                />
+                            )}
+                        </AnimatePresence>
+                        
+                        <div className="relative">
+                            <tab.icon 
+                                size={20} 
+                                strokeWidth={active ? 2.5 : 2}
+                                className={`transition-colors duration-300 ${active ? 'text-primary' : 'text-text-secondary'}`} 
+                            />
+                            
+                            {tab.count > 0 && (
+                                <span className="absolute -top-1 -right-1.5 w-4 h-4 bg-danger text-white text-[8px] font-black flex items-center justify-center rounded-full ring-2 ring-white">
+                                    {tab.count > 9 ? '9+' : tab.count}
+                                </span>
+                            )}
+                        </div>
+                        
+                        {active && (
+                            <motion.span 
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="absolute -bottom-1.5 text-[8px] font-black uppercase tracking-tighter text-primary"
+                            >
+                                {tab.label}
+                            </motion.span>
+                        )}
+                    </button>
+                );
+            })}
+        </nav>
+    );
 };
 
 export default BottomNav;

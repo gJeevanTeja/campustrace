@@ -8,8 +8,9 @@ const WS_BASE = `ws://${API_IP}:8000`;
 const api = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 15000,
+  timeout: 60000,
 });
+console.log("Axios initialized with timeout:", api.defaults.timeout);
 
 // ── Attach JWT token & Handle FormData headers ──────────────────────
 api.interceptors.request.use(
@@ -46,8 +47,13 @@ api.interceptors.response.use(
     if (!error.response) return Promise.reject(error);
 
     const original = error.config;
+    const isAuthRequest = original.url.includes('auth/login/') || 
+                         original.url.includes('auth/register/') || 
+                         original.url.includes('auth/verify-otp/') ||
+                         original.url.includes('auth/token/refresh/');
 
-    if (error.response.status === 401 && !original._retry) {
+    if (error.response.status === 401 && !original._retry && !isAuthRequest) {
+      console.log("Interceptor: 401 detected on non-auth request:", original.url);
       if (isRefreshing) {
         // Queue the request until refresh completes
         return new Promise((resolve, reject) => {
@@ -109,6 +115,7 @@ export const authAPI = {
   googleAuth: (data) => api.post('auth/google/', data),
   getColleges: () => api.get('admin/manage/'),
   checkUsername: (username) => api.get(`auth/check-username/?username=${username}`),
+  getLeaderboard: () => api.get('auth/leaderboard/'),
 };
 
 export const adminRequestAPI = {
@@ -131,6 +138,8 @@ export const itemsAPI = {
       if (v === undefined || v === null) return;
       if (k === 'photos' && Array.isArray(v)) {
         v.forEach(p => form.append('photos', p));
+      } else if (typeof v === 'object' && !(v instanceof File) && !(v instanceof Blob)) {
+        form.append(k, JSON.stringify(v));
       } else {
         form.append(k, v);
       }
@@ -146,6 +155,9 @@ export const itemsAPI = {
     photos.forEach(p => form.append('photos', p));
     return api.post(`items/${id}/photos/`, form);
   },
+  generateElectronicQuestions: (formData) => api.post('items/generate-questions/', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
   verifyClaim: (id, answers) => api.post(`items/${id}/verify-claim/`, { answers }),
   confirmReturn: (itemId, claimCode) => api.post(`items/${itemId}/confirm-return/`, { claim_code: claimCode }),
   approveClaim: (claimId) => api.post(`items/claim/${claimId}/approve/`),
@@ -204,29 +216,40 @@ export const chatAPI = {
   }),
 };
 
+// ── Colleges (Global) ─────────────────────────────────────────────
+export const collegesAPI = {
+  getCategories: () => api.get('categories/'),
+  getBlocks: () => api.get('blocks/'),
+};
+
 // ── Admin ─────────────────────────────────────────────────────────
 export const adminAPI = {
   // Analytics
-  getAnalytics: () => api.get('analytics/college/'),
+  getAnalytics: () => api.get('admin/dashboard/'),
   getGlobalAnalytics: () => api.get('analytics/global/'),
+  getItemReports: (params) => api.get('admin/item-reports/', { params }),
   exportAnalytics: (format) => api.get(`analytics/export/?format=${format}`, { responseType: 'blob' }),
+  exportCSV: (params) => api.get('admin/export/csv/', { params, responseType: 'blob' }),
+  exportExcel: (params) => api.get('admin/export/excel/', { params, responseType: 'blob' }),
+  exportPDF: (params) => api.get('admin/export/pdf/', { params, responseType: 'blob' }),
 
   // Colleges (Super Admin)
   getColleges: () => api.get('admin/manage/'),
+  getCampusLocations: () => api.get('admin/campus-locations/'),
   createCollege: (formData) => api.post('admin/manage/', formData),
   updateCollege: (id, data) => api.patch(`admin/manage/${id}/`, data),
   deleteCollege: (id) => api.delete(`admin/manage/${id}/`),
 
   // Blocks
   getBlocks: () => api.get('admin/blocks/'),
-  createBlock: (formData) => api.post('admin/blocks/', formData),
-  updateBlock: (id, data) => api.patch(`admin/blocks/${id}/`, data),
+  createBlock: (formData, config = {}) => api.post('admin/blocks/', formData, config),
+  updateBlock: (id, data, config = {}) => api.patch(`admin/blocks/${id}/`, data, config),
   deleteBlock: (id) => api.delete(`admin/blocks/${id}/`),
 
   // Categories
   getCategories: () => api.get('admin/categories/'),
-  createCategory: (formData) => api.post('admin/categories/', formData),
-  updateCategory: (id, data) => api.patch(`admin/categories/${id}/`, data),
+  createCategory: (formData, config = {}) => api.post('admin/categories/', formData, config),
+  updateCategory: (id, data, config = {}) => api.patch(`admin/categories/${id}/`, data, config),
   deleteCategory: (id) => api.delete(`admin/categories/${id}/`),
 
   // User Management

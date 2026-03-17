@@ -1,73 +1,132 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { itemsAPI } from '../services/api';
-import BottomNav from '../components/BottomNav';
+import { 
+  ChevronLeft, 
+  Package, 
+  Plus, 
+  Sparkles, 
+  Inbox,
+  Clock,
+  ShieldCheck,
+  AlertCircle
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import PremiumCard from '../components/ui/PremiumCard';
 import ItemCard from '../components/ItemCard';
 
-const MyItems = ({ darkMode }) => {
-  const [items,   setItems]   = useState([]);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+const MyItems = () => {
+    const [items, setItems] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
-  useEffect(() => {
-    itemsAPI.getMyItems()
-      .then(({ data }) => setItems(data.results || data))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+    useEffect(() => {
+        const fetchItems = async () => {
+            try {
+                const { data } = await itemsAPI.getMyItems();
+                setItems(data.results || data);
+            } catch (err) {
+                console.error('Failed to fetch items:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchItems();
+    }, []);
 
-  // ✅ Remove deleted item from local state instantly
-  const handleDelete = (deletedId) => {
-    setItems(prev => prev.filter(i => i.id !== deletedId));
-  };
+    const handleDelete = (deletedId) => {
+        setItems(prev => prev.filter(i => i.id !== deletedId));
+    };
 
-  return (
-    <div className="page-wrapper">
-      <div style={{ background: 'white', padding: '20px 16px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer' }}>
-          <i className="bi bi-arrow-left"></i>
-        </button>
-        <h5 style={{ margin: 0, fontWeight: 700 }}>My Posts</h5>
-        <span style={{ marginLeft: 'auto', fontSize: 13, color: '#64748b', fontWeight: 600 }}>
-          {items.length} item{items.length !== 1 ? 's' : ''}
-        </span>
-      </div>
+    if (loading) return (
+        <div className="flex flex-col items-center justify-center min-h-[70vh] space-y-4">
+           <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+           <p className="font-black text-text-secondary uppercase tracking-widest text-xs">Cataloging Your Posts...</p>
+        </div>
+    );
 
-      <div style={{ padding: '16px' }}>
-        {loading ? (
-          <div className="spinner-ct"><div className="spinner-border text-primary"></div></div>
-        ) : items.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#94a3b8' }}>
-            <i className="bi bi-bookmark" style={{ fontSize: 56 }}></i>
-            <h5 style={{ marginTop: 16, color: '#64748b' }}>No posts yet</h5>
-            <p style={{ fontSize: 14, marginBottom: 24 }}>Items you report will appear here</p>
-            <button onClick={() => navigate('/report')} className="btn-primary-ct">Report an Item</button>
-          </div>
-        ) : (
-          items.map(item => (
-            <ItemCard
-              key={item.id}
-              item={item}
-              darkMode={darkMode}
-              onDelete={handleDelete}  // ✅ passes delete handler — shows delete button
-            />
-          ))
-        )}
-      </div>
+    return (
+        <div className="max-w-6xl mx-auto space-y-12 pb-32 px-4">
+            {/* Header */}
+            <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-12">
+                <div className="space-y-2">
+                   <div className="flex items-center gap-4">
+                       <button onClick={() => navigate(-1)} className="p-3 bg-white border border-slate-100 rounded-2xl hover:bg-slate-50 transition-all shadow-sm">
+                           <ChevronLeft size={20} className="text-text-primary" />
+                       </button>
+                       <h1 className="text-4xl font-black text-text-primary uppercase tracking-tighter">My Activity</h1>
+                   </div>
+                   <p className="text-text-secondary font-medium ml-16 flex items-center gap-2">
+                       <Clock size={16} className="text-primary" />
+                       Manifest of items you've introduced to the system.
+                   </p>
+                </div>
+                <div className="flex items-center gap-4 ml-16 md:ml-0">
+                    <PremiumCard className="px-6 py-3 flex items-center gap-3" hover={false}>
+                        <div className="p-2 bg-primary/10 text-primary rounded-lg"><Package size={16} /></div>
+                        <div>
+                           <p className="text-[10px] font-black uppercase opacity-60">Total Posts</p>
+                           <p className="font-black text-sm">{items.length}</p>
+                        </div>
+                    </PremiumCard>
+                    <button onClick={() => navigate('/report')} className="flex items-center gap-2 bg-primary text-white font-black uppercase tracking-widest text-[10px] px-6 py-4 rounded-2xl shadow-xl shadow-primary/30 hover:scale-[1.02] transition-all">
+                        <Plus size={16} /> New Report
+                    </button>
+                </div>
+            </header>
 
-      {/* FAB */}
-      <button onClick={() => navigate('/report')} style={{
-        position: 'fixed', bottom: 90, right: 20, width: 56, height: 56, borderRadius: '50%',
-        background: '#2563eb', color: 'white', border: 'none', fontSize: 24,
-        boxShadow: '0 4px 16px rgba(37,99,235,0.4)', cursor: 'pointer',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50,
-      }}>
-        <i className="bi bi-plus"></i>
-      </button>
+            {items.length === 0 ? (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="py-24 text-center space-y-8">
+                    <div className="w-32 h-32 bg-slate-100 rounded-[48px] flex items-center justify-center mx-auto text-slate-300 relative">
+                        <Inbox size={64} />
+                        <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 3 }} className="absolute -top-2 -right-2 bg-white p-3 rounded-2xl shadow-xl text-primary"><Plus size={24} /></motion.div>
+                    </div>
+                    <div className="space-y-2">
+                       <h3 className="text-2xl font-black text-text-primary uppercase tracking-tighter">Deserted Vault</h3>
+                       <p className="max-w-xs mx-auto text-sm font-medium text-text-secondary leading-relaxed">No items detected in your personal archive. Start by reporting something you've found or lost.</p>
+                    </div>
+                    <button onClick={() => navigate('/report')} className="px-10 py-5 bg-white border-2 border-primary/20 text-primary font-black uppercase tracking-widest text-xs rounded-3xl hover:bg-primary hover:text-white transition-all shadow-xl shadow-primary/5">
+                        Initiate First Report
+                    </button>
+                </motion.div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <AnimatePresence>
+                        {items.map((item, idx) => (
+                            <motion.div 
+                              key={item.id}
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: idx * 0.05 }}
+                            >
+                                <ItemCard
+                                  item={item}
+                                  onDelete={handleDelete}
+                                />
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
+                </div>
+            )}
 
-      <BottomNav darkMode={darkMode} />
-    </div>
-  );
+            {/* Bottom Actions */}
+            <div className="flex flex-col md:flex-row items-center justify-center gap-12 py-12 grayscale opacity-40">
+                <div className="flex items-center gap-3 font-black text-[10px] uppercase tracking-widest"><ShieldCheck size={18} /> AI Verified</div>
+                <div className="flex items-center gap-3 font-black text-[10px] uppercase tracking-widest"><Sparkles size={18} /> Premium Reward Logic</div>
+                <div className="flex items-center gap-3 font-black text-[10px] uppercase tracking-widest"><AlertCircle size={18} /> Secure Handover</div>
+            </div>
+
+            {/* Floating Action Button */}
+            <motion.button 
+              whileHover={{ scale: 1.1, rotate: 90 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => navigate('/report')} 
+              className="fixed bottom-12 right-12 w-16 h-16 bg-primary-gradient rounded-[24px] text-white shadow-2xl shadow-primary/50 flex items-center justify-center z-50 md:hidden"
+            >
+                <Plus size={32} />
+            </motion.button>
+        </div>
+    );
 };
 
 export default MyItems;

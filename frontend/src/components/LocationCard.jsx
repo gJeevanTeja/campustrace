@@ -1,367 +1,260 @@
-/**
- * GoogleLocationCard.jsx
- * Drop-in replacement for LocationCard.jsx
- *
- * Same UI as before:
- *   - Google Map embedded in card (not redirecting)
- *   - Item marker (red = lost, green = found)
- *   - Blue dot for user's location
- *   - Dashed line between user and item
- *   - Distance + direction chip
- *   - Weather (Open-Meteo free API, no key needed)
- *   - "Get Directions" → opens Google Maps navigation in new tab
- *
- * Usage:
- *   <GoogleLocationCard
- *     itemLat={item.latitude}
- *     itemLng={item.longitude}
- *     locationName={item.location_name}
- *     locationDetail={item.location_detail}
- *     itemType={item.type}
- *     darkMode={darkMode}
- *   />
- */
+import React, { useEffect, useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { Navigation } from 'lucide-react';
 
-import React, { useEffect, useRef, useState } from 'react';
-import { loadGoogleMaps } from '../hooks/useGoogleMaps';
+const ACCENT = '#2563eb';
+
+// Fix for default marker icon in Leaflet
+const customIcon = (color) => new L.Icon({
+    iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
+    shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+});
+
+const blueIcon = customIcon('blue');
+const redIcon = customIcon('red');
+const greenIcon = customIcon('green');
 
 function haversineKm(lat1, lng1, lat2, lng2) {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLng = (lng2 - lng1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 function compassDir(lat1, lng1, lat2, lng2) {
-  const angle = Math.atan2(lng2 - lng1, lat2 - lat1) * 180 / Math.PI;
-  const dirs = ['North', 'NE', 'East', 'SE', 'South', 'SW', 'West', 'NW'];
-  return dirs[Math.round(((angle % 360) + 360) % 360 / 45) % 8];
+    const angle = Math.atan2(lng2 - lng1, lat2 - lat1) * 180 / Math.PI;
+    const dirs = ['North', 'NE', 'East', 'SE', 'South', 'SW', 'West', 'NW'];
+    return dirs[Math.round(((angle % 360) + 360) % 360 / 45) % 8];
 }
 
-function fmtDist(km) {
-  if (km == null) return null;
-  return km < 1 ? `${Math.round(km * 1000)} m away` : `${km.toFixed(1)} km away`;
-}
-
-async function fetchWeather(lat, lng) {
-  try {
-    const res = await fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`
-    );
-    const data = await res.json();
-    const code = data.current_weather?.weathercode ?? -1;
-    const temp = Math.round(data.current_weather?.temperature ?? 0);
-
-    let condition = 'Clear', icon = '☀️';
-    if (code >= 51 && code <= 67) { condition = 'Rainy'; icon = '🌧️'; }
-    else if (code >= 71 && code <= 77) { condition = 'Snowy'; icon = '❄️'; }
-    else if (code >= 80 && code <= 99) { condition = 'Stormy'; icon = '⛈️'; }
-    else if (code >= 1 && code <= 3) { condition = 'Cloudy'; icon = '⛅'; }
-    else if (code >= 45 && code <= 48) { condition = 'Foggy'; icon = '🌫️'; }
-    return { temp, condition, icon };
-  } catch {
-    return null;
-  }
-}
-
-const GoogleLocationCard = ({
-  itemLat,
-  itemLng,
-  locationName,
-  locationDetail,
-  itemType = 'lost',
-  darkMode = false,
+const LocationCard = ({
+    item,
+    darkMode = false,
 }) => {
-  const mapDivRef = useRef(null);
-  const mapRef = useRef(null);           // google.maps.Map instance
+    const [userLoc, setUserLoc] = useState(null);
+    const [distance, setDistance] = useState(null);
+    const [direction, setDirection] = useState(null);
+    const [weather, setWeather] = useState(null);
 
-  const [distance, setDistance] = useState(null);   // number km
-  const [direction, setDirection] = useState(null);
-  const [weather, setWeather] = useState(null);
-  const [locError, setLocError] = useState('');
+    const itemLat = item?.latitude;
+    const itemLng = item?.longitude;
+    const itemType = item?.type || 'lost';
+    const locationName = item?.location_name || item?.location_display || item?.location;
+    const locationDetail = item?.location_detail;
 
-  const itemColor = itemType === 'lost' ? '#ef4444' : '#16a34a';
-  const dm = darkMode;
-  const cardBg = dm ? '#1e293b' : '#fff';
-  const text = dm ? '#e2e8f0' : '#1e293b';
-  const muted = dm ? '#94a3b8' : '#64748b';
-  const border = dm ? '#334155' : '#e2e8f0';
+    const dm = darkMode;
+    const cardBg = dm ? '#1e293b' : '#fff';
+    const text = dm ? '#e2e8f0' : '#1e293b';
+    const muted = dm ? '#94a3b8' : '#64748b';
+    const border = dm ? '#334155' : '#e2e8f0';
+    
+    // Exact requested styling: ITEM LOST AT (Red), ITEM FOUND AT (Green)
+    const itemColor = itemType === 'lost' ? '#ef4444' : '#16a34a';
+    const leafIcon = itemType === 'lost' ? redIcon : greenIcon;
 
-  useEffect(() => {
-    if (!itemLat || !itemLng) return;
-    let mounted = true;
-
-    (async () => {
-      try {
-        await loadGoogleMaps();
-        if (!mounted || !mapDivRef.current || mapRef.current) return;
-
-        // Init map centred on item
-        const map = new window.google.maps.Map(mapDivRef.current, {
-          center: { lat: itemLat, lng: itemLng },
-          zoom: 15,
-          mapTypeControl: false,
-          fullscreenControl: false,
-          streetViewControl: false,
-          zoomControl: true,
-          gestureHandling: 'cooperative',
-          styles: dm ? DARK_STYLES : [],
-        });
-        mapRef.current = map;
-
-        // Item marker
-        const itemMarker = new window.google.maps.Marker({
-          position: { lat: itemLat, lng: itemLng },
-          map,
-          animation: window.google.maps.Animation.DROP,
-          title: itemType === 'lost' ? 'Lost Here' : 'Found Here',
-          icon: {
-            path: window.google.maps.SymbolPath.CIRCLE,
-            scale: 13,
-            fillColor: itemColor,
-            fillOpacity: 1,
-            strokeColor: '#fff',
-            strokeWeight: 3,
-          },
-        });
-
-        // Popup on item marker
-        const infoWin = new window.google.maps.InfoWindow({
-          content: `<div style="font-size:13px;font-weight:700;padding:4px 6px;">
-            ${itemType === 'lost' ? '🔴' : '🟢'} ${itemType === 'lost' ? 'Lost Here' : 'Found Here'}
-            ${locationName ? `<br/><span style="font-weight:400;color:#64748b;font-size:12px;">${locationName}</span>` : ''}
-          </div>`,
-        });
-        itemMarker.addListener('click', () => infoWin.open(map, itemMarker));
-        infoWin.open(map, itemMarker);
-
-        // Fetch weather for item location
-        const wx = await fetchWeather(itemLat, itemLng);
-        if (mounted) setWeather(wx);
+    useEffect(() => {
+        if (!itemLat || !itemLng) return;
 
         // Get user location
-        if (!navigator.geolocation) {
-          setLocError('Geolocation not supported');
-          return;
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((pos) => {
+                const { latitude, longitude } = pos.coords;
+                setUserLoc([latitude, longitude]);
+                const km = haversineKm(latitude, longitude, itemLat, itemLng);
+                setDistance(km);
+                setDirection(compassDir(latitude, longitude, itemLat, itemLng));
+            }, null, { enableHighAccuracy: true });
         }
 
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            if (!mounted) return;
-            const uLat = pos.coords.latitude;
-            const uLng = pos.coords.longitude;
+        // Fetch weather
+        fetch(`https://api.open-meteo.com/v1/forecast?latitude=${itemLat}&longitude=${itemLng}&current_weather=true`)
+            .then(r => r.json())
+            .then(data => {
+                const cw = data.current_weather;
+                const code = cw.weathercode;
+                let condition = 'Clear', icon = '☀️';
+                if (code >= 51 && code <= 67) { condition = 'Rainy'; icon = '🌧️'; }
+                else if (code >= 71 && code <= 77) { condition = 'Snowy'; icon = '❄️'; }
+                else if (code >= 80 && code <= 99) { condition = 'Stormy'; icon = '⛈️'; }
+                else if (code >= 1 && code <= 3) { condition = 'Cloudy'; icon = '⛅'; }
+                else if (code >= 45 && code <= 48) { condition = 'Foggy'; icon = '🌫️'; }
+                setWeather({ temp: Math.round(cw.temperature), condition, icon });
+            })
+            .catch(() => { });
+    }, [itemLat, itemLng]);
 
-            const km = haversineKm(uLat, uLng, itemLat, itemLng);
-            setDistance(km);
-            setDirection(compassDir(uLat, uLng, itemLat, itemLng));
-
-            // Blue user dot marker
-            new window.google.maps.Marker({
-              position: { lat: uLat, lng: uLng },
-              map,
-              title: 'You are here',
-              icon: {
-                path: window.google.maps.SymbolPath.CIRCLE,
-                scale: 9,
-                fillColor: '#2563eb',
-                fillOpacity: 1,
-                strokeColor: '#fff',
-                strokeWeight: 3,
-              },
-            });
-
-            new window.google.maps.InfoWindow({
-              content: '<div style="font-size:12px;font-weight:700;padding:3px 5px;">📍 You are Here</div>',
-            }).open(
-              map,
-              new window.google.maps.Marker({
-                position: { lat: uLat, lng: uLng },
-                map,
-                visible: false,
-              })
-            );
-
-            // Dashed line between user and item
-            new window.google.maps.Polyline({
-              path: [{ lat: uLat, lng: uLng }, { lat: itemLat, lng: itemLng }],
-              geodesic: true,
-              strokeColor: '#2563eb',
-              strokeOpacity: 0,
-              strokeWeight: 3,
-              icons: [{
-                icon: { path: 'M 0,-1 0,1', strokeOpacity: 1, scale: 4 },
-                offset: '0',
-                repeat: '16px',
-              }],
-              map,
-            });
-
-            // Fit map to show both markers
-            const bounds = new window.google.maps.LatLngBounds();
-            bounds.extend({ lat: uLat, lng: uLng });
-            bounds.extend({ lat: itemLat, lng: itemLng });
-            map.fitBounds(bounds, { top: 40, bottom: 40, left: 30, right: 30 });
-          },
-          () => { if (mounted) setLocError('Location access denied'); },
-          { enableHighAccuracy: true, timeout: 8000 }
+    if (!itemLat || !itemLng || isNaN(itemLat) || isNaN(itemLng)) {
+        return (
+            <div style={{
+                background: cardBg,
+                borderRadius: 20,
+                border: `1px solid ${border}`,
+                overflow: 'hidden',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+                marginBottom: 16,
+            }}>
+                <div style={{
+                    padding: '14px 16px',
+                    background: `linear-gradient(135deg, ${itemColor}18, ${itemColor}06)`,
+                    borderBottom: `1px solid ${border}`,
+                }}>
+                    <div style={{ fontWeight: 800, fontSize: 13, color: itemColor, textTransform: 'uppercase', letterSpacing: '0.6px' }}>
+                        ITEM {itemType.toUpperCase()} AT
+                    </div>
+                    <div style={{ fontSize: 16, color: text, fontWeight: 700, marginTop: 2 }}>
+                        {locationName}
+                    </div>
+                </div>
+                <div style={{ padding: 16 }}>
+                    {locationDetail ? (
+                        <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                            <div style={{ fontSize: 18 }}>📍</div>
+                            <div>
+                                <div style={{ fontSize: 12, fontWeight: 700, color: muted, textTransform: 'uppercase' }}>Precise Location</div>
+                                <p style={{ margin: '2px 0 0', fontSize: 14, color: text, lineHeight: 1.5 }}>{locationDetail}</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div style={{ textAlign: 'center', color: muted, fontSize: 13, padding: '10px 0' }}>
+                           Location details not specified.
+                        </div>
+                    )}
+                </div>
+            </div>
         );
-      } catch (err) {
-        console.error('[GoogleLocationCard]', err);
-      }
-    })();
+    }
 
-    return () => { mounted = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemLat, itemLng]);
+    const itemPos = [itemLat, itemLng];
+    const mapBounds = userLoc ? [itemPos, userLoc] : [itemPos];
 
-  const openDirections = () => {
-    if (!itemLat || !itemLng) return;
-    const dest = `${itemLat},${itemLng}`;
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${dest}`;
-    window.open(url, '_blank');
-  };
-
-  if (!itemLat || !itemLng) return null;
-
-  return (
-    <div style={{
-      background: cardBg,
-      borderRadius: 20,
-      border: `1px solid ${border}`,
-      overflow: 'hidden',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-      marginBottom: 16,
-    }}>
-
-      {/* ── Card header ──────────────────────────────────────── */}
-      <div style={{
-        padding: '14px 16px',
-        background: `linear-gradient(135deg, ${itemColor}18, ${itemColor}06)`,
-        borderBottom: `1px solid ${border}`,
-        display: 'flex', alignItems: 'center', gap: 12,
-      }}>
+    return (
         <div style={{
-          width: 38, height: 38, borderRadius: 10,
-          background: `${itemColor}20`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
-          flexShrink: 0,
+            background: cardBg,
+            borderRadius: 20,
+            border: `1px solid ${border}`,
+            overflow: 'hidden',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+            marginBottom: 16,
         }}>
-          {itemType === 'lost' ? '🔴' : '🟢'}
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{
-            fontWeight: 700, fontSize: 12, color: text,
-            textTransform: 'uppercase', letterSpacing: '0.6px',
-          }}>
-            Item {itemType === 'lost' ? 'Lost' : 'Found'} At
-          </div>
-          <div style={{
-            fontSize: 14, color: muted, fontWeight: 500,
-            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-          }}>
-            {locationName || 'Location on map'}
-          </div>
-          {locationDetail && (
-            <div style={{ fontSize: 12, color: muted, marginTop: 1 }}>{locationDetail}</div>
-          )}
-        </div>
-      </div>
-
-      {/* ── Google Map ──────────────────────────────────────────── */}
-      <div ref={mapDivRef} style={{ width: '100%', height: 220 }} />
-
-      {/* ── Distance + Weather chips ─────────────────────────── */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: (distance != null || locError) && weather ? '1fr 1fr' : '1fr',
-        borderTop: `1px solid ${border}`,
-      }}>
-        {/* Distance */}
-        {distance != null ? (
-          <div style={{ padding: '14px 16px', borderRight: weather ? `1px solid ${border}` : 'none' }}>
+            {/* Header - Unified Layout */}
             <div style={{
-              fontSize: 11, fontWeight: 600, color: muted,
-              textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4,
+                padding: '14px 16px',
+                background: `linear-gradient(135deg, ${itemColor}18, ${itemColor}06)`,
+                borderBottom: `1px solid ${border}`,
+                display: 'flex', alignItems: 'center', gap: 12,
             }}>
-              📏 Distance from you
+                <div style={{
+                    width: 38, height: 38, borderRadius: 10,
+                    background: `${itemColor}20`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
+                }}>
+                    {itemType === 'lost' ? '🔴' : '🟢'}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 800, fontSize: 13, color: itemColor, textTransform: 'uppercase', letterSpacing: '0.6px' }}>
+                        ITEM {itemType.toUpperCase()} AT
+                    </div>
+                    <div style={{ fontSize: 16, color: text, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 1 }}>
+                        {locationName}
+                    </div>
+                    {locationDetail && <div style={{ fontSize: 13, color: muted, fontWeight: 500, marginTop: 1 }}>{locationDetail}</div>}
+                </div>
             </div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: '#2563eb' }}>
-              {fmtDist(distance)}
-            </div>
-            {direction && (
-              <div style={{ fontSize: 12, color: muted, marginTop: 2 }}>
-                🧿 Head {direction}
-              </div>
-            )}
-          </div>
-        ) : locError ? (
-          <div style={{ padding: '14px 16px', borderRight: weather ? `1px solid ${border}` : 'none' }}>
-            <div style={{ fontSize: 12, color: '#f59e0b', fontWeight: 600 }}>⚠️ {locError}</div>
-            <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>Enable location for distance</div>
-          </div>
-        ) : (
-          <div style={{ padding: '14px 16px', borderRight: weather ? `1px solid ${border}` : 'none' }}>
-            <div style={{ fontSize: 12, color: muted }}>📍 Getting your location...</div>
-          </div>
-        )}
 
-        {/* Weather */}
-        {weather && (
-          <div style={{ padding: '14px 16px' }}>
+            {/* Leaflet Map */}
+            <div style={{ width: '100%', height: 220, position: 'relative', zIndex: 0 }}>
+                <MapContainer
+                    center={itemPos}
+                    zoom={15}
+                    style={{ height: '100%', width: '100%' }}
+                    scrollWheelZoom={false}
+                    bounds={userLoc ? mapBounds : undefined}
+                    boundsOptions={{ padding: [30, 30] }}
+                >
+                    <TileLayer
+                        attribution='&copy; OpenStreetMap contributors'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    <Marker position={itemPos} icon={leafIcon}>
+                        <Popup>
+                            <strong>{itemType === 'lost' ? 'Lost' : 'Found'} Here</strong><br />
+                            {locationName}
+                        </Popup>
+                    </Marker>
+                    {userLoc && (
+                        <>
+                            <Marker position={userLoc} icon={blueIcon}>
+                                <Popup>You are Here</Popup>
+                            </Marker>
+                            <Polyline
+                                positions={[itemPos, userLoc]}
+                                color={ACCENT}
+                                dashArray="10, 10"
+                                weight={3}
+                            />
+                        </>
+                    )}
+                </MapContainer>
+            </div>
+
+            {/* Info Chips */}
             <div style={{
-              fontSize: 11, fontWeight: 600, color: muted,
-              textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4,
+                display: 'grid',
+                gridTemplateColumns: (distance != null || userLoc) && weather ? '1fr 1fr' : '1fr',
+                borderTop: `1px solid ${border}`,
             }}>
-              🌡️ Weather there
-            </div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: text }}>
-              {weather.icon} {weather.temp}°C
-            </div>
-            <div style={{ fontSize: 12, color: muted, marginTop: 2 }}>
-              {weather.condition}
-            </div>
-          </div>
-        )}
-      </div>
+                {/* Distance */}
+                <div style={{ padding: '14px 16px', borderRight: weather ? `1px solid ${border}` : 'none' }}>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: muted, textTransform: 'uppercase', marginBottom: 4 }}>📏 Distance</div>
+                    {distance != null ? (
+                        <>
+                            <div style={{ fontSize: 20, fontWeight: 800, color: ACCENT }}>
+                                {distance < 1 ? `${Math.round(distance * 1000)}m` : `${distance.toFixed(1)}km`}
+                            </div>
+                            <div style={{ fontSize: 12, color: muted, marginTop: 2 }}>Head {direction}</div>
+                        </>
+                    ) : (
+                        <div style={{ fontSize: 12, color: muted }}>Locating...</div>
+                    )}
+                </div>
 
-      {/* ── Get Directions button ─────────────────────────────── */}
-      <div style={{ padding: '0 16px 14px' }}>
-        <button
-          onClick={openDirections}
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            background: 'none',
-            border: '1.5px solid #2563eb',
-            borderRadius: 10,
-            padding: '10px',
-            color: '#2563eb',
-            fontSize: 14,
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
-        >
-          🗺️ Get Directions
-        </button>
-      </div>
-    </div>
-  );
+                {/* Weather */}
+                {weather && (
+                    <div style={{ padding: '14px 16px' }}>
+                        <div style={{ fontSize: 11, fontWeight: 600, color: muted, textTransform: 'uppercase', marginBottom: 4 }}>🌡️ Weather</div>
+                        <div style={{ fontSize: 20, fontWeight: 800, color: text }}>
+                            {weather.icon} {weather.temp}°C
+                        </div>
+                        <div style={{ fontSize: 12, color: muted, marginTop: 2 }}>{weather.condition}</div>
+                    </div>
+                )}
+            </div>
+
+            {/* Get Directions */}
+            <div style={{ padding: '0 16px 14px' }}>
+                <button
+                    onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${itemLat},${itemLng}`, '_blank')}
+                    style={{
+                        width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        gap: 8, background: 'none', border: `1.5px solid ${ACCENT}`,
+                        borderRadius: 10, padding: '10px', color: ACCENT,
+                        fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                    }}
+                >
+                    <Navigation size={16} /> Get Directions
+                </button>
+            </div>
+        </div>
+    );
 };
 
-const DARK_STYLES = [
-  { elementType: 'geometry', stylers: [{ color: '#1e293b' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#94a3b8' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#0f172a' }] },
-  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#334155' }] },
-  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#0f172a' }] },
-  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0f2942' }] },
-  { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#1e3a5f' }] },
-];
-
-export default GoogleLocationCard;
+export default LocationCard;

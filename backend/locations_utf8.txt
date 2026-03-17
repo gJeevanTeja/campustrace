@@ -1,0 +1,7 @@
+Campus locations in DB:
+ID: 2, Name: Canteen, Lat: None, Lng: None
+ID: 3, Name: Library, Lat: None, Lng: None
+ID: 4, Name: Parking Area, Lat: None, Lng: None
+ID: 5, Name: Ground, Lat: None, Lng: None
+ID: 6, Name: Auditorium, Lat: None, Lng: None
+ID: 1, Name: Main Block, Lat: 17.5615, Lng: 78.4484

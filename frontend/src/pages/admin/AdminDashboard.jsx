@@ -1,59 +1,120 @@
-import React, { useState, useEffect } from 'react';
-import { adminAPI } from '../../services/api';
-import AdminLayout from '../../components/AdminLayout';
+import React, { useState, useEffect, useCallback } from 'react';
+import { adminAPI, collegesAPI } from '../../services/api';
 import {
     Users, Package, CheckCircle, Clock,
-    TrendingUp, AlertCircle, Calendar
+    AlertCircle,
+    Search, Filter, ChevronLeft, ChevronRight,
+    Download, FileText
 } from 'lucide-react';
 import {
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-    PieChart, Pie, Cell, Legend
+    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+    PieChart, Pie, Cell, Legend, LineChart, Line
 } from 'recharts';
 
 
-const StatCard = ({ title, value, icon, trend, dm }) => (
-    <div style={{
-        background: dm ? '#1e293b' : '#fff',
-        padding: '24px',
-        borderRadius: '16px',
-        border: `1px solid ${dm ? '#334155' : '#e2e8f0'}`,
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-    }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-                <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: dm ? '#94a3b8' : '#64748b', marginBottom: 8 }}>{title}</p>
-                <h3 style={{ margin: 0, fontSize: 24, fontWeight: 800 }}>{value}</h3>
-                {trend && (
-                    <p style={{ margin: '8px 0 0', fontSize: 12, color: '#10b981', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <TrendingUp size={14} /> {trend}
-                    </p>
-                )}
-            </div>
-            <div style={{
-                padding: 12, borderRadius: 12,
-                background: '#2563eb11', color: '#2563eb'
-            }}>
+import PremiumCard from '../../components/ui/PremiumCard';
+import { AnalyticsSkeleton } from '../../components/ui/SkeletonLoaders';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const StatCard = ({ title, value, icon, trend, idx }) => (
+    <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: idx * 0.1 }}
+    >
+        <PremiumCard className="p-6 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform text-primary">
                 {icon}
             </div>
-        </div>
-    </div>
+            <div className="flex flex-col gap-1">
+                <span className="text-sm font-bold text-text-secondary uppercase tracking-wider">{title}</span>
+                <div className="flex items-end gap-2">
+                    <span className="text-3xl font-black text-text-primary tracking-tight">{value}</span>
+                    {trend && (
+                        <span className="text-[10px] font-bold text-success bg-success/10 px-1.5 py-0.5 rounded-md mb-1.5 whitespace-nowrap">
+                            {trend}
+                        </span>
+                    )}
+                </div>
+            </div>
+        </PremiumCard>
+    </motion.div>
 );
 
-const AdminDashboard = ({ darkMode }) => {
+// Helper for row colors and badges
+const getStatusBadge = (status) => {
+    const styles = {
+        active: 'bg-primary/10 text-primary border-primary/20',
+        returned: 'bg-success/10 text-success border-success/20',
+        claimed: 'bg-warning/10 text-warning border-warning/20',
+        closed: 'bg-gray-100 text-gray-500 border-gray-200'
+    };
+    return (
+        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${styles[status] || styles.active}`}>
+            {status}
+        </span>
+    );
+};
+
+const getTypeBadge = (type) => {
+    return type === 'lost' ? (
+        <span className="flex items-center gap-1.5 text-danger font-bold text-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-danger animate-pulse" />
+            Lost
+        </span>
+    ) : (
+        <span className="flex items-center gap-1.5 text-success font-bold text-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-success" />
+            Found
+        </span>
+    );
+};
+
+const AdminDashboard = () => {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const dm = darkMode;
+    
+    // Reports State
+    const [reports, setReports] = useState([]);
+    const [loadingReports, setLoadingReports] = useState(false);
+    const [categories, setCategories] = useState([]);
+    const [colleges, setColleges] = useState([]);
+    const [isAdmin, setIsAdmin] = useState(false);
+    
+    // Filter State
+    const [params, setParams] = useState({
+        page: 1,
+        search: '',
+        category: '',
+        type: '',
+        status: '',
+        collegeId: '',
+        startDate: '',
+        endDate: ''
+    });
+    const [totalCount, setTotalCount] = useState(0);
 
-    useEffect(() => {
-        fetchStats();
-    }, []);
 
-    const fetchStats = async () => {
+    const fetchInitialData = async () => {
         try {
             setLoading(true);
-            const { data } = await adminAPI.getAnalytics();
-            setStats(data);
+            const [analyticsRes, categoriesRes] = await Promise.all([
+                adminAPI.getAnalytics(),
+                collegesAPI.getCategories(),
+                adminAPI.getUsers({ limit: 1 }) // Just to check role context if needed, but analytics endpoint usually handles it
+            ]);
+            
+            setStats(analyticsRes.data);
+            setCategories(Array.isArray(categoriesRes.data) ? categoriesRes.data : (categoriesRes.data.results || []));
+            
+            // Check if Super Admin to fetch colleges
+            const role = localStorage.getItem('user_role');
+            setIsAdmin(role === 'super_admin');
+            if (role === 'super_admin') {
+                const collegesRes = await adminAPI.getColleges();
+                setColleges(Array.isArray(collegesRes.data) ? collegesRes.data : (collegesRes.data.results || []));
+            }
         } catch (err) {
             setError('Failed to load dashboard data.');
             console.error(err);
@@ -62,172 +123,427 @@ const AdminDashboard = ({ darkMode }) => {
         }
     };
 
+    const fetchReports = useCallback(async (searchParams) => {
+        try {
+            setLoadingReports(true);
+            const { data } = await adminAPI.getItemReports(searchParams);
+            setReports(data.results || []);
+            setTotalCount(data.count || 0);
+        } catch (err) {
+            console.error('Failed to fetch reports:', err);
+        } finally {
+            setLoadingReports(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchInitialData();
+    }, []);
+
+    useEffect(() => {
+        fetchReports(params);
+    }, [fetchReports, params.page, params.category, params.type, params.status, params.collegeId, params.startDate, params.endDate]);
+
+    // Debounced search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (params.page !== 1) {
+                setParams(prev => ({ ...prev, page: 1 }));
+            } else {
+                fetchReports(params);
+            }
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [params.search, fetchReports]);
+
     const exportData = async (format) => {
         try {
-            const { data } = await adminAPI.exportAnalytics(format);
-            const url = window.URL.createObjectURL(new Blob([data]));
+            let response;
+            let filename = `CampusTrace_Report_${new Date().toISOString().split('T')[0]}`;
+            
+            // Pass current filters to export
+            const exportParams = { ...params };
+            delete exportParams.page; // Export everything matching filters
+            
+            if (format === 'csv') {
+                response = await adminAPI.exportCSV(exportParams);
+                filename += '.csv';
+            } else if (format === 'excel') {
+                response = await adminAPI.exportExcel(exportParams);
+                filename += '.xlsx';
+            } else if (format === 'pdf') {
+                response = await adminAPI.exportPDF(exportParams);
+                filename += '.pdf';
+            }
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', `analytics-report.${format === 'excel' ? 'xlsx' : format}`);
+            link.setAttribute('download', filename);
             document.body.appendChild(link);
             link.click();
             link.remove();
+            window.URL.revokeObjectURL(url);
         } catch (err) {
+            console.error('Export error:', err);
             alert('Failed to download report.');
         }
     };
 
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        setParams(prev => ({ ...prev, [name]: value, page: 1 }));
+    };
+
     if (loading) return (
-        <AdminLayout darkMode={dm}>
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
-                <div style={{ textAlign: 'center' }}>
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p style={{ color: dm ? '#94a3b8' : '#64748b' }}>Calculating real-time metrics...</p>
-                </div>
-            </div>
-        </AdminLayout>
+        <div className="space-y-8">
+            <div className="h-8 w-48 bg-gray-200 animate-pulse rounded-lg" />
+            <AnalyticsSkeleton />
+            <div className="h-64 w-full bg-gray-200 animate-pulse rounded-2xl" />
+        </div>
     );
 
     return (
-        <AdminLayout darkMode={dm}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-                <h2 style={{ margin: 0 }}>College Analytics</h2>
-                <div style={{ display: 'flex', gap: 12 }}>
-                    <button onClick={() => exportData('csv')} style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid #ccc', cursor: 'pointer' }}>CSV</button>
-                    <button onClick={() => exportData('excel')} style={{ padding: '8px 16px', borderRadius: 8, background: '#2563eb', color: '#fff', border: 'none', cursor: 'pointer' }}>Excel</button>
-                    <button onClick={() => exportData('pdf')} style={{ padding: '8px 16px', borderRadius: 8, background: '#ef4444', color: '#fff', border: 'none', cursor: 'pointer' }}>PDF</button>
+        <div className="space-y-8 pb-12">
+            {/* Header section remains similar but updated */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 className="text-3xl font-extrabold text-text-primary">
+                        {isAdmin ? 'Global System Analytics' : 'College Analytics'}
+                    </h2>
+                    <p className="text-text-secondary">Overview of reporting activity and system performance.</p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <button onClick={() => exportData('csv')} className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl font-bold text-sm bg-white hover:bg-gray-50 transition-colors shadow-sm text-text-secondary group">
+                        <FileText size={18} className="text-primary group-hover:scale-110 transition-transform" />
+                        CSV
+                    </button>
+                    <button onClick={() => exportData('excel')} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl font-bold text-sm hover:shadow-lg hover:shadow-primary/20 transition-all active:scale-95">
+                        <Download size={18} />
+                        Excel Report
+                    </button>
+                    <button onClick={() => exportData('pdf')} className="flex items-center gap-2 px-4 py-2 bg-danger text-white rounded-xl font-bold text-sm hover:shadow-lg hover:shadow-danger/20 transition-all active:scale-95">
+                        <FileText size={18} />
+                        PDF
+                    </button>
                 </div>
             </div>
+
             {error && (
-                <div style={{
-                    background: '#fee2e2', color: '#dc2626', padding: '16px',
-                    borderRadius: '12px', border: '1px solid #fecaca', marginBottom: '24px',
-                    display: 'flex', alignItems: 'center', gap: 12
-                }}>
+                <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-danger/10 text-danger p-4 rounded-2xl border border-danger/20 flex items-center gap-3 font-medium"
+                >
                     <AlertCircle size={20} />
                     {error}
-                </div>
+                </motion.div>
             )}
 
             {/* Overview Cards */}
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-                gap: '24px',
-                marginBottom: '32px'
-            }}>
-                <StatCard
-                    title="Total Reports"
-                    value={stats?.total_lost + stats?.total_found || 0}
-                    icon={<Package size={24} />}
-                    trend="+12% from last week"
-                    dm={dm}
-                />
-                <StatCard
-                    title="Resolution Rate"
-                    value={`${stats?.resolution_rate || 0}%`}
-                    icon={<CheckCircle size={24} />}
-                    dm={dm}
-                />
-                <StatCard
-                    title="Active Users"
-                    value={stats?.active_users || 0}
-                    icon={<Users size={24} />}
-                    trend="+5 new today"
-                    dm={dm}
-                />
-                <StatCard
-                    title="Avg. Return Time"
-                    value={stats?.avg_return_time || 'N/A'}
-                    icon={<Clock size={24} />}
-                    dm={dm}
-                />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard idx={0} title="Total Reports" value={stats?.totalReports || 0} icon={<Package size={24} />} trend="+12% weekly" />
+                <StatCard idx={1} title="Resolution Rate" value={`${stats?.resolutionRate || 0}%`} icon={<CheckCircle size={24} />} />
+                <StatCard idx={2} title="Active Users" value={stats?.activeUsers || 0} icon={<Users size={24} />} trend="+5 today" />
+                <StatCard idx={3} title="Avg. Return Time" value={stats?.avgReturnTime || 'N/A'} icon={<Clock size={24} />} />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px' }}>
-                {/* Charts - Will populate with real data once available */}
-                <div style={{
-                    background: dm ? '#1e293b' : '#fff',
-                    padding: '24px',
-                    borderRadius: '16px',
-                    border: `1px solid ${dm ? '#334155' : '#e2e8f0'}`
-                }}>
-                    <h4 style={{ margin: '0 0 24px', fontSize: 16, fontWeight: 700 }}>Reporting Activity</h4>
-                    <div style={{ height: 300 }}>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Main Activity Chart */}
+                <PremiumCard className="lg:col-span-2 p-8" hover={false}>
+                    <div className="flex justify-between items-center mb-8">
+                        <div>
+                            <h4 className="text-lg font-bold text-text-primary">Reporting Activity</h4>
+                            <p className="text-sm text-text-secondary">Daily reports trend over the last 30 days.</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="w-3 h-3 rounded-full bg-primary" />
+                            <span className="text-xs font-bold text-text-secondary">Reports</span>
+                        </div>
+                    </div>
+                    <div className="h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={stats?.category_stats || []}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={dm ? '#334155' : '#f1f5f9'} />
-                                <XAxis dataKey="category__name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: dm ? '#94a3b8' : '#64748b' }} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: dm ? '#94a3b8' : '#64748b' }} />
+                            <LineChart data={stats?.reportsByDay || []}>
+                                <defs>
+                                    <linearGradient id="lineGradient" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.1}/>
+                                        <stop offset="95%" stopColor="#4F46E5" stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280', fontWeight: 500 }} dy={10} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280', fontWeight: 500 }} />
                                 <Tooltip
-                                    contentStyle={{ background: dm ? '#1e293b' : '#fff', borderRadius: 12, border: `1px solid ${dm ? '#334155' : '#e2e8f0'}` }}
-                                    itemStyle={{ fontSize: 12, fontWeight: 600 }}
+                                    contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', padding: '12px' }}
+                                    itemStyle={{ fontSize: 12, fontWeight: 700, color: '#4F46E5' }}
                                 />
-                                <Bar dataKey="count" fill="#2563eb" radius={[4, 4, 0, 0]} />
-                            </BarChart>
+                                <Line type="monotone" dataKey="count" stroke="#4F46E5" strokeWidth={4} dot={false} activeDot={{ r: 6, strokeWidth: 0, fill: '#4F46E5' }} animationDuration={1500} />
+                            </LineChart>
                         </ResponsiveContainer>
+                    </div>
+                </PremiumCard>
+
+                {/* Distribution Chart */}
+                <PremiumCard className="p-8" hover={false}>
+                    <h4 className="text-lg font-bold text-text-primary mb-2">Distribution</h4>
+                    <p className="text-sm text-text-secondary mb-8">Lost vs Found ratio.</p>
+                    <ResponsiveContainer width="100%" height={250}>
+                        <PieChart>
+                            <Pie
+                                data={[{ name: 'Lost', value: stats?.lostVsFound?.lost || 0 }, { name: 'Found', value: stats?.lostVsFound?.found || 0 }]}
+                                innerRadius={70} outerRadius={90} paddingAngle={5} dataKey="value" animationDuration={1500}
+                            >
+                                <Cell fill="#EF4444" />
+                                <Cell fill="#10B981" />
+                            </Pie>
+                            <Tooltip />
+                            <Legend align="center" verticalAlign="bottom" />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </PremiumCard>
+            </div>
+
+            {/* Detailed Item Reports Section */}
+            <div className="mt-12">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+                    <div>
+                        <h4 className="text-2xl font-extrabold text-text-primary">
+                            {isAdmin ? 'Global Item Reports' : 'College Item Reports'}
+                        </h4>
+                        <p className="text-text-secondary">Detailed log of all reported items with advanced filtering.</p>
+                    </div>
+                    
+                    {/* Search & Global Actions */}
+                    <div className="relative w-full md:w-80">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" size={18} />
+                        <input
+                            type="text"
+                            name="search"
+                            value={params.search}
+                            onChange={handleFilterChange}
+                            placeholder="Search items, reference #..."
+                            className="w-full pl-12 pr-4 py-3 bg-white border border-border rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all shadow-sm font-medium"
+                        />
                     </div>
                 </div>
 
-                <div style={{
-                    background: dm ? '#1e293b' : '#fff',
-                    padding: '24px',
-                    borderRadius: '16px',
-                    border: `1px solid ${dm ? '#334155' : '#e2e8f0'}`
-                }}>
-                    <h4 style={{ margin: '0 0 24px', fontSize: 16, fontWeight: 700 }}>Distribution</h4>
-                    <div style={{ height: 300 }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie
-                                    data={[
-                                        { name: 'Lost', value: stats?.total_lost || 0 },
-                                        { name: 'Found', value: stats?.total_found || 0 },
-                                    ]}
-                                    innerRadius={60}
-                                    outerRadius={80}
-                                    paddingAngle={5}
-                                    dataKey="value"
-                                >
-                                    <Cell fill="#ef4444" />
-                                    <Cell fill="#10b981" />
-                                </Pie>
-                                <Tooltip />
-                                <Legend layout="horizontal" verticalAlign="bottom" align="center" />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-            </div>
+                {/* Filter Toolbar */}
+                <PremiumCard className="p-4 mb-6" hover={false}>
+                    <div className="flex flex-wrap items-center gap-4">
+                        <div className="flex items-center gap-2 px-3 py-2 bg-primary/5 text-primary rounded-xl">
+                            <Filter size={18} />
+                            <span className="text-sm font-bold uppercase tracking-wider">Filters</span>
+                        </div>
+                        
+                        <div className="h-8 w-px bg-border hidden md:block" />
 
-            <div style={{ marginTop: '32px' }}>
-                <h4 style={{ fontSize: 18, fontWeight: 800, marginBottom: 16 }}>Key Insights</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-                    <div style={{
-                        background: '#2563eb08', color: '#2563eb', padding: '16px',
-                        borderRadius: '12px', border: '1px solid #2563eb22',
-                        display: 'flex', alignItems: 'center', gap: 12
-                    }}>
-                        <Calendar size={20} />
-                        <div>
-                            <p style={{ margin: 0, fontSize: 12, opacity: 0.8, fontWeight: 600 }}>Peak Reporting Hour</p>
-                            <p style={{ margin: 0, fontSize: 15, fontWeight: 800 }}>{stats?.peak_hour || 'Calculating...'}</p>
+                        {/* College Filter (Super Admin only) */}
+                        {isAdmin && (
+                            <select
+                                name="collegeId"
+                                value={params.collegeId}
+                                onChange={handleFilterChange}
+                                className="px-4 py-2 bg-gray-50 border-none rounded-xl text-sm font-bold text-text-primary outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                            >
+                                <option value="">All Colleges</option>
+                                {(Array.isArray(colleges) ? colleges : []).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                            </select>
+                        )}
+
+                        <select
+                            name="category"
+                            value={params.category}
+                            onChange={handleFilterChange}
+                            className="px-4 py-2 bg-gray-50 border-none rounded-xl text-sm font-bold text-text-primary outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                        >
+                            <option value="">All Categories</option>
+                            {(Array.isArray(categories) ? categories : []).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </select>
+
+                        <select
+                            name="type"
+                            value={params.type}
+                            onChange={handleFilterChange}
+                            className="px-4 py-2 bg-gray-50 border-none rounded-xl text-sm font-bold text-text-primary outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                        >
+                            <option value="">All Types</option>
+                            <option value="lost">Lost</option>
+                            <option value="found">Found</option>
+                        </select>
+
+                        <select
+                            name="status"
+                            value={params.status}
+                            onChange={handleFilterChange}
+                            className="px-4 py-2 bg-gray-50 border-none rounded-xl text-sm font-bold text-text-primary outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                        >
+                            <option value="">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="returned">Returned</option>
+                            <option value="claimed">Claimed</option>
+                            <option value="closed">Closed</option>
+                        </select>
+
+                        <div className="flex items-center gap-2 ml-auto">
+                            <input 
+                                type="date" 
+                                name="startDate"
+                                value={params.startDate}
+                                onChange={handleFilterChange}
+                                className="px-3 py-2 bg-gray-50 border-none rounded-xl text-xs font-bold text-text-secondary outline-none"
+                            />
+                            <span className="text-text-secondary">-</span>
+                            <input 
+                                type="date"
+                                name="endDate"
+                                value={params.endDate}
+                                onChange={handleFilterChange}
+                                className="px-3 py-2 bg-gray-50 border-none rounded-xl text-xs font-bold text-text-secondary outline-none"
+                            />
                         </div>
                     </div>
-                    <div style={{
-                        background: '#f59e0b08', color: '#d97706', padding: '16px',
-                        borderRadius: '12px', border: '1px solid #f59e0b22',
-                        display: 'flex', alignItems: 'center', gap: 12
-                    }}>
-                        <Package size={20} />
-                        <div>
-                            <p style={{ margin: 0, fontSize: 12, opacity: 0.8, fontWeight: 600 }}>Most Lost Category</p>
-                            <p style={{ margin: 0, fontSize: 15, fontWeight: 800 }}>{stats?.top_category || 'Electronics'}</p>
+                </PremiumCard>
+
+                {/* Table Section */}
+                <PremiumCard className="overflow-hidden p-0" hover={false}>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead className="bg-gray-50/50 border-b border-border sticky top-0 z-10">
+                                <tr>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em]">Item Name</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em]">Category</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em]">Type</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em]">Status</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em]">Location</th>
+                                    {isAdmin && <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em]">College</th>}
+                                    <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em]">Reported By</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em]">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border">
+                                <AnimatePresence mode="popLayout">
+                                    {loadingReports ? (
+                                        [...Array(5)].map((_, i) => (
+                                            <tr key={`skeleton-${i}`} className="animate-pulse">
+                                                {[...Array(isAdmin ? 8 : 7)].map((_, j) => (
+                                                    <td key={j} className="px-6 py-5">
+                                                        <div className="h-4 bg-gray-100 rounded-md w-24" />
+                                                    </td>
+                                                ))}
+                                            </tr>
+                                        ))
+                                    ) : reports.length > 0 ? (
+                                        reports.map((item, idx) => (
+                                            <motion.tr
+                                                key={item.id}
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0 }}
+                                                transition={{ delay: idx * 0.05 }}
+                                                className="group hover:bg-primary/[0.02] transition-colors cursor-pointer"
+                                            >
+                                                <td className="px-6 py-5">
+                                                    <span className="text-sm font-bold text-text-primary group-hover:text-primary transition-colors">{item.title}</span>
+                                                </td>
+                                                <td className="px-6 py-5">
+                                                    <span className="text-xs font-medium text-text-secondary bg-gray-100 px-2 py-1 rounded-lg">{item.category}</span>
+                                                </td>
+                                                <td className="px-6 py-5">
+                                                    {getTypeBadge(item.type)}
+                                                </td>
+                                                <td className="px-6 py-5">
+                                                    {getStatusBadge(item.status)}
+                                                </td>
+                                                <td className="px-6 py-5">
+                                                    <span className="text-xs font-medium text-text-secondary">{item.location}</span>
+                                                </td>
+                                                {isAdmin && (
+                                                    <td className="px-6 py-5">
+                                                        <span className="text-xs font-bold text-text-primary">{item.college_name}</span>
+                                                    </td>
+                                                )}
+                                                <td className="px-6 py-5">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                                                            {(item.reported_by || 'U')[0].toUpperCase()}
+                                                        </div>
+                                                        <span className="text-xs font-medium text-text-primary">{item.reported_by}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-5">
+                                                    <span className="text-xs font-bold text-text-secondary whitespace-nowrap">{item.date_reported}</span>
+                                                </td>
+                                            </motion.tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={isAdmin ? 8 : 7} className="px-6 py-20 text-center">
+                                                <div className="flex flex-col items-center gap-4">
+                                                    <div className="p-4 bg-gray-50 rounded-full text-gray-400">
+                                                        <Package size={40} />
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-text-primary italic">No reports found matching your criteria.</p>
+                                                        <button 
+                                                            onClick={() => setParams({ ...params, search: '', category: '', type: '', status: '', startDate: '', endDate: '' })}
+                                                            className="text-primary text-sm font-bold mt-2 hover:underline"
+                                                        >
+                                                            Clear all filters
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </AnimatePresence>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Pagination */}
+                    <div className="px-6 py-4 bg-gray-50/50 border-t border-border flex items-center justify-between">
+                        <p className="text-xs font-bold text-text-secondary">
+                            Showing <span className="text-text-primary">{reports.length}</span> of <span className="text-text-primary">{totalCount}</span> results
+                        </p>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setParams(p => ({ ...p, page: p.page - 1 }))}
+                                disabled={params.page === 1}
+                                className="p-2 border border-border rounded-xl hover:bg-white disabled:opacity-40 disabled:hover:bg-transparent transition-all"
+                            >
+                                <ChevronLeft size={18} />
+                            </button>
+                            <div className="flex items-center gap-1">
+                                {[...Array(Math.ceil(totalCount / 20))].map((_, i) => {
+                                    const page = i + 1;
+                                    // Only show current, first, last and surrounding pages
+                                    if (page === 1 || page === Math.ceil(totalCount / 20) || Math.abs(page - params.page) <= 1) {
+                                        return (
+                                            <button
+                                                key={page}
+                                                onClick={() => setParams(p => ({ ...p, page }))}
+                                                className={`w-10 h-10 rounded-xl text-sm font-bold transition-all ${params.page === page ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'hover:bg-white text-text-secondary'}`}
+                                            >
+                                                {page}
+                                            </button>
+                                        );
+                                    }
+                                    if (Math.abs(page - params.page) === 2) return <span key={page} className="px-1">...</span>;
+                                    return null;
+                                })}
+                            </div>
+                            <button
+                                onClick={() => setParams(p => ({ ...p, page: p.page + 1 }))}
+                                disabled={params.page >= Math.ceil(totalCount / 20)}
+                                className="p-2 border border-border rounded-xl hover:bg-white disabled:opacity-40 disabled:hover:bg-transparent transition-all"
+                            >
+                                <ChevronRight size={18} />
+                            </button>
                         </div>
                     </div>
-                </div>
+                </PremiumCard>
             </div>
-        </AdminLayout>
+        </div>
     );
 };
 

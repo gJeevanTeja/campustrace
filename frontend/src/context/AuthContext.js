@@ -26,13 +26,16 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     const { data } = await authAPI.login(credentials);
-    const access = data?.tokens?.access || data?.access;
+    const access = data?.tokens?.access || data?.token || data?.access;
     const refresh = data?.tokens?.refresh || data?.refresh;
+    
     if (access) localStorage.setItem('access_token', access);
     if (refresh) localStorage.setItem('refresh_token', refresh);
-    if (data.user) {
-      setUser(data.user);
-      localStorage.setItem('user', JSON.stringify(data.user));
+    
+    const userData = data?.user || data?.data?.user;
+    if (userData) {
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
     }
     return data;
   };

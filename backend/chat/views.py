@@ -6,6 +6,7 @@ from django.db.models import Q
 from .models import ChatRoom, ChatMessage, BlockedUser, MutedRoom
 from users.models import User
 from items.models import Item
+from notifications.utils import send_in_app_notification
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -149,7 +150,7 @@ class ChatMessagesView(APIView):
     def get(self, request, room_id):
         try:
             room = ChatRoom.objects.select_related(
-                'item', 'participant1', 'participant2'
+                'item', 'participant1', 'participant2', 'item__user'
             ).get(id=room_id)
         except ChatRoom.DoesNotExist:
             return Response({'error': 'Room not found.'}, status=status.HTTP_404_NOT_FOUND)
@@ -162,15 +163,27 @@ class ChatMessagesView(APIView):
         messages_qs = room.messages.select_related('sender', 'original_sender').order_by('created_at')
         other = room.get_other_participant(request.user)
 
+        # Get active claim session if any
+        from items.models import ClaimSession
+        claim = ClaimSession.objects.filter(item=room.item, claimant=other).exclude(status='completed').first()
+        if not claim:
+            # Maybe the other person is the owner?
+            claim = ClaimSession.objects.filter(item=room.item, claimant=request.user).exclude(status='completed').first()
+
         return Response({
             'room_id': room.id,
-            'item':    {'id': room.item.id, 'title': room.item.title},
+            'item':    {'id': room.item.id, 'title': room.item.title, 'owner_id': room.item.user.id},
             'other_participant': {
                 'id':   other.id   if other else None,
                 'name': other.name if other else '',
                 # ✅ NO phone exposed
             },
             'is_muted': room.is_muted_by(request.user),
+            'claim_session': {
+                'id': claim.id,
+                'status': claim.status,
+                'claimant_id': claim.claimant.id
+            } if claim else None,
             'messages': [serialize_message(m, request.user, request) for m in messages_qs],
         })
 
@@ -230,14 +243,11 @@ class ChatMessagesView(APIView):
                     if score >= 3:
                         bg_claim.status = 'ai_verified'
                         sys_reply = f"**System:** Verification passed (Score: {score}/4). Awaiting finder approval."
-                        try:
-                            Notification.objects.create(
-                                user=bg_room.item.user, item=bg_room.item,
-                                message=f"{request_user_name} passed AI verification for your item! Please review.",
-                                notification_type='item_claimed'
-                            )
-                        except Exception:
-                            pass
+                        send_in_app_notification(
+                            user=bg_room.item.user, item=bg_room.item,
+                            message=f"{request_user_name} passed AI verification for your item! Please review.",
+                            notification_type='item_claimed'
+                        )
                     else:
                         if bg_claim.attempts >= 2:
                             bg_claim.status = 'rejected'
@@ -281,15 +291,11 @@ class ChatMessagesView(APIView):
 
         # Notification (only if not muted)
         if not room.is_muted_by(other):
-            try:
-                from notifications.models import Notification
-                Notification.objects.create(
-                    user=other, item=room.item,
-                    message=f'💬 {request.user.name}: {message_text[:60]}',
-                    notification_type='new_message',
-                )
-            except Exception:
-                pass
+            send_in_app_notification(
+                user=other, item=room.item,
+                message=f'💬 {request.user.name}: {message_text[:60]}',
+                notification_type='chat_message'
+            )
 
         return Response(serialize_message(msg, request.user, request), status=status.HTTP_201_CREATED)
 

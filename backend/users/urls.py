@@ -6,7 +6,7 @@ from .views import (
     ForgotPasswordView, ResetPasswordView, UpdateLocationView,
     SettingsView, SendOTPView, VerifyOTPView, GoogleAuthView,
     CheckUsernameView, AdminUserListView, AdminUserActionView,
-    AdminUserActivityView,
+    AdminUserActivityView, LeaderboardView
 )
 
 urlpatterns = [
@@ -44,4 +44,5 @@ urlpatterns = [
     path('admin/users/', AdminUserListView.as_view(), name='admin-user-list'),
     path('admin/users/<int:pk>/<str:action>/', AdminUserActionView.as_view(), name='admin-user-action'),
     path('admin/users/<int:pk>/activity/', AdminUserActivityView.as_view(), name='admin-user-activity'),
-]
+    path('leaderboard/', LeaderboardView.as_view(), name='leaderboard'),
+]

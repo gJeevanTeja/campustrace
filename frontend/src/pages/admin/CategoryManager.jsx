@@ -13,7 +13,7 @@ const CategoryManager = ({ darkMode }) => {
     const [showModal, setShowModal] = useState(false);
     const [editingCategory, setEditingCategory] = useState(null);
     const [formData, setFormData] = useState({
-        name: '', icon: '', priority: 0, is_active: true
+        name: '', emoji: '', priority: 0, active: true
     });
     const dm = darkMode;
 
@@ -36,17 +36,31 @@ const CategoryManager = ({ darkMode }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            const token = localStorage.getItem('access_token');
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            };
+
             if (editingCategory) {
-                await adminAPI.updateCategory(editingCategory.id, formData);
+                const { data } = await adminAPI.updateCategory(editingCategory.id, formData, config);
+                if (data.success) {
+                    // Success!
+                }
             } else {
-                await adminAPI.createCategory(formData);
+                const { data } = await adminAPI.createCategory(formData, config);
+                if (data.success) {
+                    // Success!
+                }
             }
 
             setShowModal(false);
             setEditingCategory(null);
-            setFormData({ name: '', icon: '', priority: 0, is_active: true });
+            setFormData({ name: '', emoji: '', priority: 0, active: true });
             fetchCategories();
         } catch (err) {
+            console.error('Category save error:', err);
             alert('Failed to save category.');
         }
     };
@@ -69,7 +83,7 @@ const CategoryManager = ({ darkMode }) => {
         <AdminLayout darkMode={dm}>
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 24 }}>
                 <button
-                    onClick={() => { setEditingCategory(null); setFormData({ name: '', icon: '', priority: 0, is_active: true }); setShowModal(true); }}
+                    onClick={() => { setEditingCategory(null); setFormData({ name: '', emoji: '', priority: 0, active: true }); setShowModal(true); }}
                     style={{
                         padding: '12px 20px', borderRadius: 12, background: '#2563eb', color: '#fff',
                         border: 'none', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
@@ -106,12 +120,12 @@ const CategoryManager = ({ darkMode }) => {
                                             width: 36, height: 36, borderRadius: 10, background: '#2563eb11',
                                             display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18
                                         }}>
-                                            {c.icon || '📦'}
+                                            {c.emoji || '📦'}
                                         </div>
                                         <p style={{ margin: 0, fontWeight: 700 }}>{c.name}</p>
                                     </div>
                                 </td>
-                                <td style={{ padding: '16px', fontSize: 14 }}>{c.icon}</td>
+                                <td style={{ padding: '16px', fontSize: 14 }}>{c.emoji}</td>
                                 <td style={{ padding: '16px' }}>
                                     <span style={{
                                         padding: '2px 8px', borderRadius: 6, background: dm ? '#334155' : '#f1f5f9',
@@ -121,7 +135,7 @@ const CategoryManager = ({ darkMode }) => {
                                     </span>
                                 </td>
                                 <td style={{ padding: '16px' }}>
-                                    {c.is_active ? (
+                                    {c.active ? (
                                         <span style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 600, fontSize: 13 }}>
                                             <CheckCircle size={16} /> Active
                                         </span>
@@ -192,8 +206,8 @@ const CategoryManager = ({ darkMode }) => {
                                     <Grid size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: dm ? '#94a3b8' : '#64748b' }} />
                                     <input
                                         type="text" required
-                                        value={formData.icon}
-                                        onChange={e => setFormData({ ...formData, icon: e.target.value })}
+                                        value={formData.emoji}
+                                        onChange={e => setFormData({ ...formData, emoji: e.target.value })}
                                         style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: 10, border: `1px solid ${border}`, background: dm ? '#0f172a' : '#f8fafc', color: text }}
                                         placeholder="e.g. 📱"
                                     />
@@ -216,11 +230,11 @@ const CategoryManager = ({ darkMode }) => {
 
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
                                 <input
-                                    type="checkbox" id="is_active"
-                                    checked={formData.is_active}
-                                    onChange={e => setFormData({ ...formData, is_active: e.target.checked })}
+                                    type="checkbox" id="active"
+                                    checked={formData.active}
+                                    onChange={e => setFormData({ ...formData, active: e.target.checked })}
                                 />
-                                <label htmlFor="is_active" style={{ fontSize: 14, fontWeight: 600 }}>This category is active</label>
+                                <label htmlFor="active" style={{ fontSize: 14, fontWeight: 600 }}>This category is active</label>
                             </div>
 
                             <button type="submit" style={{

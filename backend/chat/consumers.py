@@ -85,21 +85,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 )
 
         # ── Send push notification to the receiver's global socket ──
-        receiver_id = await self.get_receiver_for_notification(self.room_id, self.user)
-        if receiver_id:
-            await self.channel_layer.group_send(
-                f'notifications_{receiver_id}',
-                {
-                    'type':              'send_notification',
-                    'id':                msg['id'],                     # passing message ID
-                    'message':           msg['message'],                # preview snippet
-                    'notification_type': 'chat_message',                # special identifier
-                    'item_id':           self.room_id,                  # room_id to route click
-                    'item_type':         'chat',
-                    'created_at':        msg['created_at'],
-                    'sender_name':       msg['sender'],                 # The sender's name
-                }
-            )
+        await self.trigger_db_notification(self.room_id, self.user, message_text)
 
 
     async def chat_message(self, event):
@@ -184,8 +170,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         from items.models import ClaimSession
         from chat.models import ChatRoom, ChatMessage
         from items.ai_utils import evaluate_single_answer
-        import random
         from django.utils import timezone
+        from notifications.utils import send_in_app_notification
 
         try:
             room = ChatRoom.objects.get(id=room_id)
@@ -232,16 +218,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 messages_to_send.append("**System:** Verification complete. Right owner verified by AI. You can view the claim code on the item page.")
 
                 # Notify finder
-                try:
-                    from notifications.models import Notification
-                    Notification.objects.create(
-                        user=room.item.user,
-                        item=room.item,
-                        message="AI verified the rightful owner for your item.",
-                        notification_type='item_claimed'
-                    )
-                except Exception as e:
-                    pass
+                send_in_app_notification(
+                    user=room.item.user,
+                    item=room.item,
+                    message="AI verified the rightful owner for your item.",
+                    notification_type='item_claimed'
+                )
 
             else:
                 claim.status = 'failed'
@@ -267,6 +249,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
             })
 
         return system_msgs
+
+    @database_sync_to_async
+    def trigger_db_notification(self, room_id, sender, message_text):
+        from chat.models import ChatRoom
+        from notifications.utils import send_in_app_notification
+        try:
+            room = ChatRoom.objects.get(id=room_id)
+            receiver = room.get_other_participant(sender)
+            if receiver and not room.is_muted_by(receiver):
+                send_in_app_notification(
+                    user=receiver,
+                    item=room.item,
+                    message=f'💬 {sender.name}: {message_text[:60]}',
+                    notification_type='chat_message'
+                )
+        except Exception:
+            pass
 
     @database_sync_to_async
     def get_receiver_for_notification(self, room_id, user):
@@ -308,6 +307,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             'item_type':         event.get('item_type'),
             'created_at':        event.get('created_at'),
             'sender_name':       event.get('sender_name'),
+            'reward_data':       event.get('reward_data'),  # For reward_earned events
         }))
 
     @database_sync_to_async

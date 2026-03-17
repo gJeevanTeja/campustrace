@@ -1,94 +1,156 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { 
+  Shield, 
+  ChevronLeft, 
+  FileText, 
+  Lock, 
+  AlertCircle, 
+  CheckCircle2, 
+  UserX, 
+  MessageSquare, 
+  Image, 
+  GraduationCap, 
+  PhoneCall, 
+  Database, 
+  Ban, 
+  MapPin, 
+  Cookie, 
+  Trash2, 
+  Mail,
+  Zap,
+  Sparkles,
+  ShieldCheck
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import PremiumCard from '../components/ui/PremiumCard';
 import BottomNav from '../components/BottomNav';
 
 const TERMS = [
-  { icon:'📋', title:'Accurate Information',  text:'Users must provide accurate and truthful information when reporting lost or found items. False or misleading reports are strictly not permitted and may lead to account suspension.' },
-  { icon:'🚫', title:'No False Claims',        text:'Fraudulent claims of item ownership are prohibited. All claims are subject to verification by both parties. CampusTrace reserves the right to review disputes.' },
-  { icon:'⚠️', title:'Liability Disclaimer',  text:'CampusTrace is not responsible for any fraudulent activities, disputes, or losses that occur between users. Use the platform responsibly and meet in safe, public campus areas.' },
-  { icon:'✅', title:'Item Verification',      text:'Claimed items must be verified by both parties before handover. We recommend meeting at well-lit, campus security-monitored locations for all item exchanges.' },
-  { icon:'🔒', title:'Data Privacy',           text:'Your personal data is securely stored and encrypted. We never sell or share your data with third parties for commercial purposes. See our Privacy Policy for details.' },
-  { icon:'💬', title:'Messaging Conduct',      text:'Users must not misuse the messaging system for spam, harassment, or any purpose unrelated to lost and found items. Violations will result in account suspension.' },
-  { icon:'⛔', title:'Account Suspension',     text:'Repeated violations of these terms may lead to temporary or permanent account suspension at the sole discretion of CampusTrace administrators without prior notice.' },
-  { icon:'🖼️', title:'Content Standards',      text:'All uploaded images and content must be appropriate and relevant to the reported item. Offensive, inappropriate, or unrelated content will be removed immediately.' },
-  { icon:'🎓', title:'Campus Community Only',  text:'This platform is exclusively for verified members of the campus community. Providing false credentials during registration is a violation and access will be revoked.' },
-  { icon:'📞', title:'Contact & Support',      text:'For any issues, disputes, or violations, contact the campus administration office. We are committed to maintaining a safe and helpful environment for all users.' },
+  { icon: <FileText size={18} />, title: 'Accurate Information', text: 'Users must provide accurate and truthful information when reporting lost or found items. False or misleading reports are strictly not permitted.' },
+  { icon: <Ban size={18} />, title: 'No False Claims', text: 'Fraudulent claims of item ownership are prohibited. All claims are subject to verification by both parties.' },
+  { icon: <AlertCircle size={18} />, title: 'Liability Disclaimer', text: 'CampusTrace is not responsible for any fraudulent activities, disputes, or losses that occur between users.' },
+  { icon: <CheckCircle2 size={18} />, title: 'Item Verification', text: 'Claimed items must be verified by both parties before handover. We recommend meeting at well-lit, campus security-monitored locations.' },
+  { icon: <Lock size={18} />, title: 'Data Privacy', text: 'Your personal data is securely stored and encrypted. We never sell or share your data with third parties for commercial purposes.' },
+  { icon: <MessageSquare size={18} />, title: 'Messaging Conduct', text: 'Users must not misuse the messaging system for spam, harassment, or any purpose unrelated to lost and found items.' },
+  { icon: <UserX size={18} />, title: 'Account Suspension', text: 'Repeated violations may lead to temporary or permanent account suspension at the sole discretion of CampusTrace.' },
+  { icon: <Image size={18} />, title: 'Content Standards', text: 'All uploaded images and content must be appropriate and relevant. Offensive or inappropriate content will be removed.' },
+  { icon: <GraduationCap size={18} />, title: 'Campus Community Only', text: 'This platform is exclusively for verified members of the campus community. Access will be revoked for false credentials.' },
+  { icon: <PhoneCall size={18} />, title: 'Contact & Support', text: 'For any issues, disputes, or violations, contact the campus administration office immediately.' },
 ];
 
 const PRIVACY = [
-  { icon:'📊', title:'Data Collection',   text:'We collect your name, email, phone number, and location data only as necessary to provide the lost and found service effectively. No additional data is collected.' },
-  { icon:'🔐', title:'Data Security',     text:'All data is encrypted in transit (HTTPS) and at rest. We use industry-standard security practices and regularly audit our systems to protect your information.' },
-  { icon:'🚫', title:'No Data Selling',   text:'We never sell, rent, or trade your personal information with third parties for commercial or advertising purposes. Your data is yours.' },
-  { icon:'📍', title:'Location Data',     text:'Location data is used only to display item proximity and connect lost item owners with finders. Continuous location tracking is never performed.' },
-  { icon:'🍪', title:'Cookies',           text:'We use minimal session cookies only for authentication (keeping you logged in). No advertising, tracking, or third-party cookies are used.' },
-  { icon:'🗑️', title:'Data Deletion',     text:'You may request deletion of your account and all associated data at any time by contacting campus administration. Deletion is completed within 30 days.' },
-  { icon:'📧', title:'Email Communications', text:'You will only receive emails related to your account activity, item notifications you opted into, and critical security updates. You can opt out of notifications anytime in Settings.' },
+  { icon: <Database size={18} />, title: 'Data Collection', text: 'We collect name, email, phone, and location data only as necessary to provide the lost and found service effectively.' },
+  { icon: <ShieldCheck size={18} />, title: 'Data Security', text: 'All data is encrypted in transit (HTTPS) and at rest. We use industry-standard security practices and regular audits.' },
+  { icon: <Ban size={18} />, title: 'No Data Selling', text: 'We never sell, rent, or trade your personal information with third parties for commercial or advertising purposes.' },
+  { icon: <MapPin size={18} />, title: 'Location Data', text: 'Location data is used only to display item proximity and connect users. Continuous location tracking is never performed.' },
+  { icon: <Cookie size={18} />, title: 'Cookies', text: 'We use minimal session cookies only for authentication. No advertising, tracking, or third-party cookies are used.' },
+  { icon: <Trash2 size={18} />, title: 'Data Deletion', text: 'You may request deletion of your account and all associated data at any time. Deletion is completed within 30 days.' },
+  { icon: <Mail size={18} />, title: 'Email Communications', text: 'You will only receive emails related to account activity, unit notifications, and critical security updates.' },
 ];
 
-const TermsPage = ({ darkMode: dm }) => {
-  const navigate  = useNavigate();
-  const location  = useLocation();
-  const [tab, setTab] = useState(location.pathname === '/privacy' ? 'privacy' : 'terms');
+const TermsPage = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const [tab, setTab] = useState(location.pathname === '/privacy' ? 'privacy' : 'terms');
 
-  const bg     = dm ? '#0f172a' : '#f8fafc';
-  const card   = dm ? '#1e293b' : '#fff';
-  const text   = dm ? '#e2e8f0' : '#1e293b';
-  const muted  = dm ? '#94a3b8' : '#64748b';
-  const border = dm ? '#334155' : '#e2e8f0';
-  const items  = tab === 'terms' ? TERMS : PRIVACY;
+    const items = tab === 'terms' ? TERMS : PRIVACY;
 
-  return (
-    <div style={{ minHeight:'100vh', background:bg, paddingBottom:90 }}>
+    return (
+        <div className="max-w-4xl mx-auto space-y-12 pb-32 px-4 font-sans">
+            {/* Header */}
+            <header className="flex flex-col items-center text-center space-y-8 pt-12">
+                <div className="space-y-4">
+                   <div className="flex items-center justify-center gap-4">
+                       <button onClick={() => navigate(-1)} className="p-3 bg-white border border-slate-100 rounded-2xl hover:bg-slate-50 transition-all shadow-sm">
+                           <ChevronLeft size={20} className="text-text-primary" />
+                       </button>
+                       <div className="w-12 h-12 bg-primary-gradient rounded-xl flex items-center justify-center text-white shadow-xl rotate-6">
+                           <Shield size={24} />
+                       </div>
+                       <h1 className="text-4xl font-black text-text-primary uppercase tracking-tighter italic">Protocol & Ethics</h1>
+                   </div>
+                   <p className="text-text-secondary font-medium uppercase text-[10px] tracking-[4px]">Institutional Compliance Framework</p>
+                </div>
 
-      {/* Header */}
-      <div style={{ background:'linear-gradient(135deg,#1e40af,#7c3aed)', padding:'20px 16px', color:'#fff' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:16 }}>
-          <button onClick={() => navigate(-1)}
-            style={{ background:'rgba(255,255,255,.2)', border:'none', borderRadius:8, padding:'7px 12px', color:'#fff', cursor:'pointer', fontSize:16 }}>←</button>
-          <div>
-            <h1 style={{ margin:0, fontSize:20, fontWeight:700 }}>Legal</h1>
-            <p style={{ margin:'2px 0 0', fontSize:12, opacity:.8 }}>CampusTrace Policies</p>
-          </div>
-        </div>
-        <div style={{ display:'flex', gap:8, background:'rgba(255,255,255,.15)', borderRadius:12, padding:4 }}>
-          {[['terms','📋 Terms & Conditions'],['privacy','🔒 Privacy Policy']].map(([t, lbl]) => (
-            <button key={t} onClick={() => setTab(t)}
-              style={{ flex:1, padding:'9px', borderRadius:9, border:'none', cursor:'pointer', fontWeight:600, fontSize:13,
-                background: tab===t ? '#fff' : 'transparent', color: tab===t ? '#1e40af' : '#fff' }}>
-              {lbl}
-            </button>
-          ))}
-        </div>
-      </div>
+                <div className="flex bg-slate-100 p-1.5 rounded-[24px] w-full max-w-md">
+                    <button 
+                      onClick={() => setTab('terms')}
+                      className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-[18px] text-[10px] font-black uppercase tracking-widest transition-all ${tab === 'terms' ? 'bg-white text-primary shadow-xl shadow-black/5' : 'text-text-secondary hover:text-text-primary'}`}
+                    >
+                        <FileText size={16} /> Terms of Use
+                    </button>
+                    <button 
+                      onClick={() => setTab('privacy')}
+                      className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-[18px] text-[10px] font-black uppercase tracking-widest transition-all ${tab === 'privacy' ? 'bg-white text-primary shadow-xl shadow-black/5' : 'text-text-secondary hover:text-text-primary'}`}
+                    >
+                        <Lock size={16} /> Privacy Shield
+                    </button>
+                </div>
+            </header>
 
-      <div style={{ padding:16 }}>
-        <div style={{ background:card, borderRadius:16, border:`1px solid ${border}`, overflow:'hidden', marginBottom:16 }}>
-          <div style={{ padding:'14px 16px', borderBottom:`1px solid ${border}`, background: dm?'#162032':'#eff6ff' }}>
-            <p style={{ margin:0, fontSize:13, color: dm?'#93c5fd':'#1d4ed8', fontWeight:500 }}>Last updated: February 2026 · CampusTrace v1.0</p>
-          </div>
-          {items.map((item, i) => (
-            <div key={i} style={{ padding:'16px', borderBottom: i < items.length-1 ? `1px solid ${border}` : 'none', display:'flex', gap:14, alignItems:'flex-start' }}>
-              <div style={{ width:42, height:42, borderRadius:12, background: dm?'#0f172a':'#f0f4ff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, flexShrink:0 }}>
-                {item.icon}
-              </div>
-              <div style={{ flex:1 }}>
-                <p style={{ margin:'0 0 4px', fontWeight:700, fontSize:15, color:text }}>{i+1}. {item.title}</p>
-                <p style={{ margin:0, fontSize:14, color:muted, lineHeight:1.6 }}>{item.text}</p>
-              </div>
+            <motion.div 
+              layout
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="space-y-6"
+            >
+                <PremiumCard className="p-0 overflow-hidden divide-y divide-slate-50">
+                    <div className="p-6 bg-slate-50 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                           <div className="w-2 h-2 rounded-full bg-primary" />
+                           <p className="text-[10px] font-black uppercase tracking-widest text-text-secondary">Release Version: 1.0.4 - FEB 2026</p>
+                        </div>
+                        <span className="text-[10px] font-bold text-primary italic">Fully Audited</span>
+                    </div>
+
+                    <AnimatePresence mode="wait">
+                        <motion.div 
+                          key={tab}
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          className="divide-y divide-slate-50"
+                        >
+                            {items.map((item, i) => (
+                                <div key={i} className="p-8 flex items-start gap-8 group hover:bg-slate-50/50 transition-all">
+                                    <div className="w-14 h-14 bg-white border border-slate-100 text-text-secondary rounded-[20px] flex items-center justify-center shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-all">
+                                        {item.icon}
+                                    </div>
+                                    <div className="space-y-2 flex-1">
+                                        <div className="flex items-center gap-3">
+                                           <span className="text-[10px] font-black text-primary opacity-30">{String(i+1).padStart(2, '0')}</span>
+                                           <h3 className="text-lg font-black text-text-primary uppercase tracking-tight italic">{item.title}</h3>
+                                        </div>
+                                        <p className="text-sm font-medium text-text-secondary leading-relaxed max-w-2xl">{item.text}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </motion.div>
+                    </AnimatePresence>
+                </PremiumCard>
+
+                {/* Footer Disclaimer */}
+                <div className="p-10 rounded-[40px] bg-primary/5 border border-primary/10 relative overflow-hidden text-center space-y-6">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-16 -mt-16" />
+                    <Sparkles size={32} className="mx-auto text-primary opacity-40" />
+                    <div className="space-y-2">
+                       <h4 className="text-xl font-black text-text-primary uppercase tracking-tighter italic">Agreement Disclosure</h4>
+                       <p className="text-sm font-medium text-text-secondary max-w-lg mx-auto leading-relaxed">By maintaining an active session on CampusTrace, you acknowledge and agree to the operational protocols outlined above. For institutional disputes, contact <span className="text-primary font-bold">compliance@campustrace.university</span></p>
+                    </div>
+                </div>
+            </motion.div>
+
+            {/* Utility Links */}
+            <div className="flex flex-col md:flex-row items-center justify-center gap-12 py-8 opacity-40 grayscale hover:grayscale-0 transition-all">
+                <div className="flex items-center gap-2 font-black text-[10px] uppercase tracking-widest"><ShieldCheck size={16} /> Encryption Valid</div>
+                <div className="flex items-center gap-2 font-black text-[10px] uppercase tracking-widest"><Zap size={16} /> Zero-Log Policy</div>
+                <div className="flex items-center gap-2 font-black text-[10px] uppercase tracking-widest font-black"><AlertCircle size={16} /> Campus Security Bonded</div>
             </div>
-          ))}
-        </div>
 
-        <div style={{ background: dm?'#162032':'#eff6ff', borderRadius:12, padding:'13px 16px', border:`1px solid ${dm?'#1d4070':'#bfdbfe'}` }}>
-          <p style={{ margin:0, fontSize:13, color: dm?'#93c5fd':'#1d4ed8', lineHeight:1.6 }}>
-            By using CampusTrace, you agree to all policies above. For questions contact campus administration or email <strong>support@campustrace.edu</strong>
-          </p>
+            <BottomNav />
         </div>
-      </div>
-
-      <BottomNav darkMode={dm} />
-    </div>
-  );
+    );
 };
 
 export default TermsPage;

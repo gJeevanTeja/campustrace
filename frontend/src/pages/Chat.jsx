@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { chatAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import BottomNav from '../components/BottomNav';
+import { Search, MessageSquare, Package, ChevronRight, Filter, AlertCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ChatSkeleton } from '../components/ui/SkeletonLoaders';
 
-const Chat = ({ darkMode }) => {
+const Chat = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
@@ -12,15 +14,8 @@ const Chat = ({ darkMode }) => {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const dm = darkMode;
-  const bg = dm ? '#0f172a' : '#f0f2f5';
-  const text = dm ? '#e2e8f0' : '#1a1a1a';
-  const muted = dm ? '#94a3b8' : '#65676b';
-  const border = dm ? '#334155' : '#e4e6ea';
-  const headerBg = 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)';
-
-  // ── Open direct room from URL param ──────────────────────────────
   useEffect(() => {
     const roomId = searchParams.get('room');
     if (roomId) {
@@ -37,11 +32,10 @@ const Chat = ({ darkMode }) => {
     } catch {
       setError('Failed to load chats');
     } finally {
-      setLoading(false);
+      setTimeout(() => setLoading(false), 500);
     }
   };
 
-  // ── Resolve "other user" name from room ──────────────────────────
   const getOtherUser = (room) => {
     if (room.other_participant?.name) return room.other_participant.name;
     if (!user) return room.participant1_name || 'User';
@@ -61,115 +55,135 @@ const Chat = ({ darkMode }) => {
     return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
   };
 
-  const AVATAR_COLORS = [
-    'linear-gradient(135deg,#f97316,#ef4444)',
-    'linear-gradient(135deg,#8b5cf6,#6366f1)',
-    'linear-gradient(135deg,#06b6d4,#3b82f6)',
-    'linear-gradient(135deg,#10b981,#059669)',
-    'linear-gradient(135deg,#f59e0b,#d97706)',
-    'linear-gradient(135deg,#ec4899,#db2777)',
-  ];
-
-  const getAvatarColor = (name) => {
-    const idx = (name?.charCodeAt(0) || 0) % AVATAR_COLORS.length;
-    return AVATAR_COLORS[idx];
-  };
+  const filteredRooms = rooms.filter(room => 
+    getOtherUser(room).toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (room.item?.title || '').toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <div style={{ minHeight: '100vh', background: bg, paddingBottom: 70 }}>
-
-      {/* Header */}
-      <div style={{ background: headerBg, padding: '20px 16px 18px', color: '#fff' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, letterSpacing: '-0.5px' }}>Messages</h1>
-            <p style={{ margin: '2px 0 0', fontSize: 13, opacity: 0.8 }}>Private conversations</p>
-          </div>
-          <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>
-            💬
-          </div>
+    <div className="space-y-8 min-h-screen pb-32">
+      {/* Header Section */}
+      <section className="glass-effect rounded-3xl p-8 border border-white/40 shadow-xl overflow-hidden relative bg-primary-gradient text-white">
+        <div className="absolute top-0 right-0 p-8 text-white/10 -mr-8 -mt-8 rotate-12">
+            <MessageSquare size={120} />
         </div>
-      </div>
+        
+        <div className="relative z-10 space-y-6">
+            <div className="flex justify-between items-center">
+                <div>
+                    <h2 className="text-3xl font-black tracking-tight">Messages</h2>
+                    <p className="text-white/70 text-sm font-medium">Continue your conversations about items.</p>
+                </div>
+                <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-md">
+                    <MessageSquare size={24} />
+                </div>
+            </div>
+
+            {/* Search Bar */}
+            <div className="relative max-w-md">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50" size={18} />
+                <input 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search contacts or items..."
+                  className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl pl-12 pr-4 py-3.5 outline-none focus:ring-4 focus:ring-white/20 transition-all font-medium placeholder:text-white/40 shadow-inner"
+                />
+            </div>
+        </div>
+      </section>
 
       {error && (
-        <div style={{ background: '#fee2e2', color: '#dc2626', padding: '10px 16px', fontSize: 14 }}>
-          {error}
+        <div className="bg-danger/10 text-danger p-4 rounded-2xl border border-danger/20 flex items-center gap-3 font-bold text-sm">
+           <AlertCircle size={18} />
+           {error}
         </div>
       )}
 
-      <div style={{ padding: '12px 0' }}>
+      {/* Chat List */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between px-2 text-sm text-text-secondary">
+            <div className="flex items-center gap-2 font-bold uppercase tracking-widest text-[10px]">
+                <Filter size={12} className="text-primary" />
+                Recent Conversations
+            </div>
+            <span className="font-bold">{filteredRooms.length} chats</span>
+        </div>
+
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 60, color: muted }}>
-            <div style={{ fontSize: 36, marginBottom: 10 }}>⏳</div>
-            <p>Loading conversations...</p>
+          <div className="bg-white rounded-3xl p-6 border border-border shadow-sm">
+            <ChatSkeleton />
           </div>
-        ) : rooms.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: 70 }}>
-            <div style={{ fontSize: 64, marginBottom: 12 }}>💬</div>
-            <p style={{ color: text, fontWeight: 700, fontSize: 18, margin: '0 0 6px' }}>No conversations yet</p>
-            <p style={{ color: muted, fontSize: 14 }}>Start a chat from any item's detail page.</p>
+        ) : filteredRooms.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-32 bg-gray-50/50 rounded-3xl border border-dashed border-gray-300 text-center">
+            <div className="w-20 h-20 bg-gray-100 rounded-[30px] flex items-center justify-center mb-6 text-3xl">
+                💬
+            </div>
+            <h3 className="text-xl font-bold text-text-primary mb-2">
+                {searchQuery ? 'No results found' : 'No messages yet'}
+            </h3>
+            <p className="text-text-secondary text-sm max-w-xs">
+                {searchQuery ? 'Try a different search term or clear the filter.' : "Start a conversation from any item's detail page to begin."}
+            </p>
           </div>
         ) : (
-          rooms.map(room => {
-            const name = getOtherUser(room);
-            const hasUnread = room.unread_count > 0;
-            return (
-              <div key={room.id} onClick={() => navigate(`/chat/${room.id}`)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 14,
-                  padding: '10px 16px', cursor: 'pointer',
-                  background: hasUnread ? (dm ? '#1e3a5f' : '#e8f0fe') : 'transparent',
-                  borderBottom: `1px solid ${border}`,
-                  transition: 'background 0.15s',
-                }}>
-
-                {/* Avatar */}
-                <div style={{ position: 'relative', flexShrink: 0 }}>
-                  <div style={{
-                    width: 54, height: 54, borderRadius: '50%',
-                    background: getAvatarColor(name),
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: '#fff', fontWeight: 800, fontSize: 22,
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                  }}>
-                    {getInitial(room)}
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
-                    <span style={{ fontWeight: hasUnread ? 800 : 600, fontSize: 16, color: text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '65%' }}>
-                      {name}
-                    </span>
-                    <span style={{ fontSize: 12, color: hasUnread ? '#2563eb' : muted, fontWeight: hasUnread ? 700 : 400, flexShrink: 0 }}>
-                      {formatTime(room.last_message_time || room.updated_at)}
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 14, color: hasUnread ? (dm ? '#93c5fd' : '#1d4ed8') : muted, fontWeight: hasUnread ? 600 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
-                      {room.last_message
-                        ? (room.last_message.length > 40 ? room.last_message.slice(0, 40) + '…' : room.last_message)
-                        : `Re: ${room.item?.title || room.item_title || 'Item'}`}
-                    </span>
+          <div className="bg-white rounded-3xl border border-border overflow-hidden shadow-sm divide-y divide-gray-50">
+            {filteredRooms.map((room, idx) => {
+              const name = getOtherUser(room);
+              const hasUnread = room.unread_count > 0;
+              return (
+                <motion.div 
+                  key={room.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  onClick={() => navigate(`/chat/${room.id}`)}
+                  className={`group flex items-center gap-4 p-5 cursor-pointer transition-all hover:bg-slate-50 relative ${hasUnread ? 'bg-primary/5' : ''}`}
+                >
+                  {hasUnread && <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />}
+                  
+                  {/* Avatar */}
+                  <div className="relative flex-shrink-0">
+                    <div className="w-14 h-14 rounded-2xl bg-primary-gradient flex items-center justify-center text-white font-black text-xl shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform duration-300">
+                      {getInitial(room)}
+                    </div>
                     {hasUnread && (
-                      <div style={{ background: '#2563eb', color: '#fff', borderRadius: '50%', minWidth: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, flexShrink: 0, marginLeft: 8 }}>
-                        {room.unread_count > 9 ? '9+' : room.unread_count}
-                      </div>
+                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-danger text-white border-2 border-white rounded-full flex items-center justify-center text-[10px] font-black shadow-lg">
+                            {room.unread_count}
+                        </div>
                     )}
                   </div>
-                  <div style={{ fontSize: 11, color: muted, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    📦 {room.item?.title || room.item_title}
-                    {room.item?.incident_datetime && ` • ${room.item.type === 'lost' ? 'Lost on' : 'Found on'}: ${new Date(room.item.incident_datetime).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} at ${new Date(room.item.incident_datetime).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}`}
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0 py-1">
+                    <div className="flex justify-between items-center mb-1">
+                      <h4 className={`text-base font-black truncate ${hasUnread ? 'text-text-primary' : 'text-text-primary/80'} group-hover:text-primary transition-colors`}>
+                        {name}
+                      </h4>
+                      <span className={`text-[10px] font-bold ${hasUnread ? 'text-primary' : 'text-text-secondary'}`}>
+                        {formatTime(room.last_message_time || room.updated_at)}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between gap-4">
+                      <p className={`text-sm truncate ${hasUnread ? 'font-bold text-text-primary' : 'text-text-secondary'}`}>
+                        {room.last_message || `RE: ${room.item?.title || room.item_title || 'Item'}`}
+                      </p>
+                      <ChevronRight size={16} className="text-slate-300 group-hover:translate-x-1 transition-transform" />
+                    </div>
+
+                    <div className="flex items-center gap-1.5 mt-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                      <Package size={12} className="text-secondary" />
+                      <span className="text-[10px] font-black uppercase tracking-tighter truncate text-secondary">
+                        {room.item?.title || room.item_title}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </div>
-            );
-          })
+                </motion.div>
+              );
+            })}
+          </div>
         )}
       </div>
-
-      <BottomNav darkMode={darkMode} />
     </div>
   );
 };

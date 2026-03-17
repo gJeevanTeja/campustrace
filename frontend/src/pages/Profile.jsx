@@ -1,36 +1,48 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authAPI, itemsAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import BottomNav from '../components/BottomNav';
+import { 
+  Camera, 
+  Settings, 
+  LogOut, 
+  Trophy, 
+  Package, 
+  CheckCircle, 
+  ChevronRight, 
+  User, 
+  Mail, 
+  Smartphone, 
+  GraduationCap, 
+  Lock, 
+  Trash2, 
+  MapPin,
+  Clock,
+  Sparkles,
+  Shield,
+  Image as ImageIcon
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import PremiumCard from '../components/ui/PremiumCard';
 
-const Profile = ({ darkMode: dm }) => {
+const Profile = () => {
   const navigate = useNavigate();
   const { user, logout, updateUser } = useAuth();
 
-  const [profile,       setProfile]       = useState(null);
-  const [myItems,       setMyItems]       = useState([]);
-  const [claimedItems,  setClaimedItems]  = useState([]);
-  const [loading,       setLoading]       = useState(true);
-  const [editField,     setEditField]     = useState(null);
-  const [editValue,     setEditValue]     = useState('');
-  const [saving,        setSaving]        = useState(false);
-  const [toast,         setToast]         = useState(null);
-  const [showPwdForm,   setShowPwdForm]   = useState(false);
-  const [pwdForm,       setPwdForm]       = useState({ old_password:'', new_password:'', confirm_new_password:'' });
-  const [pwdError,      setPwdError]      = useState('');
-  const [avatarLoading, setAvatarLoading] = useState(false);
+  const [profile, setProfile] = useState(null);
+  const [myItems, setMyItems] = useState([]);
+  const [claimedItems, setClaimedItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('posted');
+  const [editField, setEditField] = useState(null);
+  const [editValue, setEditValue] = useState('');
+  const [toast, setToast] = useState(null);
+  const [showPwdForm, setShowPwdForm] = useState(false);
+  const [pwdForm, setPwdForm] = useState({ old_password: '', new_password: '', confirm_new_password: '' });
   const [showPhotoMenu, setShowPhotoMenu] = useState(false);
-  const [activeTab,     setActiveTab]     = useState('posted');
-  const fileGalleryRef = useRef(null);
-  const fileCameraRef  = useRef(null);
-
-  const bg     = dm ? '#0f172a' : '#f8fafc';
-  const card   = dm ? '#1e293b' : '#ffffff';
-  const text   = dm ? '#e2e8f0' : '#1a1a1a';
-  const muted  = dm ? '#94a3b8' : '#64748b';
-  const border = dm ? '#334155' : '#e8ecf0';
-  const inp    = dm ? '#0f172a' : '#f8fafc';
+  const [saving, setSaving] = useState(false);
+  const [pwdError, setPwdError] = useState('');
+  const [avatarLoading, setAvatarLoading] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -57,24 +69,19 @@ const Profile = ({ darkMode: dm }) => {
     setTimeout(() => setToast(null), 3000);
   };
 
-  // ── Delete item from profile list ────────────────────────────
   const handleDeleteItem = async (e, itemId) => {
     e.stopPropagation();
-    if (!window.confirm('Delete this item? This cannot be undone.')) return;
+    if (!window.confirm('Delete this item?')) return;
     try {
       await itemsAPI.delete(itemId);
       setMyItems(prev => prev.filter(i => i.id !== itemId));
       setClaimedItems(prev => prev.filter(i => i.id !== itemId));
-      showToast('Item deleted ✓');
-    } catch {
-      showToast('Failed to delete item', true);
-    }
+      showToast('Item removed ✓');
+    } catch { showToast('Failed to delete', true); }
   };
 
-  // ── Avatar upload ─────────────────────────────────────────────
   const handleAvatarUpload = async (file) => {
     if (!file) return;
-    if (!file.type.startsWith('image/')) { showToast('Please select an image file', true); return; }
     setAvatarLoading(true);
     setShowPhotoMenu(false);
     const formData = new FormData();
@@ -84,18 +91,12 @@ const Profile = ({ darkMode: dm }) => {
       const url = data.avatar_url || data.avatar;
       setProfile(p => ({ ...p, avatar: url }));
       if (updateUser) updateUser({ ...user, avatar: url });
-      showToast('Profile photo updated ✓');
-    } catch {
-      showToast('Failed to update photo', true);
-    } finally {
-      setAvatarLoading(false);
-    }
+      showToast('Photo updated ✓');
+    } catch { showToast('Upload failed', true); }
+    finally { setAvatarLoading(false); }
   };
 
-  // ── Inline field edit ──────────────────────────────────────────
-  const startEdit  = (field, val) => { setEditField(field); setEditValue(val || ''); };
-  const cancelEdit = () => { setEditField(null); setEditValue(''); };
-  const saveEdit   = async () => {
+  const saveEdit = async () => {
     if (!editField) return;
     setSaving(true);
     try {
@@ -104,299 +105,362 @@ const Profile = ({ darkMode: dm }) => {
       setProfile(p => ({ ...p, ...updated }));
       if (updateUser) updateUser({ ...user, [editField]: editValue });
       showToast('Saved ✓');
-      cancelEdit();
-    } catch (e) {
-      showToast(e?.response?.data?.[editField]?.[0] || e?.response?.data?.message || 'Failed to save', true);
-    } finally { setSaving(false); }
+      setEditField(null);
+    } catch (e) { showToast('Save failed', true); }
+    finally { setSaving(false); }
   };
 
-  // ── Change password ────────────────────────────────────────────
   const handleChangePassword = async (e) => {
     e.preventDefault();
     setPwdError('');
-    if (pwdForm.new_password !== pwdForm.confirm_new_password) { setPwdError('Passwords do not match'); return; }
-    if (pwdForm.new_password.length < 8) { setPwdError('Password must be at least 8 characters'); return; }
+    if (pwdForm.new_password !== pwdForm.confirm_new_password) return setPwdError('Passwords do not match');
+    if (pwdForm.new_password.length < 6) return setPwdError('Password too short (min 6 chars)');
+    
     setSaving(true);
     try {
       await authAPI.changePassword(pwdForm);
-      showToast('Password changed ✓');
+      showToast('Password updated ✓');
       setShowPwdForm(false);
-      setPwdForm({ old_password:'', new_password:'', confirm_new_password:'' });
-    } catch (e) {
-      setPwdError(e?.response?.data?.error || e?.response?.data?.old_password?.[0] || 'Failed to change password');
-    } finally { setSaving(false); }
+      setPwdForm({ old_password: '', new_password: '', confirm_new_password: '' });
+    } catch (e) { 
+      setPwdError(e.response?.data?.error || 'Update failed. Check current password.'); 
+    } finally { 
+      setSaving(false); 
+    }
   };
-
-  const handleLogout = async () => {
-    if (!window.confirm('Are you sure you want to sign out?')) return;
-    try { await logout(); } catch {}
-    navigate('/login');
-  };
-
-  const p = profile || {};
-
-  const ACCOUNT_FIELDS = [
-    { field:'name',         label:'FULL NAME',       value:p.name,         icon:'👤', iconBg:'#eff6ff', iconColor:'#3b82f6', editable:true  },
-    { field:'username',     label:'USERNAME',         value:p.username,     icon:'🏷️', iconBg:'#f0fdf4', iconColor:'#10b981', editable:true  },
-    { field:'section',      label:'SECTION',          value:p.section,      icon:'📚', iconBg:'#fdf2f8', iconColor:'#ec4899', editable:true  },
-    { field:'department',   label:'DEPARTMENT',       value:p.department,   icon:'🏛️', iconBg:'#f5f3ff', iconColor:'#8b5cf6', editable:false },
-    { field:'college_year', label:'COLLEGE YEAR',     value:p.college_year, icon:'🎓', iconBg:'#fffbeb', iconColor:'#f59e0b', editable:false },
-    { field:'phone',        label:'PHONE NUMBER',     value:p.phone,        icon:'📱', iconBg:'#ecfdf5', iconColor:'#059669', editable:true  },
-    { field:'email',        label:'UNIVERSITY EMAIL', value:p.email,        icon:'✉️', iconBg:'#fef3c7', iconColor:'#d97706', editable:false, locked:true },
-  ];
-
-  const inputStyle = { flex:1, border:`1.5px solid #3b82f6`, borderRadius:8, padding:'7px 10px', fontSize:14, color:text, background:inp, outline:'none' };
 
   if (loading) return (
-    <div style={{ minHeight:'100vh', background:bg, display:'flex', alignItems:'center', justifyContent:'center' }}>
-      <div style={{ textAlign:'center' }}><div style={{ fontSize:40, marginBottom:12 }}>👤</div><p style={{ color:muted }}>Loading profile...</p></div>
-    </div>
+     <div className="flex flex-col items-center justify-center h-[70vh] space-y-4">
+        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+        <p className="font-bold text-text-secondary">Loading Profile...</p>
+     </div>
   );
 
-  const avatarSrc = p.avatar || p.avatar_url || p.google_picture;
-  const displayItems = activeTab === 'posted' ? myItems : claimedItems;
+  const p = profile || {};
+  const currentItems = activeTab === 'posted' ? myItems : claimedItems;
 
   return (
-    <div style={{ minHeight:'100vh', background:bg, paddingBottom:90, fontFamily:'-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
-
-      {/* Toast */}
-      {toast && (
-        <div style={{ position:'fixed', top:20, left:'50%', transform:'translateX(-50%)', background: toast.isError ? '#ef4444' : '#10b981', color:'#fff', padding:'10px 20px', borderRadius:12, fontSize:14, fontWeight:600, zIndex:9999, boxShadow:'0 4px 12px rgba(0,0,0,.2)', whiteSpace:'nowrap' }}>
-          {toast.msg}
-        </div>
-      )}
-
-      {/* Photo Menu */}
-      {showPhotoMenu && (
-        <div onClick={() => setShowPhotoMenu(false)}
-          style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.5)', zIndex:9990, display:'flex', alignItems:'flex-end', justifyContent:'center' }}>
-          <div onClick={e => e.stopPropagation()}
-            style={{ background:card, borderRadius:'20px 20px 0 0', padding:'24px 20px', width:'100%', maxWidth:460 }}>
-            <h3 style={{ margin:'0 0 18px', fontWeight:700, color:text, textAlign:'center' }}>Update Profile Photo</h3>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:12 }}>
-              <label style={{ border:`2px dashed #2563eb`, borderRadius:14, padding:'18px 12px', textAlign:'center', cursor:'pointer', background: dm?'#0f172a':'#eff6ff' }}>
-                <input ref={fileCameraRef} type="file" accept="image/*" capture="environment" style={{ display:'none' }} onChange={e => handleAvatarUpload(e.target.files?.[0])} />
-                <div style={{ fontSize:32, marginBottom:6 }}>📷</div>
-                <div style={{ fontWeight:700, color:'#2563eb', fontSize:14 }}>Camera</div>
-                <div style={{ color:muted, fontSize:12, marginTop:2 }}>Take a photo</div>
-              </label>
-              <label style={{ border:`2px dashed ${border}`, borderRadius:14, padding:'18px 12px', textAlign:'center', cursor:'pointer', background:inp }}>
-                <input ref={fileGalleryRef} type="file" accept="image/*" style={{ display:'none' }} onChange={e => handleAvatarUpload(e.target.files?.[0])} />
-                <div style={{ fontSize:32, marginBottom:6 }}>🖼️</div>
-                <div style={{ fontWeight:700, color:text, fontSize:14 }}>Gallery</div>
-                <div style={{ color:muted, fontSize:12, marginTop:2 }}>Choose photo</div>
-              </label>
-            </div>
-            <button onClick={() => setShowPhotoMenu(false)}
-              style={{ width:'100%', padding:'13px', borderRadius:12, border:`1.5px solid ${border}`, background:'none', color:muted, fontSize:14, cursor:'pointer' }}>
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── Profile Hero — NO stat counts ── */}
-      <div style={{ background:'linear-gradient(135deg,#2563eb 0%,#7c3aed 100%)', padding:'32px 20px 28px', textAlign:'center', color:'#fff' }}>
-        <div style={{ position:'relative', display:'inline-block', marginBottom:14 }}>
-          <div style={{ width:90, height:90, borderRadius:'50%', border:'3px solid rgba(255,255,255,.6)', overflow:'hidden', background:'#1e40af', display:'flex', alignItems:'center', justifyContent:'center', fontSize:34, fontWeight:800, color:'#fff' }}>
-            {avatarSrc
-              ? <img src={avatarSrc} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} onError={e => e.target.style.display='none'} />
-              : (p.name?.[0]?.toUpperCase() || '?')}
-          </div>
-          <button onClick={() => setShowPhotoMenu(true)} disabled={avatarLoading}
-            style={{ position:'absolute', bottom:2, right:2, width:28, height:28, borderRadius:'50%', background:'#fff', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, boxShadow:'0 2px 6px rgba(0,0,0,.3)' }}>
-            {avatarLoading ? '⏳' : '📷'}
-          </button>
-        </div>
-
-        <h1 style={{ margin:'0 0 3px', fontSize:22, fontWeight:800 }}>{p.name || 'Your Name'}</h1>
-        {p.username && <p style={{ margin:'0 0 3px', fontSize:13, opacity:.8 }}>@{p.username}</p>}
-        <p style={{ margin:'0 0 3px', fontSize:13, opacity:.85 }}>{p.email}</p>
-        {p.department && (
-          <p style={{ margin:0, fontSize:13, opacity:.75 }}>
-            {p.department}{p.college_year ? ` · ${p.college_year}` : ''}
-          </p>
-        )}
-        {/* ✅ REMOVED: Posted / Lost / Found / Claimed stat boxes */}
-      </div>
-
-      <div style={{ padding:'14px 16px 0' }}>
-
-        {/* ── Account Details ── */}
-        <div style={{ background:card, borderRadius:16, marginBottom:14, border:`1px solid ${border}`, overflow:'hidden' }}>
-          <div style={{ padding:'13px 16px 9px', borderBottom:`1px solid ${border}` }}>
-            <p style={{ margin:0, fontSize:11, fontWeight:800, color:muted, textTransform:'uppercase', letterSpacing:'1px' }}>Account Details</p>
-          </div>
-          {ACCOUNT_FIELDS.map((row, i) => {
-            const isEditing = editField === row.field;
-            const display   = row.value || (row.locked ? '—' : 'Not set');
-            return (
-              <div key={row.field} style={{ padding:'13px 16px', borderBottom: i < ACCOUNT_FIELDS.length-1 ? `1px solid ${border}` : 'none', display:'flex', alignItems:'center', gap:12 }}>
-                <div style={{ width:40, height:40, borderRadius:12, flexShrink:0, background: dm ? `${row.iconColor}20` : row.iconBg, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, border:`1px solid ${dm ? row.iconColor+'30' : row.iconColor+'20'}` }}>
-                  {row.icon}
+    <div className="max-w-5xl mx-auto space-y-8 pb-32">
+      {/* Hero Section */}
+      <section className="relative glass-effect rounded-[40px] p-8 sm:p-12 overflow-hidden bg-primary-gradient text-white shadow-2xl">
+         <div className="absolute top-0 right-0 p-12 text-white/10 -mr-12 -mt-12 rotate-45">
+            <User size={180} />
+         </div>
+         <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
+            <div className="relative group">
+                <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-[40px] border-4 border-white/20 overflow-hidden bg-slate-800 flex items-center justify-center text-4xl font-black shadow-2xl relative">
+                    {p.avatar || p.google_picture ? (
+                        <img src={p.avatar || p.google_picture} className={`w-full h-full object-cover transition-opacity ${avatarLoading ? 'opacity-40' : 'opacity-100'}`} alt="" />
+                    ) : (p.name?.[0]?.toUpperCase() || 'U')}
+                    
+                    {avatarLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+                            <div className="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+                        </div>
+                    )}
                 </div>
-                <div style={{ flex:1, minWidth:0 }}>
-                  <p style={{ margin:'0 0 2px', fontSize:10, fontWeight:700, color:muted, textTransform:'uppercase', letterSpacing:'.6px' }}>{row.label}</p>
-                  {isEditing ? (
-                    <div style={{ display:'flex', gap:6, alignItems:'center' }}>
-                      <input value={editValue} onChange={e => setEditValue(e.target.value)} autoFocus
-                        onKeyDown={e => { if (e.key==='Enter') saveEdit(); if (e.key==='Escape') cancelEdit(); }}
-                        style={inputStyle} />
-                      <button onClick={saveEdit} disabled={saving}
-                        style={{ background:'#3b82f6', color:'#fff', border:'none', borderRadius:7, padding:'7px 11px', cursor:'pointer', fontSize:13, fontWeight:600, flexShrink:0 }}>
-                        {saving ? '…' : 'Save'}
-                      </button>
-                      <button onClick={cancelEdit}
-                        style={{ background: dm?'#334155':'#f1f5f9', color:muted, border:'none', borderRadius:7, padding:'7px 9px', cursor:'pointer', fontSize:13, flexShrink:0 }}>✕</button>
+                <button 
+                  onClick={() => setShowPhotoMenu(true)}
+                  disabled={avatarLoading}
+                  className="absolute bottom-2 right-2 p-3 bg-white text-primary rounded-2xl shadow-xl hover:scale-110 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <Camera size={20} />
+                </button>
+            </div>
+            <div className="text-center md:text-left space-y-2">
+                <h1 className="text-3xl sm:text-5xl font-black tracking-tighter uppercase">{p.name || 'Anonymous'}</h1>
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                   <span className="bg-white/10 backdrop-blur-md px-3 py-1 rounded-lg text-xs font-bold border border-white/10">@{p.username}</span>
+                   <span className="bg-white/10 backdrop-blur-md px-3 py-1 rounded-lg text-xs font-bold border border-white/10 uppercase tracking-widest">{p.department}</span>
+                </div>
+                <div className="pt-4 flex gap-4">
+                   <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 min-w-[100px]">
+                      <p className="text-[10px] font-black uppercase opacity-60">Success Rate</p>
+                      <p className="text-xl font-black">94%</p>
+                   </div>
+                   <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 min-w-[100px]">
+                      <p className="text-[10px] font-black uppercase opacity-60">Karma Points</p>
+                      <p className="text-xl font-black">{p.reward_points || 0}</p>
+                   </div>
+                </div>
+            </div>
+         </div>
+      </section>
+
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left: Stats & My Items */}
+        <div className="lg:col-span-2 space-y-8">
+           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {[
+                { label: 'Posted', val: myItems.length, icon: Package, color: 'text-primary' },
+                { label: 'Resolved', val: claimedItems.length, icon: CheckCircle, color: 'text-success' },
+                { label: 'Rank', val: '#12', icon: Trophy, color: 'text-amber-500' },
+                { label: 'Level', val: p.level || 'Silver', icon: Sparkles, color: 'text-secondary' },
+              ].map((s, i) => (
+                <PremiumCard key={i} className="p-5 text-center flex flex-col items-center justify-center gap-2">
+                   <s.icon size={24} className={s.color} />
+                   <p className="text-xs font-black uppercase opacity-60 tracking-widest">{s.label}</p>
+                   <p className="text-2xl font-black">{s.val}</p>
+                </PremiumCard>
+              ))}
+           </div>
+
+           <div className="bg-white rounded-[32px] border border-border overflow-hidden shadow-sm">
+              <div className="flex border-b border-border">
+                  {[
+                    { id: 'posted', lbl: `My Submissions (${myItems.length})` },
+                    { id: 'claimed', lbl: `Claimed by Me (${claimedItems.length})` }
+                  ].map(tab => (
+                    <button 
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`flex-1 py-5 text-xs font-black uppercase tracking-widest transition-all ${activeTab === tab.id ? 'bg-slate-50 text-primary border-b-4 border-primary' : 'text-text-secondary hover:bg-slate-50'}`}
+                    >
+                      {tab.lbl}
+                    </button>
+                  ))}
+              </div>
+              <div className="divide-y divide-slate-50 max-h-[500px] overflow-y-auto no-scrollbar">
+                  {currentItems.length === 0 ? (
+                    <div className="p-12 text-center space-y-4">
+                        <div className="text-4xl">📦</div>
+                        <p className="text-sm font-bold text-text-secondary">No items found in this category.</p>
+                        <button onClick={() => navigate('/report')} className="text-primary font-black text-xs uppercase hover:underline">Report Something Now</button>
                     </div>
                   ) : (
-                    <p style={{ margin:0, fontSize:15, fontWeight:600, color: row.value ? text : muted, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{display}</p>
+                    currentItems.map((item, idx) => (
+                      <motion.div 
+                        key={item.id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: idx * 0.05 }}
+                        className="p-5 flex items-center justify-between group hover:bg-slate-50 transition-colors"
+                      >
+                         <div className="flex items-center gap-4 cursor-pointer" onClick={() => navigate(`/item/${item.id}`)}>
+                            <div className="w-14 h-14 rounded-2xl overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200">
+                               {item.image_url ? (
+                                 <img src={item.image_url} className="w-full h-full object-cover" alt="" />
+                               ) : (
+                                 <div className="w-full h-full flex items-center justify-center text-xl">📦</div>
+                               )}
+                            </div>
+                            <div className="min-w-0">
+                               <h4 className="font-black text-text-primary text-base truncate group-hover:text-primary transition-colors">{item.title}</h4>
+                               <div className="flex items-center gap-3 text-[10px] font-bold text-text-secondary uppercase">
+                                  <span className="flex items-center gap-1"><MapPin size={10} /> {item.location_name || 'Campus'}</span>
+                                  <span className="flex items-center gap-1"><Clock size={10} /> {item.time_ago}</span>
+                               </div>
+                            </div>
+                         </div>
+                         <div className="flex items-center gap-4">
+                            <span className={`text-[9px] font-black px-2 py-1 rounded-md uppercase tracking-tighter ${item.status === 'active' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'}`}>
+                               {item.status}
+                            </span>
+                            {activeTab === 'posted' && (
+                               <button onClick={(e) => handleDeleteItem(e, item.id)} className="p-2.5 text-danger bg-danger/5 rounded-xl opacity-0 group-hover:opacity-100 transition-all hover:bg-danger/10">
+                                  <Trash2 size={16} />
+                               </button>
+                            )}
+                         </div>
+                      </motion.div>
+                    ))
                   )}
-                </div>
-                {!isEditing && (
-                  row.locked
-                    ? <span style={{ fontSize:16, color:muted, flexShrink:0 }}>🔒</span>
-                    : row.editable
-                      ? <button onClick={() => startEdit(row.field, row.value)}
-                          style={{ background:'none', border:'none', cursor:'pointer', fontSize:18, color:muted, flexShrink:0, padding:4 }}>✏️</button>
-                      : null
-                )}
               </div>
-            );
-          })}
+           </div>
         </div>
 
-        {/* ── My Items (Posted + Claimed tabs) with Delete ── */}
-        <div style={{ background:card, borderRadius:16, marginBottom:14, border:`1px solid ${border}`, overflow:'hidden' }}>
-          <div style={{ display:'flex', borderBottom:`1px solid ${border}` }}>
-            {[['posted', `📋 Posted (${myItems.length})`], ['claimed', `✅ Claimed (${claimedItems.length})`]].map(([t, lbl]) => (
-              <button key={t} onClick={() => setActiveTab(t)}
-                style={{ flex:1, padding:'13px 10px', border:'none', background:'none', cursor:'pointer', fontWeight:700, fontSize:13,
-                  color: activeTab===t ? '#2563eb' : muted,
-                  borderBottom: activeTab===t ? '2px solid #2563eb' : '2px solid transparent',
-                }}>
-                {lbl}
+        {/* Right: Settings & Details */}
+        <div className="space-y-8">
+           <PremiumCard className="p-8 space-y-6" hover={false}>
+              <h3 className="text-sm font-bold text-text-primary uppercase tracking-widest flex items-center gap-2">
+                 <Settings size={18} className="text-primary" /> Account Details
+              </h3>
+              <div className="space-y-4">
+                 {[
+                   { id: 'name', lbl: 'Full Name', val: p.name, icon: User, edit: true },
+                   { id: 'username', lbl: 'Username', val: p.username, icon: Shield, edit: true },
+                   { id: 'email', lbl: 'Email', val: p.email, icon: Mail, edit: false },
+                   { id: 'phone', lbl: 'Mobile', val: p.phone, icon: Smartphone, edit: true },
+                   { id: 'department', lbl: 'Dept', val: p.department, icon: GraduationCap, edit: false },
+                 ].map(f => (
+                   <div key={f.id} className="p-4 bg-slate-50 rounded-2xl group transition-all">
+                      <div className="flex items-center justify-between mb-1">
+                         <div className="flex items-center gap-2 text-[10px] font-black text-text-secondary uppercase tracking-widest">
+                            <f.icon size={12} /> {f.lbl}
+                         </div>
+                         {f.edit && (
+                           <button onClick={() => { setEditField(f.id); setEditValue(f.val || ''); }} className="opacity-0 group-hover:opacity-100 transition-all text-primary font-black text-[10px]">EDIT</button>
+                         )}
+                      </div>
+                      <p className="font-bold text-text-primary truncate">{f.val || '—'}</p>
+                   </div>
+                 ))}
+              </div>
+              <button 
+                onClick={logout}
+                className="w-full py-4 rounded-2xl flex items-center justify-center gap-3 font-black text-danger bg-danger/5 border border-danger/10 hover:bg-danger/10 transition-all active:scale-95"
+              >
+                  <LogOut size={20} /> SIGN OUT
               </button>
-            ))}
-          </div>
+           </PremiumCard>
 
-          <div style={{ maxHeight:320, overflowY:'auto' }}>
-            {displayItems.length === 0 && (
-              <div style={{ padding:'24px', textAlign:'center', color:muted }}>
-                {activeTab === 'posted' ? 'No posted items yet.' : 'No claimed items yet.'}
-              </div>
-            )}
-            {displayItems.map((item, i) => (
-              <div key={item.id}
-                style={{ padding:'13px 16px', borderBottom: i < displayItems.length-1 ? `1px solid ${border}` : 'none', display:'flex', alignItems:'center', gap:12 }}>
-
-                {/* Thumbnail — actual photo or initial */}
-                <div onClick={() => navigate(`/item/${item.id}`)}
-                  style={{ width:46, height:46, borderRadius:10, overflow:'hidden', flexShrink:0, cursor:'pointer',
-                    background: item.type==='lost' ? '#fee2e2' : '#dcfce7',
-                    display:'flex', alignItems:'center', justifyContent:'center',
-                    fontSize:18, fontWeight:800, color: item.type==='lost' ? '#ef4444' : '#16a34a',
-                  }}>
-                  {item.image_url
-                    ? <img src={item.image_url} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} onError={e => e.target.style.display='none'} />
-                    : (item.title?.[0]?.toUpperCase() || '?')}
-                </div>
-
-                {/* Info */}
-                <div onClick={() => navigate(`/item/${item.id}`)} style={{ flex:1, minWidth:0, cursor:'pointer' }}>
-                  <p style={{ margin:0, fontSize:14, fontWeight:600, color:text, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.title}</p>
-                  <p style={{ margin:'2px 0 0', fontSize:12, color:muted }}>
-                    {item.location_name || item.location_display || item.location} · {item.time_ago}
-                  </p>
-                </div>
-
-                {/* Status badge */}
-                <span style={{ fontSize:10, fontWeight:700, padding:'3px 8px', borderRadius:10, flexShrink:0,
-                  background: item.status==='active' ? '#dcfce7' : item.status==='claimed' ? '#fef3c7' : '#f1f5f9',
-                  color:      item.status==='active' ? '#16a34a' : item.status==='claimed' ? '#d97706' : '#64748b',
-                }}>
-                  {item.status?.toUpperCase()}
-                </span>
-
-                {/* ✅ Delete button */}
-                {activeTab === 'posted' && (
-                  <button onClick={(e) => handleDeleteItem(e, item.id)}
-                    style={{ background:'#fee2e2', border:'none', borderRadius:8, padding:'6px 8px',
-                      cursor:'pointer', color:'#ef4444', fontSize:14, flexShrink:0 }}
-                    title="Delete item">
-                    🗑
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {myItems.length > 0 && (
-            <button onClick={() => navigate('/my-items')}
-              style={{ width:'100%', padding:'12px', background:'none', border:'none', cursor:'pointer', color:'#2563eb', fontSize:14, fontWeight:600, borderTop:`1px solid ${border}` }}>
-              View All Items →
-            </button>
-          )}
-        </div>
-
-        {/* ── Change Password ── */}
-        <div style={{ background:card, borderRadius:16, marginBottom:14, border:`1px solid ${border}`, overflow:'hidden' }}>
-          <button onClick={() => setShowPwdForm(v => !v)}
-            style={{ width:'100%', padding:'15px 16px', border:'none', background:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'space-between', color:text }}>
-            <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-              <div style={{ width:40, height:40, borderRadius:12, background: dm?'#7c3aed20':'#f5f3ff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18 }}>🔑</div>
-              <span style={{ fontWeight:600, fontSize:15 }}>Change Password</span>
-            </div>
-            <span style={{ color:muted, fontSize:14 }}>{showPwdForm ? '▲' : '▼'}</span>
-          </button>
-          {showPwdForm && (
-            <form onSubmit={handleChangePassword} style={{ padding:'0 16px 16px' }}>
-              {pwdError && <div style={{ background:'#fee2e2', color:'#dc2626', borderRadius:10, padding:'10px 14px', marginBottom:12, fontSize:13 }}>⚠️ {pwdError}</div>}
-              {[
-                { name:'old_password',         label:'Current Password',   ph:'Current password'    },
-                { name:'new_password',         label:'New Password',        ph:'New password'        },
-                { name:'confirm_new_password', label:'Confirm Password',    ph:'Confirm new password'},
-              ].map(f => (
-                <div key={f.name} style={{ marginBottom:12 }}>
-                  <label style={{ display:'block', fontSize:12, fontWeight:600, color:muted, marginBottom:4, textTransform:'uppercase', letterSpacing:'.5px' }}>{f.label}</label>
-                  <input type="password" placeholder={f.ph} value={pwdForm[f.name]}
-                    onChange={e => setPwdForm(p => ({...p, [f.name]: e.target.value}))}
-                    autoComplete="new-password"
-                    style={{ width:'100%', padding:'11px 14px', borderRadius:10, border:`1.5px solid ${border}`, background:inp, color:text, fontSize:14, outline:'none', boxSizing:'border-box' }} />
-                </div>
-              ))}
-              <button type="submit" disabled={saving}
-                style={{ width:'100%', padding:'12px', borderRadius:12, border:'none', background:'#7c3aed', color:'#fff', fontSize:15, fontWeight:700, cursor:'pointer', opacity: saving ? .7 : 1 }}>
-                {saving ? 'Updating...' : 'Update Password'}
+           <PremiumCard className="p-8 space-y-6" hover={false}>
+              <button 
+                onClick={() => setShowPwdForm(!showPwdForm)}
+                className="w-full flex items-center justify-between group"
+              >
+                 <div className="flex items-center gap-3">
+                    <div className="p-2 bg-indigo-50 text-indigo-500 rounded-xl">
+                       <Lock size={18} />
+                    </div>
+                    <span className="font-black text-sm uppercase tracking-tighter">Security Settings</span>
+                 </div>
+                 <ChevronRight size={18} className={`transition-transform duration-300 ${showPwdForm ? 'rotate-90' : ''}`} />
               </button>
-            </form>
-          )}
+              
+              <AnimatePresence>
+                 {showPwdForm && (
+                   <motion.form 
+                     initial={{ height: 0, opacity: 0 }}
+                     animate={{ height: 'auto', opacity: 1 }}
+                     exit={{ height: 0, opacity: 0 }}
+                     className="overflow-hidden space-y-4 pt-2"
+                     onSubmit={handleChangePassword}
+                   >
+                      {pwdError && (
+                         <div className="bg-danger/10 text-danger text-[10px] font-black uppercase tracking-widest p-3 rounded-xl border border-danger/10">
+                            {pwdError}
+                         </div>
+                      )}
+                      <input 
+                        type="password" 
+                        placeholder="Current Password" 
+                        required
+                        className="w-full bg-slate-50 border border-border rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 transition-all text-sm font-medium"
+                        onChange={(e) => setPwdForm({...pwdForm, old_password: e.target.value})}
+                      />
+                      <input 
+                        type="password" 
+                        placeholder="New Password" 
+                        required
+                        className="w-full bg-slate-50 border border-border rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 transition-all text-sm font-medium"
+                        onChange={(e) => setPwdForm({...pwdForm, new_password: e.target.value})}
+                      />
+                      <input 
+                        type="password" 
+                        placeholder="Confirm Password" 
+                        required
+                        className="w-full bg-slate-50 border border-border rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 transition-all text-sm font-medium"
+                        onChange={(e) => setPwdForm({...pwdForm, confirm_new_password: e.target.value})}
+                      />
+                      <button 
+                        disabled={saving}
+                        className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                         {saving ? 'Updating...' : 'Update Password'}
+                      </button>
+                   </motion.form>
+                 )}
+              </AnimatePresence>
+           </PremiumCard>
         </div>
-
-        {/* ── Quick Links ── */}
-        <div style={{ background:card, borderRadius:16, marginBottom:14, border:`1px solid ${border}`, overflow:'hidden' }}>
-          {[
-            { label:'Notification Settings', icon:'🔔', bg:'#fdf2f8', ic:'#ec4899', to:'/settings' },
-            { label:'Terms & Privacy',        icon:'📜', bg:'#f0fdf4', ic:'#10b981', to:'/terms'    },
-          ].map((link, i) => (
-            <button key={link.label} onClick={() => navigate(link.to)}
-              style={{ width:'100%', padding:'14px 16px', border:'none', background:'none', cursor:'pointer', display:'flex', alignItems:'center', gap:14, borderBottom: i === 0 ? `1px solid ${border}` : 'none' }}>
-              <div style={{ width:40, height:40, borderRadius:12, background: dm ? `${link.ic}20` : link.bg, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0 }}>{link.icon}</div>
-              <span style={{ flex:1, textAlign:'left', fontSize:15, fontWeight:600, color:text }}>{link.label}</span>
-              <span style={{ color:muted, fontSize:16 }}>›</span>
-            </button>
-          ))}
-        </div>
-
-        {/* ── Sign Out ── */}
-        <button onClick={handleLogout}
-          style={{ width:'100%', padding:'14px', borderRadius:14, border:'1.5px solid #ef4444', background: dm?'#1e293b':'#fff5f5', color:'#ef4444', fontSize:16, fontWeight:700, cursor:'pointer', marginBottom:8, display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
-          🚪 Sign Out
-        </button>
-        <p style={{ textAlign:'center', color:muted, fontSize:12, marginTop:8 }}>CampusTrace v1.0 · Made with ❤️</p>
       </div>
 
-      <BottomNav darkMode={dm} />
+           {/* Rewards Section */}
+           <PremiumCard className="p-8 space-y-6" hover={false}>
+              <h3 className="text-sm font-bold text-text-primary uppercase tracking-widest flex items-center gap-2">
+                 <Trophy size={18} className="text-amber-500" /> Rewards
+              </h3>
+              <div className="space-y-4">
+                 <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-5 space-y-3">
+                    <div className="flex justify-between items-center">
+                       <span className="text-xs font-black uppercase text-amber-700">Reward Points</span>
+                       <span className="text-2xl font-black text-amber-600">{p.reward_points || 0}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                       <span className="text-xs font-black uppercase text-amber-700">Level</span>
+                       <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200">{p.level || 'Beginner Helper'}</span>
+                    </div>
+                    <div className="w-full bg-amber-200 rounded-full h-2 mt-2">
+                       <div className="bg-amber-500 h-2 rounded-full transition-all duration-700" style={{ width: Math.min(100, Math.round(((p.reward_points || 0) % 300) / 3)) + '%' }} />
+                    </div>
+                 </div>
+                 <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-slate-50 rounded-2xl p-4 text-center border border-border">
+                       <p className="text-2xl font-black text-primary">{p.successful_returns || 0}</p>
+                       <p className="text-[10px] font-black uppercase text-text-secondary mt-1">Items Returned</p>
+                    </div>
+                    <div className="bg-slate-50 rounded-2xl p-4 text-center border border-border">
+                       <p className="text-2xl font-black text-amber-600">{(p.badges || []).length}</p>
+                       <p className="text-[10px] font-black uppercase text-text-secondary mt-1">Badges</p>
+                    </div>
+                 </div>
+                 {(p.badges || []).length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                       {(p.badges || []).map((badge, i) => (
+                          <span key={i} className="text-xs font-black bg-amber-100 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-xl">{badge}</span>
+                       ))}
+                    </div>
+                 ) : (
+                    <p className="text-xs font-bold text-text-secondary text-center py-2">Return items to earn badges!</p>
+                 )}
+              </div>
+           </PremiumCard>
+
+      {/* Popups */}
+      <AnimatePresence>
+        {editField && (
+           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+              <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-white rounded-[40px] p-8 max-w-sm w-full space-y-6 shadow-3xl">
+                 <h2 className="text-2xl font-black uppercase tracking-tighter text-text-primary">Edit {editField}</h2>
+                 <input 
+                   value={editValue} 
+                   onChange={(e) => setEditValue(e.target.value)} 
+                   autoFocus
+                   className="w-full bg-slate-50 border border-border rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-bold"
+                 />
+                 <div className="flex gap-3">
+                    <button onClick={() => setEditField(null)} className="flex-1 py-4 font-bold text-text-secondary bg-slate-100 rounded-2xl">Cancel</button>
+                    <button 
+                      onClick={saveEdit} 
+                      disabled={saving}
+                      className="flex-2 py-4 font-black text-white bg-primary rounded-2xl shadow-xl shadow-primary/20 px-8 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {saving ? 'SAVING...' : 'Save Changes'}
+                    </button>
+                 </div>
+              </motion.div>
+           </motion.div>
+        )}
+
+        {showPhotoMenu && (
+           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={() => setShowPhotoMenu(false)} className="fixed inset-0 z-[100] flex items-end justify-center bg-black/60 backdrop-blur-sm p-4">
+              <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} onClick={(e) => e.stopPropagation()} className="bg-white rounded-t-[40px] p-8 w-full max-w-lg space-y-6 pb-12 shadow-3xl">
+                 <h2 className="text-xl font-black uppercase tracking-widest text-text-primary text-center">Update Profile Image</h2>
+                 <div className="grid grid-cols-2 gap-4">
+                    <label className="p-8 border-2 border-dashed border-primary/20 bg-primary/5 rounded-3xl flex flex-col items-center justify-center gap-3 group cursor-pointer hover:border-primary transition-all">
+                       <Camera size={32} className="text-primary group-hover:scale-110 transition-transform" />
+                       <span className="text-xs font-black uppercase text-primary">Camera</span>
+                       <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleAvatarUpload(e.target.files?.[0])} />
+                    </label>
+                    <label className="p-8 border-2 border-dashed border-slate-200 bg-slate-50 rounded-3xl flex flex-col items-center justify-center gap-3 group cursor-pointer hover:border-slate-400 transition-all">
+                       <ImageIcon size={32} className="text-slate-400 group-hover:scale-110 transition-transform" />
+                       <span className="text-xs font-black uppercase text-text-secondary">Gallery</span>
+                       <input type="file" accept="image/*" className="hidden" onChange={(e) => handleAvatarUpload(e.target.files?.[0])} />
+                    </label>
+                 </div>
+                 <button onClick={() => setShowPhotoMenu(false)} className="w-full py-4 font-bold text-text-secondary">Close</button>
+              </motion.div>
+           </motion.div>
+        )}
+
+        {toast && (
+           <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }} className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[200] px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 font-bold text-sm ${toast.isError ? 'bg-danger text-white' : 'bg-success text-white'}`}>
+              <CheckCircle size={18} /> {toast.msg}
+           </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

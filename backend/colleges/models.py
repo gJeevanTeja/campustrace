@@ -33,8 +33,9 @@ class Category(models.Model):
     college = models.ForeignKey(College, on_delete=models.CASCADE, related_name='categories')
     name = models.CharField(max_length=100)
     icon = models.ImageField(upload_to='categories/icons/', blank=True, null=True)
+    emoji = models.CharField(max_length=10, blank=True, null=True)
     priority = models.IntegerField(default=0)
-    is_active = models.BooleanField(default=True)
+    active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -48,6 +49,8 @@ class Category(models.Model):
 class CampusLocation(models.Model):
     name = models.CharField(max_length=100)
     college = models.ForeignKey(College, on_delete=models.CASCADE, related_name='campus_locations')
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.name} - {self.college.name}"

@@ -18,7 +18,7 @@ const UserManager = ({ darkMode }) => {
         try {
             setLoading(true);
             const { data } = await adminAPI.getUsers({ search, role: roleFilter });
-            setUsers(data);
+            setUsers(data.results || data || []);
         } catch (err) {
             console.error('Failed to fetch users', err);
         } finally {

@@ -9,11 +9,10 @@ import dj_database_url
 from dotenv import load_dotenv
 
 # ── Load .env file ─────────────────────────────────────────────
-load_dotenv()
+load_dotenv(override=True)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-# ── Security ───────────────────────────────────────────────────
+# ── Django ───────────────────────────────────────────────────
 SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG        = os.environ.get('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = ['*']
@@ -82,22 +81,37 @@ CHANNEL_LAYERS = {
 }
 
 # ══════════════════════════════════════════════════════════════════
-# ✅ DATABASE — Neon PostgreSQL (Cloud Shared Database)
-#    All teammates use the same DATABASE_URL from backend/.env
-#    Old SQLite is removed — data now lives in the cloud
+# ✅ DATABASE — Support for Neon PostgreSQL (Cloud) and SQLite (Local)
+#    Enable USE_LOCAL_SQLITE=True in .env to use local database
 # ══════════════════════════════════════════════════════════════════
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
-        conn_max_age=600,         # reuse connections for 10 minutes
-        conn_health_checks=True,  # auto-reconnect if connection drops
-        ssl_require=True,         # Neon requires SSL
-    )
-}
+USE_LOCAL_SQLITE = os.environ.get('USE_LOCAL_SQLITE', 'False') == 'True'
 
-# ── Authentication ─────────────────────────────────────────────
+if USE_LOCAL_SQLITE:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+else:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=600,         # reuse connections for 10 minutes
+            conn_health_checks=True,  # auto-reconnect if connection drops
+            ssl_require=True,         # Neon requires SSL
+        )
+    }
+
 AUTHENTICATION_BACKENDS = [
     'users.backends.EmailBackend',
+]
+
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
 ]
 
 # ── Frontend URL ───────────────────────────────────────────────
@@ -179,6 +193,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
+    'EXCEPTION_HANDLER': 'campustrace_backend.utils.custom_exception_handler',
 }
 
 # ── JWT Settings ───────────────────────────────────────────────

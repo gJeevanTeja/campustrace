@@ -8,6 +8,9 @@ from .models import Item, ItemPhoto, ClaimSession
 from django.utils import timezone
 from datetime import timedelta
 from .serializers import ItemSerializer, ItemCreateSerializer, ItemPhotoSerializer, haversine_distance
+from users.rewards_logic import grant_reward_points
+from notifications.utils import send_in_app_notification
+
 
 
 class ItemListCreateView(generics.ListCreateAPIView):
@@ -188,31 +191,61 @@ class ClaimItemView(APIView):
     def post(self, request, pk):
         try:
             user = request.user
-            item = Item.objects.get(pk=pk)
+            item = Item.objects.select_for_update().get(pk=pk)
             # Isolation check
             if user.role != 'super_admin' and item.college != user.college:
-                return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+                return Response({
+                    'success': False,
+                    'message': 'Unauthorized to claim items from another college'
+                }, status=status.HTTP_403_FORBIDDEN)
         except Item.DoesNotExist:
-            return Response({'error': 'Item not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({
+                'success': False,
+                'message': 'Item not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            from campustrace_backend.api_utils import log_event
+            log_event("db_error_claim", {"error": str(e), "item_id": pk}, level="error")
+            raise e
 
         if item.type == 'found':
-            return Response(
-                {'error': 'Found items cannot be claimed. Contact the finder directly.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({
+                'success': False,
+                'message': 'Found items cannot be claimed. Contact the finder directly.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
         if item.status == 'claimed':
-            return Response({'error': 'Already claimed'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'success': False,
+                'message': 'This item has already been claimed'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
         if item.status == 'closed':
-            return Response({'error': 'Item is closed'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'success': False, 
+                'message': 'This item is no longer available'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
         if item.user == request.user:
-            return Response({'error': 'Cannot claim your own item'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'success': False,
+                'message': 'You cannot claim your own item'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-        item.status     = 'claimed'
-        item.claimed_by = request.user
-        item.save()
+        # Idempotency check: Already claimed by THIS user?
+        if item.claimed_by == request.user:
+            return Response({
+                'success': True,
+                'message': 'You have already claimed this item',
+                'data': ItemSerializer(item, context={'request': request}).data
+            })
 
-        # ✅ In-app notification only — NO email sent on claim
         try:
+            item.status     = 'claimed'
+            item.claimed_by = request.user
+            item.save()
+
+            # ✅ In-app notification
             from notifications.models import Notification
             Notification.objects.create(
                 user=item.user,
@@ -221,15 +254,19 @@ class ClaimItemView(APIView):
                 notification_type='item_claimed',
                 play_sound=item.user.notification_sound,
             )
+            
+            from campustrace_backend.api_utils import log_event
+            log_event("item_claimed", {"item_id": item.id, "claimed_by": user.id})
+
+            return Response({
+                'success': True,
+                'message': 'Item claimed successfully',
+                'data': ItemSerializer(item, context={'request': request}).data
+            })
         except Exception as e:
-            print(f"[Claim notification error] {e}")
-
-        # ❌ REMOVED: send_mail() for item claim — no email sent here
-        # Email is only sent for:
-        #   1. OTP login        → users/views.py SendOTPView
-        #   2. Password reset   → users/views.py ForgotPasswordView
-
-        return Response(ItemSerializer(item, context={'request': request}).data)
+            from campustrace_backend.api_utils import log_event
+            log_event("claim_save_error", {"error": str(e), "item_id": item.id}, level="error")
+            raise e
 
 
 class AddItemPhotosView(APIView):
@@ -344,145 +381,531 @@ class VerifyClaimView(APIView):
 
     def _post(self, request, pk):
         try:
-            item = Item.objects.get(id=pk)
-        except Item.DoesNotExist:
-            return Response({"error": "Item not found."}, status=status.HTTP_404_NOT_FOUND)
+            from django.db import transaction
+            with transaction.atomic():
+                try:
+                    item = Item.objects.select_for_update().get(id=pk)
+                except Item.DoesNotExist:
+                    return Response({
+                        "success": False,
+                        "message": "Item not found."
+                    }, status=status.HTTP_404_NOT_FOUND)
 
-        previous_attempts = ClaimSession.objects.filter(item=item, claimant=request.user).count()
-        if previous_attempts >= 3:
-            return Response({"error": "Maximum claim attempts reached for this item."}, status=status.HTTP_403_FORBIDDEN)
+                # Isolation check
+                if request.user.role != 'super_admin' and item.college != request.user.college:
+                    return Response({
+                        "success": False,
+                        "message": "Unauthorized"
+                    }, status=status.HTTP_403_FORBIDDEN)
 
-        is_electronic = item.is_electronics()
+                previous_attempts = ClaimSession.objects.filter(item=item, claimant=request.user).count()
+                if previous_attempts >= 3:
+                    return Response({
+                        "success": False,
+                        "message": "Maximum claim attempts reached for this item."
+                    }, status=status.HTTP_403_FORBIDDEN)
 
-        if is_electronic:
-            # Generate questions using AI
-            from .ai_utils import generate_verification_questions
-            questions = generate_verification_questions(item.image) if item.image else [
-                "What is the brand?", "What is the color?", "Any unique marks?"
-            ]
+                is_electronic = item.is_electronics()
 
-            claim = ClaimSession.objects.create(
-                item=item,
-                claimant=request.user,
-                status='pending',
-                attempts=previous_attempts + 1,
-                ai_questions=questions
-            )
-        else:
-            # Bypass AI completely for non-electronic items
-            claim = ClaimSession.objects.create(
-                item=item,
-                claimant=request.user,
-                status='verified', # Open direct chat and unlock features
-                ai_score=3,
-                attempts=previous_attempts + 1,
-                ai_questions=[],
-                claim_code=None # Explicitly no claim code
-            )
+                # Idempotency: Return existing pending claim
+                existing_claim = ClaimSession.objects.filter(item=item, claimant=request.user, status='pending').first()
+                if existing_claim:
+                     return Response({
+                         "success": True,
+                         "message": "AIV_STARTED" if is_electronic else "NORMAL_CLAIM_STARTED",
+                         "data": {
+                             "status": existing_claim.status,
+                             "is_electronics": is_electronic,
+                             "verification_questions": existing_claim.ai_questions if is_electronic else []
+                         }
+                     })
 
-        # Create or get chat room
-        from chat.models import ChatRoom, ChatMessage
-        from django.db.models import Q
-        room = ChatRoom.objects.filter(
-            Q(participant1=request.user, participant2=item.user) |
-            Q(participant1=item.user, participant2=request.user),
-            item=item
-        ).first()
+                questions = []
+                if is_electronic:
+                    if not item.verification_questions:
+                        questions = [
+                            f"What is the brand of this {item.title}?", 
+                            "What is the exact color?", 
+                            "Are there any unique identifying marks?",
+                            "What condition is the item in?",
+                            "Any other specific detail?"
+                        ]
+                    else:
+                        questions = item.verification_questions
 
-        if not room:
-            room = ChatRoom.objects.create(item=item, participant1=request.user, participant2=item.user)
+                    claim = ClaimSession.objects.create(
+                        item=item,
+                        claimant=request.user,
+                        status='pending',
+                        attempts=previous_attempts + 1,
+                        ai_questions=questions
+                    )
+                else:
+                    claim = ClaimSession.objects.create(
+                        item=item,
+                        claimant=request.user,
+                        status='pending', 
+                        ai_score=0,
+                        attempts=previous_attempts + 1,
+                        ai_questions=[]
+                    )
 
-        if is_electronic:
-            # Create first automated message with questions
-            q_text = questions[0]
-            sys_msg = f"**System:** Verifying ownership. Please answer the following 3 questions based on poverty details.\n\nQuestion 1: {q_text}"
-            
-            ChatMessage.objects.create(
-                room=room,
-                sender=item.user, # use finder as sender
-                message=sys_msg,
-                message_type='text'
-            )
-        else:
-            # Inform users of direct chat mode
-            sys_msg = f"**System:** Direct chat mode. Finder and Claimant are now connected. Please coordinate the return manually."
-            
-            ChatMessage.objects.create(
-                room=room,
-                sender=item.user,
-                message=sys_msg,
-                message_type='text'
-            )
+                # Create or get chat room
+                from chat.models import ChatRoom, ChatMessage
+                from django.db.models import Q
+                room = ChatRoom.objects.filter(
+                    Q(participant1=request.user, participant2=item.user) |
+                    Q(participant1=item.user, participant2=request.user),
+                    item=item
+                ).first()
 
-        # Notify found person
-        try:
-            from notifications.models import Notification
-            Notification.objects.create(
-                user=item.user,  # Item reporter
-                item=item,
-                message=f"{request.user.name} is claiming your item.",
-                notification_type='item_claimed'
-            )
+                if not room:
+                    room = ChatRoom.objects.create(item=item, participant1=request.user, participant2=item.user)
+
+                if is_electronic:
+                    q_text = questions[0]
+                    sys_msg = f"**System:** Verifying ownership. Please answer the following 5 questions based on property details.\n\nQuestion 1: {q_text}"
+                    ChatMessage.objects.create(room=room, sender=item.user, message=sys_msg, message_type='text')
+                else:
+                    sys_msg = f"**System:** Direct chat mode. Finder and Claimant are now connected. Please coordinate the return manually."
+                    ChatMessage.objects.create(room=room, sender=item.user, message=sys_msg, message_type='text')
+
+                send_in_app_notification(
+                    user=item.user,
+                    item=item,
+                    message=f"Right owner found! {request.user.name} started verifying the claim." if is_electronic else f"Right owner found! {request.user.name} is claiming the item you reported.",
+                    notification_type='item_claimed'
+                )
+                
+                from campustrace_backend.api_utils import log_event
+                log_event("claim_started", {"item_id": item.id, "claimant": request.user.id, "type": "electronic" if is_electronic else "normal"})
+
+                return Response({
+                    "success": True,
+                    "message": "AIV_STARTED" if is_electronic else "NORMAL_CLAIM_STARTED",
+                    "data": {
+                        "status": claim.status,
+                        "is_electronics": is_electronic,
+                        "verification_questions": questions if is_electronic else []
+                    }
+                })
         except Exception as e:
-            print(f"[Verify claim notification error] {e}")
-
-        return Response({
-            "message": "ELECTRONICS_VERIFICATION_ENABLED" if is_electronic else "DIRECT_CHAT_MODE",
-            "status": claim.status,
-            "room_id": room.id,
-            "is_electronics": is_electronic
-        })
+            from campustrace_backend.api_utils import log_event
+            log_event("verify_claim_error", {"error": str(e), "item_id": pk}, level="error")
+            raise e
 
 
+class SubmitAIAnswerView(APIView):
+    def post(self, request, pk):
+        try:
+            from django.db import transaction
+            with transaction.atomic():
+                try:
+                    item = Item.objects.get(id=pk)
+                    # Use select_for_update on the claim session
+                    claim = ClaimSession.objects.select_for_update().filter(item=item, claimant=request.user).order_by('-created_at').first()
+                    if not claim:
+                        return Response({
+                            "success": False,
+                            "message": "No active claim session found."
+                        }, status=status.HTTP_404_NOT_FOUND)
+                except Item.DoesNotExist:
+                    return Response({
+                        "success": False,
+                        "message": "Item not found."
+                    }, status=status.HTTP_404_NOT_FOUND)
+
+                # If already finished, just return the result
+                if claim.status != 'pending':
+                    return Response({
+                        "success": True,
+                        "message": "Verification already completed",
+                        "data": {
+                            "finished": True,
+                            "ai_result": getattr(claim, 'ai_result', claim.ai_result_label),
+                            "score": claim.ai_score
+                        }
+                    })
+
+                answer = request.data.get("answer", "").strip()
+                idx = claim.current_question_index
+                
+                # Robust logging
+                from campustrace_backend.api_utils import log_event
+                log_event("ai_verification_step", {
+                    "claim_id": claim.id,
+                    "item_id": pk,
+                    "current_idx": idx,
+                    "questions_count": len(claim.ai_questions),
+                    "has_answer": bool(answer)
+                })
+
+                # If initializing (answer is empty and index 0)
+                if not answer and idx == 0:
+                    if not claim.ai_questions:
+                        return Response({
+                            "success": False,
+                            "message": "AI verification session has no questions. Please contact support."
+                        }, status=status.HTTP_400_BAD_REQUEST)
+                        
+                    return Response({
+                        "success": True,
+                        "data": {
+                            "next_question": claim.ai_questions[0],
+                            "question_index": 0,
+                            "finished": False
+                        }
+                    })
+
+                if idx >= len(claim.ai_questions):
+                    return Response({
+                        "success": False,
+                        "message": "No more questions."
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
+                # Evaluate Answer
+                from .ai_utils import compare_user_answer_to_founder
+                question = claim.ai_questions[idx]
+                
+                # Get founder's answer for this question
+                founder_answers = item.verification_answers or {}
+                # Handle possible key formats
+                founder_answer_obj = founder_answers.get(f"Q{idx+1}") or founder_answers.get(str(idx+1))
+                founder_answer = ""
+                if isinstance(founder_answer_obj, dict):
+                    founder_answer = founder_answer_obj.get("answer", "")
+                elif isinstance(founder_answer_obj, str):
+                    founder_answer = founder_answer_obj
+                
+                if founder_answer:
+                    score = compare_user_answer_to_founder(question, founder_answer, answer)
+                else:
+                    from .ai_utils import evaluate_single_answer
+                    score = evaluate_single_answer(item.image, question, answer)
+                
+                claim.ai_score += score
+                claim.current_question_index += 1
+                
+                # Save Answer
+                answers = claim.user_answers
+                answers[f"Q{idx+1}"] = {"question": question, "answer": answer, "score": score}
+                claim.user_answers = answers
+                
+                is_finished = claim.current_question_index >= len(claim.ai_questions)
+                
+                if is_finished:
+                    total_score = claim.ai_score
+                    if total_score >= 40: label = "PERFECT MATCH"
+                    elif total_score >= 30: label = "GOOD MATCH"
+                    elif total_score >= 20: label = "PARTIAL MATCH"
+                    else: label = "INACCURATE"
+                    
+                    claim.ai_result = label
+                    claim.ai_result_label = label
+                    claim.save()
+
+                    send_in_app_notification(
+                        user=item.user,
+                        item=item,
+                        message=f"AI verification completed for {item.title}. Result: {label}. Please review.",
+                        notification_type='item_claimed'
+                    )
+                    
+                    from campustrace_backend.api_utils import log_event
+                    log_event("ai_verification_finished", {"claim_id": claim.id, "score": total_score, "result": label})
+
+                    return Response({
+                        "success": True,
+                        "message": "Verification finished",
+                        "data": {
+                            "finished": True,
+                            "ai_result": label,
+                            "score": total_score
+                        }
+                    })
+                
+                claim.save()
+                return Response({
+                    "success": True,
+                    "data": {
+                        "next_question": claim.ai_questions[claim.current_question_index],
+                        "question_index": claim.current_question_index,
+                        "finished": False
+                    }
+                })
+        except Exception as e:
+            from campustrace_backend.api_utils import log_event
+            log_event("submit_answer_error", {"error": str(e), "item_id": pk}, level="error")
+            raise e
 
 
 class ConfirmReturnView(APIView):
     def post(self, request, item_id):
         try:
-            item = Item.objects.get(id=item_id)
-            claim = ClaimSession.objects.get(item=item, status='verified')
-        except (Item.DoesNotExist, ClaimSession.DoesNotExist):
-            return Response({"error": "No active claim found for this item."}, status=status.HTTP_404_NOT_FOUND)
+            from django.db import transaction
+            with transaction.atomic():
+                try:
+                    item = Item.objects.select_for_update().get(id=item_id)
+                    # Find the verified claim for this item
+                    claim = ClaimSession.objects.select_for_update().filter(item=item, status='verified').first()
+                except Item.DoesNotExist:
+                    return Response({
+                        "success": False,
+                        "message": "Item not found."
+                    }, status=status.HTTP_404_NOT_FOUND)
 
-        if timezone.now() > claim.created_at + timedelta(minutes=30):
-            return Response({"error": "Claim code expired"}, status=status.HTTP_400_BAD_REQUEST)
+                if not claim:
+                    return Response({
+                        "success": False,
+                        "message": "No verified claim found for this item. Has the owner approved it yet?"
+                    }, status=status.HTTP_400_BAD_REQUEST)
 
-        entered_code = request.data.get("claim_code")
+                entered_code = request.data.get("claim_code")
+                
+                # Security: Only the claimant can confirm their own received item
+                if claim.claimant != request.user:
+                    return Response({
+                        "success": False,
+                        "message": "Only the claimant can confirm item receipt."
+                    }, status=status.HTTP_403_FORBIDDEN)
 
-        is_electronic = item.is_electronics()
-        
-        # Check claim code ONLY if it is electronics
-        if is_electronic and claim.claim_code != entered_code:
-            return Response({"error": "Invalid claim code"}, status=status.HTTP_400_BAD_REQUEST)
+                # Check claim code
+                if not entered_code or claim.claim_code != str(entered_code).strip():
+                    return Response({
+                        "success": False,
+                        "message": "Invalid claim code"
+                    }, status=status.HTTP_400_BAD_REQUEST)
 
-        # Confirm return
-        claim.status = 'completed'
-        claim.item.status = "returned"
-        claim.item.save()
-        claim.save()
+                # Confirm return
+                claim.status = 'completed'
+                item.status = "returned"
+                item.claimed_by = request.user
+                item.save()
+                claim.save()
 
-        # Award Gamification Points to Finder
-        finder = claim.item.user
-        finder.points += 50
-        finder.successful_returns += 1
-        finder.save(update_fields=['points', 'successful_returns'])
+                # Award Rewards
+                # For "found" items: item.user = founder (gets rewards), claim.claimant = lost person (enters code, receives this response)
+                # For "lost" items: item.user = lost person, claim.claimant = finder (gets rewards AND receives this response)
+                reward_info = {}
+                try:
+                    from users.rewards_logic import grant_reward_points
+                    if item.type == 'found':
+                        # Founder gets points. The API response goes to the claimant (lost person), so is_yours=False
+                        finder = item.user
+                        new_badges = grant_reward_points(finder, 50, f"Successfully returned item: {item.title}", "return", item) or []
+                        grant_reward_points(finder, 20, f"Initial report for returned item: {item.title}", "reporting", item)
+                        grant_reward_points(finder, 30, f"Approved owner for: {item.title}", "approval", item)
+                        finder.refresh_from_db()
+                        reward_info = {
+                            "is_yours": False,  # Response goes to lost person, not founder
+                            "points_earned": 100,
+                            "total_points": finder.reward_points,
+                            "level": finder.level,
+                            "new_badges": new_badges,
+                            "items_returned": finder.successful_returns,
+                            "founder_name": finder.name,
+                        }
+                        # Push reward popup directly to the founder via WebSocket
+                        try:
+                            from asgiref.sync import async_to_sync
+                            from channels.layers import get_channel_layer
+                            from django.utils import timezone
+                            channel_layer = get_channel_layer()
+                            if channel_layer:
+                                async_to_sync(channel_layer.group_send)(
+                                    f'notifications_{finder.id}',
+                                    {
+                                        'type': 'send_notification',
+                                        'id': f'reward_{item.id}',
+                                        'message': f'\U0001f3c6 You earned 100 points for returning "{item.title}"!',
+                                        'notification_type': 'reward_earned',
+                                        'item_id': item.id,
+                                        'item_type': item.type,
+                                        'time': timezone.now().isoformat(),
+                                        'reward_data': {
+                                            'points_earned': 100,
+                                            'total_points': finder.reward_points,
+                                            'level': finder.level,
+                                            'new_badges': new_badges,
+                                            'items_returned': finder.successful_returns,
+                                        }
+                                    }
+                                )
+                        except Exception as ws_err:
+                            print(f'[reward_ws_push error] {ws_err}')
+                    else:
+                        # Lost item: claimant = finder who helped return it. They get rewards and receive this response.
+                        finder = claim.claimant
+                        new_badges = grant_reward_points(finder, 50, f"Successfully returned lost item: {item.title}", "return", item) or []
+                        finder.refresh_from_db()
+                        reward_info = {
+                            "is_yours": True,  # Response goes to finder (claimant), who earned the reward
+                            "points_earned": 50,
+                            "total_points": finder.reward_points,
+                            "level": finder.level,
+                            "new_badges": new_badges,
+                            "items_returned": finder.successful_returns,
+                        }
+                except Exception as reward_err:
+                    from campustrace_backend.api_utils import log_event
+                    log_event("reward_error", {"error": str(reward_err), "item_id": item.id}, level="warning")
 
-        # Notify lost user
-        try:
-            from notifications.models import Notification
-            Notification.objects.create(
-                user=claim.claimant,
-                item=claim.item,
-                message="Your item has been marked as returned.",
-                notification_type='item_returned'
-            )
-            Notification.objects.create(
-                user=claim.item.user,
-                item=claim.item,
-                message="Return process completed.",
-                notification_type='item_returned'
-            )
+                # Notify Both
+                send_in_app_notification(
+                    user=claim.claimant,
+                    item=item,
+                    message=f"Success! {item.title} reached home.",
+                    notification_type='item_returned'
+                )
+                send_in_app_notification(
+                    user=item.user,
+                    item=item,
+                    message=f"Item returned successfully! Thank you for being a hero!",
+                    notification_type='item_returned'
+                )
+                
+                from campustrace_backend.api_utils import log_event
+                log_event("item_returned_confirmed", {"item_id": item.id, "claimant": claim.claimant.id, "finder": item.user.id})
+
+                return Response({
+                    "success": True,
+                    "message": "Return confirmed successfully.",
+                    "data": ItemSerializer(item, context={'request': request}).data,
+                    "reward": reward_info,
+                })
         except Exception as e:
-            print(f"[Return notification error] {e}")
+            from campustrace_backend.api_utils import log_event
+            log_event("confirm_return_error", {"error": str(e), "item_id": item_id}, level="error")
+            raise e
 
-        return Response({"message": "Return confirmed successfully."})
+
+class ApproveVerificationView(APIView):
+    def post(self, request, claim_id):
+        try:
+            from django.db import transaction
+            with transaction.atomic():
+                try:
+                    claim = ClaimSession.objects.select_for_update().get(id=claim_id)
+                    item = claim.item
+                except ClaimSession.DoesNotExist:
+                    return Response({
+                        "success": False,
+                        "message": "Claim not found"
+                    }, status=status.HTTP_404_NOT_FOUND)
+
+                if request.user != item.user:
+                    return Response({
+                        "success": False,
+                        "message": "Unauthorized"
+                    }, status=status.HTTP_403_FORBIDDEN)
+
+                import random
+                claim_code = str(random.randint(100000, 999999))
+                
+                claim.status = 'verified'
+                claim.claim_code = claim_code
+                claim.save()
+                
+                item.claim_code = claim_code
+                item.save()
+
+                # Notify claimant with code
+                send_in_app_notification(
+                    user=claim.claimant,
+                    item=item,
+                    message=f"Claim approved! The founder generated the claim code: {claim_code}. Please verify it to confirm receipt.",
+                    notification_type='claim_verified'
+                )
+                
+                from campustrace_backend.api_utils import log_event
+                log_event("claim_approved", {"claim_id": claim.id, "approved_by": request.user.id})
+
+                return Response({
+                    "success": True,
+                    "message": "Claim approved successfully",
+                    "data": {"claim_code": claim_code}
+                })
+        except Exception as e:
+            from campustrace_backend.api_utils import log_event
+            log_event("approve_claim_error", {"error": str(e), "claim_id": claim_id}, level="error")
+            raise e
+
+
+class RejectClaimView(APIView):
+    def post(self, request, claim_id):
+        try:
+            from django.db import transaction
+            with transaction.atomic():
+                try:
+                    claim = ClaimSession.objects.select_for_update().get(id=claim_id)
+                except ClaimSession.DoesNotExist:
+                    return Response({
+                        "success": False,
+                        "message": "Claim not found"
+                    }, status=status.HTTP_404_NOT_FOUND)
+
+                if request.user != claim.item.user:
+                    return Response({
+                        "success": False,
+                        "message": "Unauthorized"
+                    }, status=status.HTTP_403_FORBIDDEN)
+                
+                claim.status = 'failed'
+                claim.save()
+                
+                from campustrace_backend.api_utils import log_event
+                log_event("claim_rejected", {"claim_id": claim.id, "rejected_by": request.user.id})
+
+                return Response({
+                    "success": True,
+                    "message": "Claim rejected successfully"
+                })
+        except Exception as e:
+            from campustrace_backend.api_utils import log_event
+            log_event("reject_claim_error", {"error": str(e), "claim_id": claim_id}, level="error")
+            raise e
+
+class GenerateElectronicQuestionsView(APIView):
+    def post(self, request):
+        """
+        Special endpoint to generate 5 verification questions before posting.
+        Used by founders for electronic items.
+        """
+        try:
+            from .ai_utils import generate_verification_questions
+            import io
+            from django.core.files.base import ContentFile
+            
+            image_file = request.FILES.get('image')
+            description = request.data.get('description')
+            brand = request.data.get('brand')
+            color = request.data.get('color')
+            unique_mark = request.data.get('unique_mark')
+            
+            if not image_file:
+                return Response({
+                    "success": False,
+                    "message": "Image is required to generate questions."
+                }, status=400)
+                
+            questions = generate_verification_questions(
+                image_file,
+                description=description,
+                brand=brand,
+                color=color,
+                unique_mark=unique_mark
+            )
+            
+            from campustrace_backend.api_utils import log_event
+            log_event("ai_questions_generated", {"brand": brand, "color": color})
+
+            return Response({
+                "success": True,
+                "message": "Questions generated successfully",
+                "data": {"questions": questions}
+            })
+        except Exception as e:
+            from campustrace_backend.api_utils import log_event
+            log_event("gen_questions_error", {"error": str(e)}, level="error")
+            # The custom handler will catch and format this if we don't return here
+            raise e

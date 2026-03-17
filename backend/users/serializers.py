@@ -5,6 +5,7 @@ import re
 
 
 class UserSerializer(serializers.ModelSerializer):
+    college_data = serializers.SerializerMethodField()
     avatar_url = serializers.SerializerMethodField()
 
     class Meta:
@@ -13,9 +14,16 @@ class UserSerializer(serializers.ModelSerializer):
             'id', 'name', 'username', 'email', 'phone', 'role', 'department',
             'section', 'college_year', 'student_id', 'avatar', 'avatar_url',
             'notifications_enabled', 'notification_sound', 'email_notifications',
-            'dark_mode', 'auth_provider', 'created_at'
+            'dark_mode', 'auth_provider', 'created_at', 'reward_points', 'level',
+            'successful_returns', 'badges', 'college_data'
         ]
         read_only_fields = ['id', 'created_at']
+
+    def get_college_data(self, obj):
+        if obj.college:
+            from colleges.serializers import CollegeSerializer
+            return CollegeSerializer(obj.college).data
+        return None
 
     def get_avatar_url(self, obj):
         request = self.context.get('request')
@@ -136,46 +144,79 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
 
     def validate(self, data):
-        identifier = data.get('email', '').strip()
-        password   = data.get('password', '')
+        import logging
+        logger = logging.getLogger('users.auth')
+        
+        identifier = data.get('email') or data.get('identity')
+        password   = data.get('password') or data.get('secret_key')
+
+        if identifier:
+            identifier = identifier.strip()
+
+        # --- DEBUG LOGS ---
+        logger.info(f"[AUTH DEBUG] Login attempt received for: {identifier}")
 
         if not identifier or not password:
+            logger.warning("[AUTH DEBUG] Validation failed: Missing email or password")
             raise serializers.ValidationError({"detail": "Email/phone and password are required."})
 
         user = None
-        cleaned_phone = re.sub(r'\D', '', identifier)
-        if cleaned_phone.startswith('91') and len(cleaned_phone) == 12:
-            cleaned_phone = cleaned_phone[2:]
-        is_phone = len(cleaned_phone) == 10 and cleaned_phone[0] in '6789'
+        try:
+            # 1. Identifier type check
+            cleaned_phone = re.sub(r'\D', '', identifier)
+            is_phone = (len(cleaned_phone) == 10 and cleaned_phone[0] in '6789')
+            
+            if not is_phone:
+                email = identifier.lower()
+                email_regex = r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$'
+                if not re.match(email_regex, email):
+                    logger.warning(f"[AUTH DEBUG] Invalid email format: {email}")
+                    raise serializers.ValidationError({"detail": "Invalid email format"})
 
-        if is_phone:
-            for phone_val in [f"+91{cleaned_phone}", cleaned_phone]:
-                try:
-                    u = User.objects.get(phone=phone_val)
-                    if u.check_password(password):
-                        user = u
-                        break
-                except User.DoesNotExist:
-                    continue
-        else:
-            email = identifier.lower()
-            user = authenticate(username=email, password=password)
-            if not user:
-                try:
-                    u = User.objects.get(email=email)
-                    if u.check_password(password):
-                        user = u
-                except User.DoesNotExist:
-                    pass
+                # 2. User existence check
+                user = User.objects.filter(email=email).first()
+                if not user:
+                    logger.warning(f"[AUTH DEBUG] User not found in database: {email}")
+                    raise serializers.ValidationError({"detail": "User not found"})
+                logger.info(f"[AUTH DEBUG] User exists: {user.email} (ID: {user.id})")
+            else:
+                phone_variants = [f"+91{cleaned_phone}", cleaned_phone]
+                user = User.objects.filter(phone__in=phone_variants).first()
+                if not user:
+                    logger.warning(f"[AUTH DEBUG] User not found for phone: {identifier}")
+                    raise serializers.ValidationError({"detail": "User not found"})
+                logger.info(f"[AUTH DEBUG] User exists by phone: {user.email}")
 
-        if not user:
-            raise serializers.ValidationError({"detail": "Invalid email/phone or password."})
-        if not user.is_active:
-            raise serializers.ValidationError({"detail": "Your account has been deactivated."})
-        if user.is_blocked:
-            raise serializers.ValidationError({"detail": "Your account is blocked. Contact administrator."})
-        if user.college and not user.college.is_active:
-            raise serializers.ValidationError({"detail": f"Logging into {user.college.name} is currently disabled."})
+            # 3. Password check
+            # user.check_password handles the secure hashing comparison (PBKDF2/bcrypt)
+            logger.info(f"[AUTH DEBUG] Verifying password for user: {user.email}")
+            is_match = user.check_password(password)
+            logger.info(f"[AUTH DEBUG] Password match result: {is_match}")
+            
+            if not is_match:
+                logger.warning(f"[AUTH DEBUG] Authentication failed: Incorrect password for {user.email}")
+                raise serializers.ValidationError({"detail": "Incorrect password"})
+
+            # 4. Account status checks
+            if not getattr(user, 'is_active', True):
+                logger.warning(f"[AUTH DEBUG] Authentication failed: Account deactivated for {user.email}")
+                raise serializers.ValidationError({"detail": "Your account has been deactivated."})
+            if getattr(user, 'is_blocked', False):
+                logger.warning(f"[AUTH DEBUG] Authentication failed: Account blocked for {user.email}")
+                raise serializers.ValidationError({"detail": "Your account is blocked. Contact administrator."})
+
+            logger.info(f"[AUTH DEBUG] LOGIN SUCCESSFUL: {user.email}")
+
+        except serializers.ValidationError:
+            raise
+        except Exception as e:
+            from django.db import OperationalError, InterfaceError
+            logger.error(f"[AUTH DEBUG] CRITICAL ERROR during login: {str(e)}", exc_info=True)
+            
+            if isinstance(e, (OperationalError, InterfaceError)):
+                raise serializers.ValidationError({"detail": "Database connection failure"})
+            
+            raise serializers.ValidationError({"detail": "Authentication service error. Please try again later."})
 
         data['user'] = user
         return data

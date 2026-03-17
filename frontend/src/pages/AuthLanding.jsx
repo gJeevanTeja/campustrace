@@ -1,131 +1,105 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, ArrowRight, GraduationCap } from 'lucide-react';
+import { ShieldCheck, ArrowRight, GraduationCap, MapPin, Sparkles, Building2, UserCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
+import PremiumCard from '../components/ui/PremiumCard';
 
-const AuthLanding = ({ darkMode: dm }) => {
+const AuthLanding = () => {
     const navigate = useNavigate();
 
-    const bg = dm ? '#0f172a' : '#f0f4ff';
-    const card = dm ? '#1e293b' : '#ffffff';
-    const text = dm ? '#e2e8f0' : '#1e293b';
-    const muted = dm ? '#94a3b8' : '#64748b';
-    const border = dm ? '#334155' : '#e2e8f0';
-
-    const cardStyle = {
-        background: card,
-        borderRadius: 24,
-        padding: '32px',
-        border: `1.5px solid ${border}`,
-        cursor: 'pointer',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        textAlign: 'center',
-        gap: 16,
-        boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-        width: '100%',
-        maxWidth: 300
-    };
-
     return (
-        <div style={{
-            minHeight: '100vh',
-            background: bg,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '24px'
-        }}>
-            <div style={{ textAlign: 'center', marginBottom: 48 }}>
-                <div style={{
-                    width: 80, height: 80, borderRadius: 20,
-                    background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    margin: '0 auto 20px', boxShadow: '0 10px 30px rgba(37,99,235,0.3)'
-                }}>
-                    <span style={{ fontSize: 40 }}>📍</span>
-                </div>
-                <h1 style={{ fontSize: 32, fontWeight: 900, color: text, margin: '0 0 10px' }}>CampusTrace</h1>
-                <p style={{ color: muted, fontSize: 16, maxWidth: 400 }}>Choose your portal to track lost items across your university</p>
-            </div>
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans relative overflow-hidden">
+            {/* Background Orbs */}
+            <div className="absolute top-0 -left-20 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute bottom-0 -right-20 w-[600px] h-[600px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
 
-            <div style={{
-                display: 'flex',
-                flexDirection: window.innerWidth < 640 ? 'column' : 'row',
-                gap: 24,
-                width: '100%',
-                justifyContent: 'center'
-            }}>
-                {/* Student Portal */}
-                <div
-                    onClick={() => navigate('/login')}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-8px)';
-                        e.currentTarget.style.borderColor = '#2563eb';
-                        e.currentTarget.style.boxShadow = '0 20px 40px rgba(37,99,235,0.15)';
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.borderColor = border;
-                        e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.06)';
-                    }}
-                    style={cardStyle}
+            <div className="max-w-4xl w-full flex flex-col items-center space-y-16 relative z-10">
+                {/* Brand Header */}
+                <motion.div 
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-center space-y-4"
                 >
-                    <div style={{
-                        width: 64, height: 64, borderRadius: 16,
-                        background: '#2563eb15', color: '#2563eb',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                    }}>
-                        <GraduationCap size={32} />
+                    <div className="flex items-center justify-center gap-4">
+                        <div className="w-16 h-16 bg-primary-gradient rounded-[24px] flex items-center justify-center text-white shadow-2xl rotate-12">
+                           <MapPin size={32} />
+                        </div>
+                        <h1 className="text-5xl font-black text-text-primary tracking-tighter italic">CampusTrace</h1>
                     </div>
-                    <div>
-                        <h3 style={{ fontSize: 20, fontWeight: 800, color: text, margin: '0 0 8px' }}>Student Portal</h3>
-                        <p style={{ fontSize: 14, color: muted, margin: 0 }}>Report lost items or claim found ones within your campus</p>
+                    <div className="space-y-1">
+                       <p className="text-xl font-bold text-text-secondary">Advanced Asset Recovery Protocol</p>
+                       <p className="text-[10px] font-black uppercase tracking-[5px] text-primary opacity-60">University Secured Infrastructure</p>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#2563eb', fontWeight: 700, fontSize: 14, marginTop: 8 }}>
-                        Get Started <ArrowRight size={16} />
-                    </div>
+                </motion.div>
+
+                {/* Portal Selection */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-3xl">
+                    <motion.div
+                      initial={{ opacity: 0, x: -30 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.1 }}
+                      onClick={() => navigate('/login')}
+                      className="group"
+                    >
+                        <PremiumCard className="p-10 h-full flex flex-col items-center text-center space-y-6 cursor-pointer border-2 border-transparent transition-all hover:border-primary/20 hover:bg-primary/[0.02]">
+                            <div className="w-20 h-20 bg-primary/5 text-primary rounded-[32px] flex items-center justify-center transition-transform group-hover:scale-110 group-hover:rotate-6">
+                                <GraduationCap size={44} />
+                            </div>
+                            <div className="space-y-4 flex-1">
+                                <div className="space-y-1">
+                                   <h3 className="text-2xl font-black text-text-primary uppercase tracking-tighter">Student Portal</h3>
+                                   <p className="text-[10px] font-black uppercase tracking-widest text-primary">Identity: Helper / Finder</p>
+                                </div>
+                                <p className="text-sm font-medium text-text-secondary leading-relaxed">Access the campus-wide network to log lost assets, claim found items, and secure rewards.</p>
+                            </div>
+                            <div className="flex items-center gap-3 font-black text-[12px] uppercase tracking-widest text-primary pt-4 group-hover:gap-5 transition-all">
+                                Establish Link <ArrowRight size={18} />
+                            </div>
+                        </PremiumCard>
+                    </motion.div>
+
+                    <motion.div
+                      initial={{ opacity: 0, x: 30 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.2 }}
+                      onClick={() => navigate('/login')}
+                      className="group"
+                    >
+                        <PremiumCard className="p-10 h-full flex flex-col items-center text-center space-y-6 cursor-pointer border-2 border-transparent transition-all hover:border-indigo-500/20 hover:bg-indigo-500/[0.02]">
+                            <div className="w-20 h-20 bg-indigo-500/5 text-indigo-500 rounded-[32px] flex items-center justify-center transition-transform group-hover:scale-110 group-hover:-rotate-6">
+                                <ShieldCheck size={44} />
+                            </div>
+                            <div className="space-y-4 flex-1">
+                                <div className="space-y-1">
+                                   <h3 className="text-2xl font-black text-text-primary uppercase tracking-tighter">Admin Portal</h3>
+                                   <p className="text-[10px] font-black uppercase tracking-widest text-indigo-500">Identity: Moderator / Staff</p>
+                                </div>
+                                <p className="text-sm font-medium text-text-secondary leading-relaxed">Oversee university operations, manage identity verification, and audit campus security logs.</p>
+                            </div>
+                            <div className="flex items-center gap-3 font-black text-[12px] uppercase tracking-widest text-indigo-500 pt-4 group-hover:gap-5 transition-all">
+                                Access Core <ArrowRight size={18} />
+                            </div>
+                        </PremiumCard>
+                    </motion.div>
                 </div>
 
-                {/* Admin Portal */}
-                <div
-                    onClick={() => navigate('/login')} // We can modify login to handle both or have /admin/login
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-8px)';
-                        e.currentTarget.style.borderColor = '#7c3aed';
-                        e.currentTarget.style.boxShadow = '0 20px 40px rgba(124,58,237,0.15)';
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.borderColor = border;
-                        e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.06)';
-                    }}
-                    style={cardStyle}
+                {/* Bottom Utility */}
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                  className="flex flex-col items-center space-y-8"
                 >
-                    <div style={{
-                        width: 64, height: 64, borderRadius: 16,
-                        background: '#7c3aed15', color: '#7c3aed',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                    }}>
-                        <ShieldCheck size={32} />
+                    <div className="flex items-center gap-10">
+                       <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[2px] opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all cursor-default text-text-primary"><Building2 size={16} /> Enterprise Grade</div>
+                       <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[2px] opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all cursor-default text-text-primary"><Sparkles size={16} /> AI Verification</div>
+                       <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[2px] opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all cursor-default text-text-primary"><UserCircle size={16} /> Biometric Ready</div>
                     </div>
-                    <div>
-                        <h3 style={{ fontSize: 20, fontWeight: 800, color: text, margin: '0 0 8px' }}>Admin Portal</h3>
-                        <p style={{ fontSize: 14, color: muted, margin: 0 }}>Manage campus data, locations, and oversee security operations</p>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#7c3aed', fontWeight: 700, fontSize: 14, marginTop: 8 }}>
-                        Access Panel <ArrowRight size={16} />
-                    </div>
-                </div>
-            </div>
 
-            <div style={{ marginTop: 48, fontSize: 14, color: muted }}>
-                Need to register your university? <span
-                    onClick={() => navigate('/admin/request')}
-                    style={{ color: '#2563eb', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
-                >Click here</span>
+                    <div className="text-center font-black uppercase text-[10px] tracking-widest text-text-secondary">
+                       Institutional Enrollment Required? <button onClick={() => navigate('/admin/request')} className="text-primary hover:underline underline-offset-4">Provision University</button>
+                    </div>
+                </motion.div>
             </div>
         </div>
     );

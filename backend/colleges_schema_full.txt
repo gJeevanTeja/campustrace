@@ -1,0 +1,12 @@
+Column                    Type                 Nullable   Default
+----------------------------------------------------------------------
+id                        bigint               NO         None
+name                      character varying    NO         None
+logo                      character varying    YES        None
+is_active                 boolean              NO         None
+created_at                timestamp with time zone NO         None
+updated_at                timestamp with time zone NO         None
+location                  character varying    YES        ''::character varying
+status                    character varying    YES        'active'::character varying
+domain                    character varying    YES        None
+email_domain              character varying    YES        ''::character varying

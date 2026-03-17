@@ -89,10 +89,11 @@ const Toast = ({ popup, removePopup }) => {
   };
 
   const handleClick = () => {
-    if (popup.item_id && popup.item_type !== 'chat') {
-      window.location.href = `/item/${popup.item_id}`;
-    } else if (popup.item_id && popup.item_type === 'chat') {
-      window.location.href = `/chat/${popup.item_id}`;
+    const itemId = popup.item?.id || popup.item_id;
+    if (itemId && popup.item_type !== 'chat') {
+      window.location.href = `/item/${itemId}`;
+    } else if (itemId && popup.item_type === 'chat') {
+      window.location.href = `/chat/${itemId}`;
     }
   };
 
@@ -140,6 +141,8 @@ export const NotificationProvider = ({ children }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [unreadChatCount, setUnreadChatCount] = useState(0); // Add chat unread tracker
   const [popups, setPopups] = useState([]); // Currently active toasts
+  const [lastItemUpdate, setLastItemUpdate] = useState(null); // Real-time item refresh triggers
+  const [pendingReward, setPendingReward] = useState(null); // Reward data for founder popup
 
   const wsRef = useRef(null);
   const audioRef = useRef(null);
@@ -195,8 +198,8 @@ export const NotificationProvider = ({ children }) => {
     if (!token) return;
 
     // Use environment variable IP or fallback to localhost
-    const apiHost = process.env.REACT_APP_API_IP || 'localhost';
-    const ws = new WebSocket(`ws://${apiHost}:8000/ws/notifications/?token=${token}`);
+    const wsUrl = process.env.REACT_APP_WS_URL || `ws://${process.env.REACT_APP_API_IP || 'localhost'}:8000`;
+    const ws = new WebSocket(`${wsUrl}/ws/notifications/?token=${token}`);
 
     wsRef.current = ws;
 
@@ -204,6 +207,18 @@ export const NotificationProvider = ({ children }) => {
       try {
         const data = JSON.parse(e.data);
         if (data.type === 'send_notification' || data.message) {
+
+          // Silent triggers for UI updates (no popups, no bells)
+          if (data.notification_type === 'item_update') {
+            setLastItemUpdate({ itemId: data.item_id, timestamp: Date.now() });
+            return; // Skip normal notification processing
+          }
+
+          // Silent reward popup for the founder — no toast, just show the overlay
+          if (data.notification_type === 'reward_earned' && data.reward_data) {
+            setPendingReward(data.reward_data);
+            return; // Skip toast/sound — the ItemDetails page handles the popup
+          }
 
           setNotifications(prev => {
             if (prev.find(n => n.id === data.id)) return prev; // prevent duplicate
@@ -315,10 +330,13 @@ export const NotificationProvider = ({ children }) => {
       unreadCount,
       unreadChatCount,
       setUnreadChatCount,
+      lastItemUpdate,
       fetchNotifications,
       markRead,
       markAllRead,
-      deleteNotif
+      deleteNotif,
+      pendingReward,
+      clearPendingReward: () => setPendingReward(null),
     }}>
       {children}
 
@@ -329,11 +347,95 @@ export const NotificationProvider = ({ children }) => {
         ))}
       </div>
 
+      {/* ── Global Reward Modal (shown to the founder via WebSocket reward_earned event) ── */}
+      {pendingReward && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 99999,
+          background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+          animation: 'rewardFadeIn 0.25s ease',
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: 36, padding: '44px 36px 32px',
+            maxWidth: 380, width: '100%', textAlign: 'center',
+            boxShadow: '0 32px 80px -8px rgba(0,0,0,0.35)',
+            animation: 'rewardSlideUp 0.35s cubic-bezier(0.16,1,0.3,1)',
+          }}>
+            <div style={{ fontSize: 72, marginBottom: 8 }}>🎉</div>
+            <h2 style={{
+              margin: '0 0 8px', fontSize: 28, fontWeight: 900,
+              textTransform: 'uppercase', letterSpacing: '-1px', color: '#0f172a'
+            }}>Congratulations!</h2>
+            <p style={{ margin: '0 0 24px', color: '#64748b', fontSize: 15, lineHeight: 1.5 }}>
+              You helped someone recover their item.<br />The campus is safer because of you!
+            </p>
+
+            <div style={{
+              background: 'linear-gradient(135deg, #fffbeb, #fff7ed)',
+              border: '1.5px solid #fcd34d', borderRadius: 20,
+              padding: '20px 20px 16px', marginBottom: 20, textAlign: 'left',
+            }}>
+              <p style={{
+                margin: '0 0 14px', textAlign: 'center',
+                fontSize: 11, fontWeight: 900, textTransform: 'uppercase',
+                letterSpacing: 2, color: '#92400e'
+              }}>🏆 Rewards Earned</p>
+              {[
+                { label: '⭐ Points Earned', value: '+' + pendingReward.points_earned, color: '#d97706' },
+                { label: '🎖 Total Points',  value: pendingReward.total_points,        color: '#2563eb' },
+                { label: '🌟 Level',         value: pendingReward.level,               color: '#16a34a', small: true },
+                { label: '📦 Items Returned',value: pendingReward.items_returned,      color: '#0f172a' },
+              ].map(function(row) { return (
+                <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                  <span style={{ fontSize: 13, color: '#64748b', fontWeight: 600 }}>{row.label}</span>
+                  <span style={{ fontSize: row.small ? 13 : 17, fontWeight: 900, color: row.color }}>{row.value}</span>
+                </div>
+              ); })}
+              {pendingReward.new_badges && pendingReward.new_badges.length > 0 && (
+                <div style={{ borderTop: '1px solid #fcd34d', paddingTop: 12, marginTop: 4 }}>
+                  <p style={{ margin: '0 0 8px', fontSize: 11, fontWeight: 900, color: '#92400e', textTransform: 'uppercase' }}>
+                    🎖 New Badge{pendingReward.new_badges.length > 1 ? 's' : ''} Unlocked!
+                  </p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {pendingReward.new_badges.map(function(b, i) { return (
+                      <span key={i} style={{ fontSize: 11, fontWeight: 800, background: '#fef3c7', color: '#92400e', padding: '4px 10px', borderRadius: 10, border: '1px solid #fcd34d' }}>{b}</span>
+                    ); })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={function() { setPendingReward(null); window.location.href = '/profile'; }}
+              style={{
+                width: '100%', background: 'linear-gradient(135deg,#6366f1,#4f46e5)',
+                color: '#fff', border: 'none', borderRadius: 16, padding: '16px',
+                fontSize: 14, fontWeight: 900, letterSpacing: 1,
+                textTransform: 'uppercase', cursor: 'pointer', marginBottom: 10,
+                boxShadow: '0 8px 20px -4px rgba(99,102,241,0.45)',
+              }}
+            >VIEW MY REWARDS</button>
+            <button
+              onClick={function() { setPendingReward(null); }}
+              style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: 14, fontWeight: 600, cursor: 'pointer', padding: '8px' }}
+            >Close</button>
+          </div>
+        </div>
+      )}
+
       <style dangerouslySetInnerHTML={{
         __html: `
         @keyframes slideInRight {
           from { transform: translateX(100%); opacity: 0; }
           to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes rewardFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes rewardSlideUp {
+          from { transform: scale(0.85) translateY(30px); opacity: 0; }
+          to { transform: scale(1) translateY(0); opacity: 1; }
         }
       `}} />
     </NotificationContext.Provider>

@@ -23,6 +23,7 @@ from .serializers import (
     OTPRequestSerializer, OTPVerifySerializer
 )
 from .permissions import IsSuperAdmin, IsCollegeAdmin, IsAdminOrModerator
+from notifications.utils import send_in_app_notification
 
 
 def get_tokens_for_user(user):
@@ -105,19 +106,77 @@ class LoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        serializer = LoginSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.validated_data['user']
-            tokens = get_tokens_for_user(user)
+        try:
+            from rest_framework.exceptions import ValidationError as DRFValidationError
+            serializer = LoginSerializer(data=request.data)
+            
+            # Use try-except for is_valid to catch unexpected schema/DB errors early
+            try:
+                if serializer.is_valid():
+                    user = serializer.validated_data['user']
+                    tokens = get_tokens_for_user(user)
+                    
+                    from campustrace_backend.api_utils import log_event
+                    log_event("login_success", {"user_id": user.id, "email": user.email})
+                    
+                    return Response({
+                        'success': True,
+                        'message': 'Login successful!',
+                        'tokens': tokens,
+                        'user': UserSerializer(user, context={'request': request}).data
+                    })
+            except Exception as e:
+                # Catch crashes during validation (like missing columns)
+                from campustrace_backend.api_utils import log_event
+                log_event("login_validation_crash", {"error": str(e)}, level="error")
+                import logging
+                logger = logging.getLogger('users.auth')
+                logger.error(f"[AUTH CRITICAL] Validation crash: {str(e)}", exc_info=True)
+                return Response({
+                    "success": False,
+                    "message": "Internal server error during authentication."
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+            return self._handle_login_errors(serializer.errors)
+
+        except Exception as e:
+            from rest_framework.exceptions import ValidationError as DRFValidationError
+            if isinstance(e, DRFValidationError):
+                return self._handle_login_errors(e.detail)
+                
+            from campustrace_backend.api_utils import log_event
+            log_event("login_failed_unexpected", {"error": str(e)}, level="error")
+            import logging
+            logger = logging.getLogger('users.auth')
+            logger.error(f"[AUTH CRITICAL] Unexpected error: {str(e)}", exc_info=True)
+            
             return Response({
-                'message': 'Login successful!',
-                'tokens': tokens,
-                'user': UserSerializer(user, context={'request': request}).data,
-            })
-        errors = serializer.errors
-        msg = errors.get('detail') or errors.get('non_field_errors', ['Invalid credentials'])[0]
-        return Response({'message': str(msg), 'errors': errors},
-                        status=status.HTTP_401_UNAUTHORIZED)
+                "success": False,
+                "message": "An unexpected error occurred. Please try again later."
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def _handle_login_errors(self, errors):
+        # Extract first error message from detail or other fields
+        msg = None
+        if isinstance(errors, dict):
+            msg = errors.get('detail')
+            if isinstance(msg, list): msg = msg[0]
+            if not msg:
+                for field, field_errors in errors.items():
+                    if isinstance(field_errors, list) and len(field_errors) > 0:
+                        msg = field_errors[0]
+                        break
+        elif isinstance(errors, list) and len(errors) > 0:
+            msg = errors[0]
+            
+        if not msg:
+            msg = "Invalid credentials"
+        
+        return Response({
+            'success': False,
+            'message': str(msg),
+            'errors': errors
+        }, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class LogoutView(APIView):
@@ -177,15 +236,12 @@ class ChangePasswordView(APIView):
 
         user.set_password(serializer.validated_data['new_password'])
         user.save()
-        try:
-            from notifications.models import Notification
-            Notification.objects.create(
-                user=user,
-                message='Your password was changed successfully.',
-                notification_type='password_changed',
-            )
-        except Exception:
-            pass
+        send_in_app_notification(
+            user=user,
+            item=None,
+            message='Your password was changed successfully.',
+            notification_type='password_changed',
+        )
         return Response({'message': 'Password changed successfully.'})
 
 
@@ -627,3 +683,11 @@ class AdminUserActivityView(APIView):
             'role': target_user.role,
             'status': 'Blocked' if target_user.is_blocked else 'Active'
         })
+
+
+class LeaderboardView(APIView):
+    """View to return top users by reward points."""
+    def get(self, request):
+        top_users = User.objects.filter(is_active=True).order_by('-reward_points')[:20]
+        serializer = UserSerializer(top_users, many=True, context={'request': request})
+        return Response(serializer.data)

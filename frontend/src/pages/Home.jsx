@@ -2,34 +2,27 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { itemsAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import BottomNav from '../components/BottomNav';
 import ItemCard from '../components/ItemCard';
-import { Shield } from 'lucide-react';
-
-import { useNotifications } from '../context/NotificationContext';
+import { Search, PlusCircle, AlertCircle, ArrowRight, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
+import PremiumCard from '../components/ui/PremiumCard';
+import { ItemSkeleton } from '../components/ui/SkeletonLoaders';
 
 const CATEGORIES = [
-  { id: 'electronics', label: 'Electronics', icon: '🖥️' },
-  { id: 'keys', label: 'Keys', icon: '🔑' },
-  { id: 'wallet', label: 'Wallets', icon: '👛' },
-  { id: 'books', label: 'Books', icon: '📚' },
-  { id: 'clothing', label: 'Clothing', icon: '👕' },
-  { id: 'other', label: 'Other', icon: '📦' },
+  { id: 'electronics', label: 'Electronics', icon: '🖥️', gradient: 'from-blue-500 to-indigo-600' },
+  { id: 'keys', label: 'Keys', icon: '🔑', gradient: 'from-amber-400 to-orange-500' },
+  { id: 'wallet', label: 'Wallets', icon: '👛', gradient: 'from-pink-500 to-rose-600' },
+  { id: 'books', label: 'Books', icon: '📚', gradient: 'from-emerald-400 to-teal-600' },
+  { id: 'clothing', label: 'Clothing', icon: '👕', gradient: 'from-purple-500 to-indigo-600' },
+  { id: 'other', label: 'Other', icon: '📦', gradient: 'from-gray-400 to-slate-600' },
 ];
 
-const Home = ({ darkMode, setDarkMode }) => {
+const Home = () => {
   const [recent, setRecent] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const { unreadCount } = useNotifications();
   const navigate = useNavigate();
-  const { user } = useAuth();
-
-  const bg = darkMode ? '#0f172a' : '#f8fafc';
-  const card = darkMode ? '#1e293b' : '#fff';
-  const text = darkMode ? '#e2e8f0' : '#1e293b';
-  const muted = darkMode ? '#94a3b8' : '#64748b';
-  const border = darkMode ? '#334155' : '#e2e8f0';
+  useAuth();
 
   useEffect(() => {
     itemsAPI.getRecent()
@@ -44,210 +37,182 @@ const Home = ({ darkMode, setDarkMode }) => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: bg, color: text, paddingBottom: 90 }}>
+    <div className="space-y-10 pb-10">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden rounded-3xl bg-primary-gradient p-8 lg:p-12 text-white shadow-2xl">
+         {/* Decorative shapes */}
+         <div className="absolute top-0 right-0 -u mt-[-10%] mr-[-10%] w-64 h-64 bg-white/10 rounded-full blur-3xl" />
+         <div className="absolute bottom-0 left-0 mb-[-10%] ml-[-10%] w-48 h-48 bg-secondary/20 rounded-full blur-2xl" />
+         
+         <div className="relative z-10 max-w-2xl">
+           <motion.div
+             initial={{ opacity: 0, x: -20 }}
+             animate={{ opacity: 1, x: 0 }}
+             className="flex items-center gap-2 mb-4"
+           >
+             <span className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold uppercase tracking-wider">
+               Campus Resource Network
+             </span>
+             <Sparkles size={16} className="text-yellow-300 animate-pulse" />
+           </motion.div>
 
-      {/* Header */}
-      <div style={{
-        background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
-        padding: '24px 16px 32px',
-        color: '#fff',
-        position: 'relative',
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, letterSpacing: -0.5 }}>
-              📍 CampusTrace
-            </h1>
-            <p style={{ margin: '4px 0 0', fontSize: 13, opacity: 0.85 }}>
-              Hello, {user?.name?.split(' ')[0] || 'there'} 👋
-            </p>
-          </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            {/* Notification bell */}
-            <button
-              onClick={() => navigate('/notifications')}
-              style={{
-                background: 'rgba(255,255,255,0.2)',
-                border: 'none', borderRadius: 12,
-                padding: '8px 10px', cursor: 'pointer',
-                color: '#fff', fontSize: 18, position: 'relative'
-              }}
-            >
-              🔔
-              {unreadCount > 0 && (
-                <span style={{
-                  position: 'absolute', top: 2, right: 2,
-                  background: '#ef4444', color: '#fff',
-                  borderRadius: '50%', minWidth: 16, height: 16,
-                  fontSize: 10, fontWeight: 700,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              )}
-            </button>
-            {/* Dark mode toggle */}
-            <button
-              onClick={() => {
-                setDarkMode(!darkMode);
-                localStorage.setItem('darkMode', !darkMode);
-              }}
-              style={{
-                background: 'rgba(255,255,255,0.2)',
-                border: 'none', borderRadius: 12,
-                padding: '8px 10px', cursor: 'pointer',
-                color: '#fff', fontSize: 18
-              }}
-            >
-              {darkMode ? '☀️' : '🌙'}
-            </button>
-          </div>
-        </div>
+           <motion.h1 
+             initial={{ opacity: 0, y: 20 }}
+             animate={{ opacity: 1, y: 0 }}
+             transition={{ delay: 0.1 }}
+             className="text-4xl lg:text-5xl font-extrabold mb-6 leading-tight"
+           >
+             Lost something? <br /> We'll help you <span className="text-yellow-200">trace it.</span>
+           </motion.h1>
 
-        {/* Search bar */}
-        <form onSubmit={handleSearch}>
-          <div style={{
-            background: '#fff', borderRadius: 14,
-            display: 'flex', alignItems: 'center',
-            padding: '4px 4px 4px 16px',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.15)'
-          }}>
-            <span style={{ fontSize: 18, marginRight: 8 }}>🔍</span>
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search lost or found items..."
-              style={{
-                flex: 1, border: 'none', outline: 'none',
-                fontSize: 14, color: '#1e293b', background: 'transparent'
-              }}
-            />
-            <button
-              type="submit"
-              style={{
-                background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
-                color: '#fff', border: 'none', borderRadius: 10,
-                padding: '10px 18px', cursor: 'pointer',
-                fontSize: 13, fontWeight: 600
-              }}
-            >
-              Search
-            </button>
-          </div>
-        </form>
+           <motion.p
+             initial={{ opacity: 0 }}
+             animate={{ opacity: 1 }}
+             transition={{ delay: 0.2 }}
+             className="text-white/80 text-lg mb-8"
+           >
+             The smartest way to find lost items on campus. Join thousands of students making campus life easier.
+           </motion.p>
 
-        {/* Admin Quick Access Banner */}
-        {(() => {
-          const authUser = JSON.parse(localStorage.getItem("user")) || user;
-          return authUser && (authUser.role === 'college_admin' || authUser.role === 'super_admin') ? (
-            <button
-              onClick={() => {
-                if (authUser.role === "super_admin") {
-                  navigate("/super-admin-dashboard");
-                } else {
-                  navigate("/admin-dashboard");
-                }
-              }}
-              style={{
-                marginTop: 18, background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)',
-                borderRadius: 14, padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                cursor: 'pointer', backdropFilter: 'blur(10px)', color: '#fff', fontSize: 15, fontWeight: 800, width: '100%'
-              }}
-            >
-              <Shield size={18} /> Admin Panel
-            </button>
-          ) : null;
-        })()}
-      </div>
+           <motion.form 
+             initial={{ opacity: 0, y: 20 }}
+             animate={{ opacity: 1, y: 0 }}
+             transition={{ delay: 0.3 }}
+             onSubmit={handleSearch}
+             className="flex flex-col sm:flex-row gap-3"
+           >
+             <div className="flex-1 relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" size={20} />
+                <input 
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search for lost items..."
+                  className="w-full bg-white text-text-primary pl-12 pr-4 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-white/20 transition-all shadow-lg"
+                />
+             </div>
+             <button type="submit" className="bg-text-primary text-white font-bold py-4 px-8 rounded-2xl hover:bg-slate-800 transition-all shadow-lg whitespace-nowrap active:scale-95">
+               Find Now
+             </button>
+           </motion.form>
+         </div>
+      </section>
 
       {/* Quick Actions */}
-      <div style={{ padding: '16px 16px 0' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
-          <button
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <PremiumCard 
+          className="bg-gradient-to-br from-red-500 to-orange-600 border-none p-1 overflow-hidden"
+          hover={true}
+        >
+          <button 
             onClick={() => navigate('/report?type=lost')}
-            style={{
-              background: 'linear-gradient(135deg, #ef4444, #f97316)',
-              color: '#fff', border: 'none', borderRadius: 16,
-              padding: '18px', cursor: 'pointer', textAlign: 'left',
-              boxShadow: '0 4px 16px rgba(239,68,68,0.3)'
-            }}
+            className="w-full h-full bg-white/10 backdrop-blur-sm p-6 flex items-start gap-4 text-white text-left group"
           >
-            <div style={{ fontSize: 28, marginBottom: 6 }}>😔</div>
-            <div style={{ fontWeight: 700, fontSize: 15 }}>Lost Something?</div>
-            <div style={{ fontSize: 12, opacity: 0.9, marginTop: 2 }}>Report a lost item</div>
+             <div className="p-4 bg-white/20 rounded-2xl group-hover:scale-110 transition-transform">
+               <AlertCircle size={32} />
+             </div>
+             <div>
+               <h3 className="text-xl font-extrabold mb-1">Lost Something?</h3>
+               <p className="text-white/80 text-sm mb-4">Report it now and let the network find it.</p>
+               <div className="flex items-center gap-2 text-sm font-bold bg-white/20 w-fit px-3 py-1.5 rounded-lg">
+                 Report Lost <ArrowRight size={14} />
+               </div>
+             </div>
           </button>
-          <button
+        </PremiumCard>
+
+        <PremiumCard 
+          className="bg-gradient-to-br from-emerald-500 to-teal-600 border-none p-1 overflow-hidden"
+          hover={true}
+          delay={0.1}
+        >
+          <button 
             onClick={() => navigate('/report?type=found')}
-            style={{
-              background: 'linear-gradient(135deg, #16a34a, #059669)',
-              color: '#fff', border: 'none', borderRadius: 16,
-              padding: '18px', cursor: 'pointer', textAlign: 'left',
-              boxShadow: '0 4px 16px rgba(22,163,74,0.3)'
-            }}
+            className="w-full h-full bg-white/10 backdrop-blur-sm p-6 flex items-start gap-4 text-white text-left group"
           >
-            <div style={{ fontSize: 28, marginBottom: 6 }}>🎉</div>
-            <div style={{ fontWeight: 700, fontSize: 15 }}>Found Something?</div>
-            <div style={{ fontSize: 12, opacity: 0.9, marginTop: 2 }}>Report a found item</div>
+             <div className="p-4 bg-white/20 rounded-2xl group-hover:scale-110 transition-transform">
+               <PlusCircle size={32} />
+             </div>
+             <div>
+               <h3 className="text-xl font-extrabold mb-1">Found Something?</h3>
+               <p className="text-white/80 text-sm mb-4">Be a hero. Help someone get their item back.</p>
+               <div className="flex items-center gap-2 text-sm font-bold bg-white/20 w-fit px-3 py-1.5 rounded-lg">
+                 Report Found <ArrowRight size={14} />
+               </div>
+             </div>
+          </button>
+        </PremiumCard>
+      </section>
+
+      {/* Categories */}
+      <section>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-text-primary">Browse Categories</h2>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          {CATEGORIES.map((cat, idx) => (
+            <motion.button
+              key={cat.id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: idx * 0.05 }}
+              whileHover={{ y: -5 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate(`/browse?category=${cat.id}`)}
+              className="group"
+            >
+              <div className={`aspect-square rounded-3xl bg-gradient-to-br ${cat.gradient} p-0.5 mb-3 shadow-lg group-hover:shadow-primary/30 transition-all`}>
+                <div className="w-full h-full bg-white rounded-[22px] flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
+                  {cat.icon}
+                </div>
+              </div>
+              <span className="text-sm font-semibold text-text-secondary group-hover:text-primary transition-colors">
+                {cat.label}
+              </span>
+            </motion.button>
+          ))}
+        </div>
+      </section>
+
+      {/* Recent Items */}
+      <section>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-text-primary">Recently Found</h2>
+          <button 
+            onClick={() => navigate('/browse')}
+            className="text-primary font-bold text-sm hover:underline flex items-center gap-1"
+          >
+            See all items <ArrowRight size={14} />
           </button>
         </div>
 
-        {/* Categories */}
-        <div style={{ marginBottom: 20 }}>
-          <h3 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 700 }}>Browse by Category</h3>
-          <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => navigate(`/browse?category=${cat.id}`)}
-                style={{
-                  background: card, border: `1px solid ${border}`,
-                  borderRadius: 12, padding: '10px 14px',
-                  cursor: 'pointer', color: text,
-                  display: 'flex', flexDirection: 'column',
-                  alignItems: 'center', gap: 4,
-                  minWidth: 72, flexShrink: 0,
-                  fontSize: 12, fontWeight: 500,
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
-                }}
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <ItemSkeleton />
+            <ItemSkeleton />
+            <ItemSkeleton />
+            <ItemSkeleton />
+          </div>
+        ) : recent.length === 0 ? (
+          <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-300">
+             <div className="text-5xl mb-4">empty</div>
+             <p className="text-text-secondary font-medium">No recent activity. Start by reporting an item!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {recent.slice(0, 6).map((item, idx) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
               >
-                <span style={{ fontSize: 22 }}>{cat.icon}</span>
-                {cat.label}
-              </button>
+                <ItemCard item={item} />
+              </motion.div>
             ))}
           </div>
-        </div>
-
-        {/* Recent Items */}
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Recent Items</h3>
-            <button
-              onClick={() => navigate('/browse')}
-              style={{ background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
-            >
-              View all →
-            </button>
-          </div>
-
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: 40, color: muted }}>
-              <div style={{ fontSize: 32, marginBottom: 8 }}>⏳</div>
-              Loading items...
-            </div>
-          ) : recent.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: 40, color: muted }}>
-              <div style={{ fontSize: 48 }}>📭</div>
-              <p style={{ marginTop: 8 }}>No items yet. Be the first to report!</p>
-            </div>
-          ) : (
-            recent.slice(0, 6).map(item => (
-              <ItemCard key={item.id} item={item} darkMode={darkMode} />
-            ))
-          )}
-        </div>
-      </div>
-
-      <BottomNav darkMode={darkMode} />
+        )}
+      </section>
     </div>
   );
 };

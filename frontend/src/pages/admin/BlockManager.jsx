@@ -37,17 +37,26 @@ const BlockManager = ({ darkMode }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            const token = localStorage.getItem('access_token');
+            const config = {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            };
+
             const data = new FormData();
             data.append('name', formData.name);
             data.append('latitude', formData.latitude);
             data.append('longitude', formData.longitude);
-            data.append('is_active', formData.is_active);
-            if (imageFile) data.append('image', imageFile);
+            // Use aliases 'photo' and 'active' as requested
+            data.append('active', formData.is_active);
+            if (imageFile) data.append('photo', imageFile);
 
             if (editingBlock) {
-                await adminAPI.updateBlock(editingBlock.id, data);
+                await adminAPI.updateBlock(editingBlock.id, data, config);
             } else {
-                await adminAPI.createBlock(data);
+                await adminAPI.createBlock(data, config);
             }
 
             setShowModal(false);
@@ -56,6 +65,7 @@ const BlockManager = ({ darkMode }) => {
             setImageFile(null);
             fetchBlocks();
         } catch (err) {
+            console.error('Block save error:', err);
             alert('Failed to save block.');
         }
     };
@@ -123,8 +133,8 @@ const BlockManager = ({ darkMode }) => {
                                     </div>
                                 </td>
                                 <td style={{ padding: '16px' }}>
-                                    <p style={{ margin: 0, fontSize: 13, fontFamily: 'monospace' }}>Lat: {b.latitude.toFixed(4)}</p>
-                                    <p style={{ margin: 0, fontSize: 13, fontFamily: 'monospace' }}>Lng: {b.longitude.toFixed(4)}</p>
+                                    <p style={{ margin: 0, fontSize: 13, fontFamily: 'monospace' }}>Lat: {b.latitude?.toFixed(4) || '0.0000'}</p>
+                                    <p style={{ margin: 0, fontSize: 13, fontFamily: 'monospace' }}>Lng: {b.longitude?.toFixed(4) || '0.0000'}</p>
                                 </td>
                                 <td style={{ padding: '16px' }}>
                                     {b.is_active ? (

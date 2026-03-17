@@ -73,8 +73,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_known_lng = models.FloatField(null=True, blank=True)
 
     # Gamification
-    points             = models.IntegerField(default=0)
+    reward_points      = models.IntegerField(default=0)
+    level              = models.CharField(max_length=50, default='Beginner Helper')
     successful_returns = models.IntegerField(default=0)
+    badges             = models.JSONField(default=list, blank=True)
 
     # Django Required
     is_active  = models.BooleanField(default=True)
@@ -138,3 +140,22 @@ class OTPVerification(models.Model):
     @classmethod
     def generate_otp(cls):
         return ''.join(random.choices(string.digits, k=6))
+
+
+class RewardTransaction(models.Model):
+    CATEGORY_CHOICES = [
+        ('return', 'Successful Return'),
+        ('reporting', 'Reporting Found Item'),
+        ('approval', 'Approving Verification'),
+        ('bonus', 'Bonus Points'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reward_transactions')
+    points = models.IntegerField()
+    description = models.CharField(max_length=255)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    item = models.ForeignKey('items.Item', on_delete=models.SET_NULL, null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.name}: {self.points} ({self.category})"
