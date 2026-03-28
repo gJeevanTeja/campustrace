@@ -1,4 +1,5 @@
 import React, { lazy, Suspense } from 'react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
@@ -112,12 +113,15 @@ function AppRoutes() {
   );
 }
 
+
+
 function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
         <NotificationProvider>
           <AppRoutes />
+          <SpeedInsights />
         </NotificationProvider>
       </AuthProvider>
     </ThemeProvider>
