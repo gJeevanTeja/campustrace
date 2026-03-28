@@ -91,9 +91,19 @@ const Notifications = () => {
 
   const handleTap = (notif) => {
     if (!notif.is_read) handleMarkRead(notif.id);
-    const itemId = notif.item?.id || notif.item_id;
-    if (itemId) navigate(`/item/${itemId}`);
-    else if (['password_changed', 'account', 'system'].includes(notif.notification_type)) navigate('/profile');
+    
+    const itemId = notif.item_details?.id || notif.item || notif.item_id;
+    
+    if (['password_changed', 'account', 'system', 'security'].includes(notif.notification_type)) {
+      navigate('/profile');
+    } else if (['new_message', 'chat', 'chat_message'].includes(notif.notification_type)) {
+      navigate(notif.room_id ? `/chat/${notif.room_id}` : '/chat');
+    } else if (itemId) {
+      navigate(`/item/${itemId}`);
+    } else {
+      // Fallback for notifications without a specific navigation target
+      console.log('Notification tapped, no navigation target found:', notif);
+    }
   };
 
   const getFiltered = () => {

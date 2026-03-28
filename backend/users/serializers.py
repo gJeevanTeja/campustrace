@@ -39,13 +39,14 @@ class RegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True)
     terms_accepted   = serializers.BooleanField(write_only=True)
     college_name     = serializers.CharField(write_only=True)
+    student_id       = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
     class Meta:
         model = User
         fields = [
             'name', 'username', 'email', 'phone', 'department',
             'section', 'college_year', 'college_name', 'password', 'confirm_password',
-            'terms_accepted'
+            'terms_accepted', 'student_id'
         ]
 
     def validate_name(self, value):
@@ -75,6 +76,19 @@ class RegisterSerializer(serializers.ModelSerializer):
         email_regex = r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$'
         if not re.match(email_regex, value):
             raise serializers.ValidationError("Enter a valid email address.")
+        
+        domain = value.split('@')[-1]
+        
+        # Check standard university domains
+        is_standard = domain.endswith('.edu') or domain.endswith('.in') or domain.endswith('.ac')
+        
+        # Check customized college domains
+        from colleges.models import College
+        is_approved = College.objects.filter(email_domain=domain, is_active=True).exists()
+
+        if not (is_standard or is_approved):
+            raise serializers.ValidationError("Must use a university email (.edu, .in, .ac) or an approved college domain.")
+
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError("An account with this email already exists.")
         
@@ -211,6 +225,8 @@ class LoginSerializer(serializers.Serializer):
             raise
         except Exception as e:
             from django.db import OperationalError, InterfaceError
+            # Add print here for immediate visibility in USER terminal
+            print(f"\n[AUTH ERROR] Login Exception: {type(e).__name__}: {str(e)}\n")
             logger.error(f"[AUTH DEBUG] CRITICAL ERROR during login: {str(e)}", exc_info=True)
             
             if isinstance(e, (OperationalError, InterfaceError)):

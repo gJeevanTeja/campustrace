@@ -55,7 +55,7 @@ def send_sms_otp(phone_number, otp_code, user_name=''):
         return True  # Pretend it worked
 
     try:
-        message = f"Your CampusTrace OTP is {otp_code}. Valid for 5 minutes. Do not share."
+        message = f"Your UniTrace OTP is {otp_code}. Valid for 5 minutes. Do not share."
         url = "https://www.fast2sms.com/dev/bulkV2"
         params = urllib.parse.urlencode({
             'authorization': api_key,
@@ -82,22 +82,29 @@ class RegisterView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        serializer = RegisterSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            tokens = get_tokens_for_user(user)
-            return Response({
-                'message': 'Registration successful! Welcome to CampusTrace.',
-                'tokens': tokens,
-                'user': UserSerializer(user, context={'request': request}).data,
-            }, status=status.HTTP_201_CREATED)
+        try:
+            serializer = RegisterSerializer(data=request.data)
+            if serializer.is_valid():
+                user = serializer.save()
+                tokens = get_tokens_for_user(user)
+                return Response({
+                    'message': 'Registration successful! Welcome to UniTrace.',
+                    'tokens': tokens,
+                    'user': UserSerializer(user, context={'request': request}).data,
+                }, status=status.HTTP_201_CREATED)
 
-        errors = serializer.errors
-        first_error = next(iter(errors.values()))
-        if isinstance(first_error, list):
-            first_error = first_error[0]
-        return Response({'message': str(first_error), 'errors': errors},
-                        status=status.HTTP_400_BAD_REQUEST)
+            errors = serializer.errors
+            first_error = next(iter(errors.values()))
+            if isinstance(first_error, list):
+                first_error = first_error[0]
+            return Response({'message': str(first_error), 'errors': errors},
+                            status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            import traceback
+            import sys
+            print(f"REGISTER ERROR: {e}")
+            traceback.print_exc(file=sys.stdout)
+            return Response({"message": str(e)}, status=500)
 
 
 
@@ -116,7 +123,7 @@ class LoginView(APIView):
                     user = serializer.validated_data['user']
                     tokens = get_tokens_for_user(user)
                     
-                    from campustrace_backend.api_utils import log_event
+                    from unitrace.api_utils import log_event
                     log_event("login_success", {"user_id": user.id, "email": user.email})
                     
                     return Response({
@@ -127,7 +134,7 @@ class LoginView(APIView):
                     })
             except Exception as e:
                 # Catch crashes during validation (like missing columns)
-                from campustrace_backend.api_utils import log_event
+                from unitrace.api_utils import log_event
                 log_event("login_validation_crash", {"error": str(e)}, level="error")
                 import logging
                 logger = logging.getLogger('users.auth')
@@ -144,7 +151,7 @@ class LoginView(APIView):
             if isinstance(e, DRFValidationError):
                 return self._handle_login_errors(e.detail)
                 
-            from campustrace_backend.api_utils import log_event
+            from unitrace.api_utils import log_event
             log_event("login_failed_unexpected", {"error": str(e)}, level="error")
             import logging
             logger = logging.getLogger('users.auth')
@@ -301,8 +308,8 @@ class ForgotPasswordView(APIView):
         reset_link = f"{settings.FRONTEND_URL}/reset-password?token={token_str}"
         try:
             send_mail(
-                subject='Reset Your CampusTrace Password',
-                message=f"Hi {user.name},\n\nReset link (expires 1 hour):\n{reset_link}\n\n— CampusTrace Team",
+                subject='Reset Your UniTrace Password',
+                message=f"Hi {user.name},\n\nReset link (expires 1 hour):\n{reset_link}\n\n— UniTrace Team",
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[email],
                 fail_silently=False,
@@ -423,8 +430,8 @@ class SendOTPView(APIView):
         if otp_type == 'email':
             try:
                 send_mail(
-                    subject='Your CampusTrace Login OTP',
-                    message=f"Hi {user.name},\n\nYour OTP is: {otp_code}\n\nExpires in 5 minutes. Do not share.\n\n— CampusTrace Team",
+                    subject='Your UniTrace Login OTP',
+                    message=f"Hi {user.name},\n\nYour OTP is: {otp_code}\n\nExpires in 5 minutes. Do not share.\n\n— UniTrace Team",
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[identifier],
                     fail_silently=False,

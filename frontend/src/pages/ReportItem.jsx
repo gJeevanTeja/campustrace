@@ -19,9 +19,20 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PremiumCard from '../components/ui/PremiumCard';
+import { MRU_LOCATIONS, GROUPED_LOCATIONS } from '../data/mruLocations';
 
 const ELECTRONICS_CATEGORIES = [
-  "Mobile Phones", "Earbuds", "Laptops", "Tablets", "Smart Watches", "Camera", "Headphones", "Other electronics", "Electronics"
+  "Mobile Phones", "Earbuds", "Laptops", "Tablets", "Smart Watches", "Camera", "Headphones", "Other electronics", "Electronics",
+  "Ear buds", "laptop", "watch"
+];
+
+const DEFAULT_CATEGORIES = [
+  { id: 'key', name: 'Key', icon: '🔑' },
+  { id: 'helmet', name: 'Helmet', icon: '🪖' },
+  { id: 'id_card', name: 'ID Card', icon: '🆔' },
+  { id: 'mobile_phone', name: 'Mobile Phone', icon: '📱' },
+  { id: 'wallet', name: 'Wallet', icon: '👛' },
+  { id: 'other', name: 'Other', icon: '📦' },
 ];
 
 const ReportItem = () => {
@@ -29,8 +40,7 @@ const ReportItem = () => {
   const [searchParams] = useSearchParams();
   const [step, setStep] = useState(1);
 
-  const [categories, setCategories] = useState([]);
-  const [blocks, setBlocks] = useState([]);
+  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
 
   const [form, setForm] = useState({
     type: searchParams.get('type') || 'lost',
@@ -52,6 +62,7 @@ const ReportItem = () => {
     unique_mark: '',
     verification_questions: [],
     verification_answers: {},
+    product_price: '',
   });
 
   const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
@@ -69,38 +80,46 @@ const ReportItem = () => {
     collegesAPI.getCategories()
       .then(({ data }) => {
         const list = Array.isArray(data) ? data : (data?.results || []);
-        if (list.length > 0) setCategories(list);
+        if (list.length > 0) {
+          // Perfect order: Alphabetical, with "Other" at the very end
+          const sortedList = [...list].sort((a, b) => {
+            if (a.name === 'Other') return 1;
+            if (b.name === 'Other') return -1;
+            return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+          });
+          setCategories(sortedList);
+        }
       })
       .catch((err) => console.error("Categories fetch error:", err));
       
-    collegesAPI.getBlocks()
-      .then(({ data }) => {
-        const list = Array.isArray(data) ? data : (data?.results || []);
-        if (list.length > 0) setBlocks(list);
-      })
-      .catch((err) => console.error("Blocks fetch error:", err));
   }, []);
 
   const handleLocationSelect = ({ lat, lng, location_name: address }) => {
+    // If it's a verified location, use the exact name from dataset
+    const verified = MRU_LOCATIONS.find(l => 
+      (Math.abs(l.latitude - lat) < 0.0001 && Math.abs(l.longitude - lng) < 0.0001)
+    );
+
     setForm(prev => ({
       ...prev,
       latitude: lat,
       longitude: lng,
-      location_name: address ? address.split(',').slice(0, 3).join(',').trim() : '',
+      location_name: verified ? verified.name : (address ? address.split(',').slice(0, 3).join(',').trim() : ''),
+      block: verified ? verified.name : prev.block
     }));
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === 'block' && value) {
-      const selectedBlock = blocks.find(b => String(b.id) === String(value));
-      if (selectedBlock) {
+      const selectedLoc = MRU_LOCATIONS.find(l => l.name === value);
+      if (selectedLoc) {
         setForm(prev => ({
           ...prev,
           [name]: value,
-          latitude: selectedBlock.latitude || prev.latitude,
-          longitude: selectedBlock.longitude || prev.longitude,
-          location_name: selectedBlock.name || prev.location_name
+          latitude: selectedLoc.latitude,
+          longitude: selectedLoc.longitude,
+          location_name: selectedLoc.name
         }));
         return;
       }
@@ -173,6 +192,7 @@ const ReportItem = () => {
     if (!form.block) return setError('Please select a campus block');
     if (!form.incident_date) return setError('Please select a date');
     if (!form.incident_time) return setError('Please select a time');
+    if (isLost && !form.product_price) return setError('Product Price is required for lost items');
 
     if (!isLost && isElectronic) {
       if (!questionsGenerated) return setError('Please generate verification questions for this electronic item.');
@@ -331,6 +351,22 @@ const ReportItem = () => {
                       inputMode="numeric"
                     />
                   </div>
+                  {isLost && (
+                    <div className="bg-primary/5 p-6 rounded-2xl border border-primary/10 space-y-2">
+                       <label className="text-sm font-black text-primary uppercase tracking-wider flex items-center gap-2">
+                         <Sparkles size={16} /> Product Market Price (₹)
+                       </label>
+                       <input 
+                         name="product_price" 
+                         type="number"
+                         value={form.product_price} 
+                         onChange={handleChange}
+                         placeholder=""
+                         className="w-full bg-white border border-primary/20 rounded-xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-black text-lg text-primary"
+                       />
+                       <p className="text-[10px] text-primary/60 font-bold uppercase">This helps us calculate the fair reward and platform commission.</p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-4">
@@ -388,11 +424,10 @@ const ReportItem = () => {
                       />
                    </div>
                 </div>
-
-                <div className="space-y-4">
+                 <div className="space-y-4">
                    <label className="text-sm font-bold text-text-primary uppercase tracking-wider flex items-center gap-2">
                      <MapPin size={16} className="text-primary" />
-                     Campus Block
+                     Select Verified Campus Location
                    </label>
                    <select 
                      name="block" 
@@ -400,20 +435,25 @@ const ReportItem = () => {
                      onChange={handleChange}
                      className="w-full bg-gray-50 border border-border rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium appearance-none"
                    >
-                     <option value="">Select Campus Location</option>
-                     {blocks.map(b => (
-                       <option key={b.id} value={b.id}>{b.name}</option>
+                     <option value="">Choose a verified place...</option>
+                     {Object.entries(GROUPED_LOCATIONS).map(([group, locations]) => (
+                       <optgroup key={group} label={group}>
+                         {locations.map((loc, i) => (
+                           <option key={i} value={loc.name}>{loc.name}</option>
+                         ))}
+                       </optgroup>
                      ))}
                    </select>
                 </div>
 
                 <div className="space-y-4">
                    <label className="text-sm font-bold text-text-primary uppercase tracking-wider">Pinpoint Exact Location</label>
-                   <div className="rounded-3xl overflow-hidden border border-border h-[250px] shadow-inner">
+                   <div className="rounded-3xl overflow-hidden border border-border h-[300px] shadow-inner relative">
                       <CampusMap
                         onLocationSelect={handleLocationSelect}
                         selectedLat={form.latitude}
                         selectedLng={form.longitude}
+                        restrictedLocations={MRU_LOCATIONS}
                       />
                    </div>
                 </div>

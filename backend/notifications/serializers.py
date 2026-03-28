@@ -1,10 +1,10 @@
 from rest_framework import serializers
 from .models import Notification
-from items.serializers import ItemSerializer
+from items.serializers import ItemSimpleSerializer
 
 
 class NotificationSerializer(serializers.ModelSerializer):
-    item_details = ItemSerializer(source='item', read_only=True)
+    item_details = ItemSimpleSerializer(source='item', read_only=True)
 
     class Meta:
         model = Notification

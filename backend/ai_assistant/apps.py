@@ -4,4 +4,4 @@ from django.apps import AppConfig
 class AiAssistantConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'ai_assistant'
-    verbose_name = 'CampusTrace AI Assistant'
+    verbose_name = 'UniTrace AI Assistant'

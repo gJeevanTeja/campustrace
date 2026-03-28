@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // ─── API Configuration ──────────────────────────────────────────────────────
-const API_IP = process.env.REACT_APP_API_IP || 'localhost';
+const API_IP = process.env.REACT_APP_API_IP || (typeof window !== 'undefined' ? window.location.hostname : 'localhost');
 const BASE_URL = `http://${API_IP}:8000/api/`;
 const WS_BASE = `ws://${API_IP}:8000`;
 
@@ -130,6 +130,7 @@ export const itemsAPI = {
   getAll: (params) => api.get('items/', { params }),
   getRecent: () => api.get('items/recent/'),
   getMyItems: () => api.get('items/my-items/'),
+  getMyClaims: () => api.get('items/my-claims/'),
   getById: (id, params) => api.get(`items/${id}/`, { params }),
   getNearby: (lat, lng, km) => api.get('items/nearby/', { params: { lat, lng, km: km || 2 } }),
   create: (data) => {
@@ -162,6 +163,9 @@ export const itemsAPI = {
   confirmReturn: (itemId, claimCode) => api.post(`items/${itemId}/confirm-return/`, { claim_code: claimCode }),
   approveClaim: (claimId) => api.post(`items/claim/${claimId}/approve/`),
   rejectClaim: (claimId) => api.post(`items/claim/${claimId}/reject/`),
+  initiatePayment: (itemId, data) => api.post(`payments/initiate/${itemId}/`, data),
+  verifyPayment: (data) => api.post(`payments/verify/`, data),
+  releasePayment: (itemId) => api.post(`payments/release/${itemId}/`),
 };
 
 // ── Notifications ─────────────────────────────────────────────────

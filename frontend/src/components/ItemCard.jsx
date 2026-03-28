@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { MapPin, Clock, Trash2, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const ItemCard = ({ item, onDelete }) => {
+const ItemCard = memo(({ item, onDelete }) => {
   const navigate = useNavigate();
 
   const handleDelete = async (e) => {
@@ -42,6 +42,7 @@ const ItemCard = ({ item, onDelete }) => {
           <img 
             src={item.image_url} 
             alt={item.title} 
+            loading="lazy"
             className="w-full h-full object-cover rounded-2xl shadow-sm group-hover:scale-105 transition-transform duration-500"
             onError={e => {
               e.target.style.display = 'none';
@@ -104,6 +105,6 @@ const ItemCard = ({ item, onDelete }) => {
       </div>
     </motion.div>
   );
-};
+});
 
 export default ItemCard;

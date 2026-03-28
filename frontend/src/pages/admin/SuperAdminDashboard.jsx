@@ -67,7 +67,7 @@ const SuperAdminDashboard = ({ darkMode }) => {
                 <div style={{ marginBottom: 56 }}>
                     <h2 style={{ fontSize: 44, fontWeight: 900, color: '#1e293b', margin: '0 0 16px 0', letterSpacing: '-1px' }}>Global System Overview</h2>
                     <p style={{ color: '#94a3b8', fontSize: 18, fontWeight: 600, margin: 0, opacity: 0.9 }}>
-                        Monitor and manage the entire CampusTrace network.
+                        Monitor and manage the entire UniTrace network.
                     </p>
                 </div>
 

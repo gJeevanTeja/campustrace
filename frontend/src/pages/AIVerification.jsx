@@ -136,7 +136,7 @@ const AIVerification = () => {
                         <ChevronLeft size={20} className="text-text-primary" />
                     </button>
                     <div>
-                        <h1 className="font-black text-text-primary uppercase tracking-tighter text-lg leading-tight">CampusTrace AI</h1>
+                        <h1 className="font-black text-text-primary uppercase tracking-tighter text-lg leading-tight">UniTrace AI</h1>
                         <div className="flex items-center gap-2">
                            <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
                            <span className="text-[10px] font-black text-success uppercase tracking-widest">Active Processing</span>

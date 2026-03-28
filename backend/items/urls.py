@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     ItemListCreateView, ItemDetailView, ClaimItemView,
-    MyItemsView, RecentItemsView, AddItemPhotosView,
+    MyItemsView, MyClaimsView, RecentItemsView, AddItemPhotosView,
     NearbyItemsView, VerifyClaimView, ConfirmReturnView,
     ApproveVerificationView, SubmitAIAnswerView, RejectClaimView,
     GenerateElectronicQuestionsView
@@ -12,6 +12,7 @@ urlpatterns = [
     path('', ItemListCreateView.as_view(), name='item-list-create'),
     path('recent/', RecentItemsView.as_view(), name='recent-items'),
     path('my-items/', MyItemsView.as_view(), name='my-items'),
+    path('my-claims/', MyClaimsView.as_view(), name='my-claims'),
     path('nearby/', NearbyItemsView.as_view(), name='nearby-items'),
     path('<int:pk>/', ItemDetailView.as_view(), name='item-detail'),
     path('<int:pk>/claim/', ClaimItemView.as_view(), name='claim-item'),

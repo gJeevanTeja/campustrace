@@ -46,20 +46,20 @@ const BrowseItems = () => {
   return (
     <div className="space-y-8 min-h-screen">
       {/* Header & Filters Section */}
-      <section className="glass-effect rounded-3xl p-6 lg:p-8 border border-white/40 shadow-xl overflow-hidden relative">
-        <div className="absolute top-0 right-0 p-8 text-primary/5 -mr-8 -mt-8 rotate-12">
+      <section className="glass-effect rounded-3xl p-4 sm:p-6 lg:p-8 border border-white/40 shadow-xl overflow-hidden relative">
+        <div className="absolute top-0 right-0 p-8 text-primary/5 -mr-8 -mt-8 rotate-12 hidden sm:block">
             <LayoutGrid size={120} />
         </div>
 
         <div className="relative z-10">
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h2 className="text-3xl font-extrabold text-text-primary">Discover Items</h2>
-                    <p className="text-text-secondary text-sm">Browse and filter lost/found reports.</p>
+                    <h2 className="text-2xl sm:text-3xl font-extrabold text-text-primary">Discover Items</h2>
+                    <p className="text-text-secondary text-[11px] sm:text-sm">Browse and filter lost/found reports.</p>
                 </div>
                 <button 
                   onClick={() => navigate('/report')}
-                  className="bg-primary text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:shadow-lg hover:shadow-primary/30 transition-all active:scale-95"
+                  className="bg-primary text-white p-3 sm:px-6 sm:py-3 rounded-2xl font-bold flex items-center gap-2 hover:shadow-lg hover:shadow-primary/30 transition-all active:scale-95"
                 >
                     <Plus size={20} />
                     <span className="hidden sm:inline">Report Item</span>
@@ -70,23 +70,23 @@ const BrowseItems = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
                 {/* Search */}
                 <div className="lg:col-span-5 relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" size={18} />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" size={16} />
                     <input
                       value={search}
                       onChange={e => setFilter('search', e.target.value)}
-                      placeholder="Search items by name or keywords..."
-                      className="w-full bg-white/50 backdrop-blur-sm border border-border rounded-2xl pl-12 pr-4 py-3.5 outline-none focus:ring-4 focus:ring-primary/10 transition-all shadow-sm"
+                      placeholder="Search items..."
+                      className="w-full bg-white/50 backdrop-blur-sm border border-border rounded-xl sm:rounded-2xl pl-11 pr-4 py-3 sm:py-3.5 outline-none focus:ring-4 focus:ring-primary/10 transition-all shadow-sm text-sm"
                     />
                 </div>
 
                 {/* Type & Category Desktop Pills */}
                 <div className="lg:col-span-7 flex flex-wrap gap-2 items-center">
-                    <div className="h-12 bg-white/50 backdrop-blur-sm border border-border p-1 rounded-2xl flex gap-1">
+                    <div className="h-11 sm:h-12 bg-white/50 backdrop-blur-sm border border-border p-1 rounded-xl sm:rounded-2xl flex gap-1 w-full sm:w-auto">
                         {['all', 'lost', 'found'].map(t => (
                             <button 
                               key={t} 
                               onClick={() => setFilter('type', t)} 
-                              className={`px-4 rounded-xl font-bold text-xs uppercase tracking-tighter transition-all ${
+                              className={`flex-1 sm:flex-none px-4 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-xs uppercase tracking-tighter transition-all ${
                                 type === t ? 'bg-primary text-white shadow-md' : 'text-text-secondary hover:bg-gray-100'
                               }`}
                             >

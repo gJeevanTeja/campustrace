@@ -23,11 +23,20 @@
 
 @layer base {
   body {
-    @apply font-sans bg-background text-text-primary antialiased;
+    @apply bg-background text-text-primary antialiased;
+    font-family: "Times New Roman", Times, serif;
     line-height: 1.5;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Add padding for mobile bottom nav */
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  @media (max-width: 1024px) {
+    body {
+      padding-bottom: calc(var(--bottom-nav-height) + 2rem);
+    }
   }
 
   ::selection {

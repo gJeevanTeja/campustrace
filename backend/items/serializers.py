@@ -20,11 +20,31 @@ def haversine_distance(lat1, lon1, lat2, lon2):
 
 class ClaimSessionSerializer(serializers.ModelSerializer):
     claimant = UserSerializer(read_only=True)
+    has_paid = serializers.SerializerMethodField()
+    claim_code = serializers.SerializerMethodField()
 
     class Meta:
         model = ClaimSession
-        fields = ['id', 'item', 'claimant', 'status', 'ai_score', 'ai_result', 'ai_result_label', 'claim_code', 'attempts', 'created_at']
-        read_only_fields = ['id', 'item', 'claimant', 'ai_score', 'ai_result', 'ai_result_label', 'claim_code', 'attempts', 'created_at']
+        fields = ['id', 'item', 'claimant', 'status', 'ai_score', 'ai_result', 'ai_result_label', 'claim_code', 'attempts', 'created_at', 'has_paid']
+        read_only_fields = ['id', 'item', 'claimant', 'ai_score', 'ai_result', 'ai_result_label', 'claim_code', 'attempts', 'created_at', 'has_paid']
+
+    def get_has_paid(self, obj):
+        from payments.models import RewardPayment
+        return RewardPayment.objects.filter(item=obj.item, payer=obj.claimant, status__in=['paid', 'completed']).exists()
+
+    def get_claim_code(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return None
+        
+        # Original Flow: Only the Finder (Post Owner) should see the code to show it to the claimant
+        if obj.item.user == request.user:
+             # Only show if paid
+             from payments.models import RewardPayment
+             if RewardPayment.objects.filter(item=obj.item, payer=obj.claimant, status__in=['paid', 'completed']).exists():
+                 return obj.claim_code
+            
+        return None
 
 
 class ItemPhotoSerializer(serializers.ModelSerializer):
@@ -57,6 +77,12 @@ class ItemSerializer(serializers.ModelSerializer):
     is_electronics     = serializers.SerializerMethodField()
     category_display   = serializers.SerializerMethodField()
 
+    claim_code         = serializers.SerializerMethodField()
+    reward_suggestions = serializers.SerializerMethodField()
+    contact_phone     = serializers.SerializerMethodField()
+    matching_lost_item_price = serializers.SerializerMethodField()
+    matching_lost_item_id = serializers.SerializerMethodField()
+
     class Meta:
         model  = Item
         fields = [
@@ -70,9 +96,57 @@ class ItemSerializer(serializers.ModelSerializer):
             'distance_from_user', 'nearby_matches',
             'college', 'category_new', 'category_display', 'block', 'pending_claims', 'my_claim',
             'is_electronics', 'latitude', 'longitude',
-            'brand', 'color', 'unique_mark', 'verification_questions', 'verification_answers'
+            'brand', 'color', 'unique_mark', 'verification_questions', 'verification_answers',
+            'product_price', 'reward_amount', 'reward_suggestions',
+            'matching_lost_item_price', 'matching_lost_item_id'
         ]
-        read_only_fields = ['id', 'reference_number', 'user', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'reference_number', 'user', 'created_at', 'updated_at', 'claim_code']
+
+    def get_claim_code(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return None
+        
+        # Original Flow: Only the Finder (Post Owner) should see the code
+        if obj.user == request.user:
+            # Check for any verified and paid claim
+            from payments.models import RewardPayment
+            has_paid = RewardPayment.objects.filter(
+                item=obj, 
+                status__in=['paid', 'completed']
+            ).exists()
+            
+            if has_paid:
+                return obj.claim_code
+            
+        return None
+
+    def get_matching_lost_item_price(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated or obj.type != 'found':
+            return None
+        # Look for the current user's most recent lost report of the same category
+        match = Item.objects.filter(
+            user=request.user, 
+            type='lost', 
+            category=obj.category,
+            status='active'
+        ).order_by('-created_at').first()
+        if match and match.product_price:
+            return float(match.product_price)
+        return None
+
+    def get_matching_lost_item_id(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated or obj.type != 'found':
+            return None
+        match = Item.objects.filter(
+            user=request.user, 
+            type='lost', 
+            category=obj.category,
+            status='active'
+        ).order_by('-created_at').first()
+        return match.id if match else None
 
     def get_image_url(self, obj):
         request = self.context.get('request')
@@ -134,6 +208,41 @@ class ItemSerializer(serializers.ModelSerializer):
             return False
         return True
 
+    def get_reward_suggestions(self, obj):
+        if not obj.product_price:
+            return None
+        from payments.utils import get_suggested_reward
+        suggested, min_val = get_suggested_reward(obj.product_price)
+        return {
+            "suggested": float(suggested),
+            "min": float(min_val)
+        }
+
+    def get_contact_phone(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return "Locked"
+        
+        # If the requester is the finder themselves, show it
+        if obj.user == request.user:
+            return obj.contact_phone
+            
+        # Check if there is a successful payment (status='paid' or 'completed')
+        try:
+            from payments.models import RewardPayment
+            has_paid = RewardPayment.objects.filter(
+                item=obj, 
+                payer=request.user, 
+                status__in=['paid', 'completed']
+            ).exists()
+            
+            if has_paid:
+                return obj.contact_phone
+        except Exception:
+            pass
+            
+        return "Locked"
+
     def get_distance_from_user(self, obj):
         request = self.context.get('request')
         if not request:
@@ -194,6 +303,27 @@ class ItemSerializer(serializers.ModelSerializer):
         return data
 
 
+class ItemSimpleSerializer(serializers.ModelSerializer):
+    """Lightweight item serializer for lists/notifications to avoid expensive distance calculations."""
+    image_url = serializers.SerializerMethodField()
+    category_display = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Item
+        fields = ['id', 'title', 'type', 'status', 'image_url', 'category_display', 'created_at']
+
+    def get_image_url(self, obj):
+        request = self.context.get('request')
+        if obj.image and request:
+            return request.build_absolute_uri(obj.image.url)
+        return None
+
+    def get_category_display(self, obj):
+        if obj.category_new:
+            return obj.category_new.name
+        return obj.get_category_display()
+
+
 class ItemCreateSerializer(serializers.ModelSerializer):
     photos = serializers.ListField(
         child=serializers.ImageField(),
@@ -210,7 +340,7 @@ class ItemCreateSerializer(serializers.ModelSerializer):
             'location_detail', 'latitude', 'longitude', 'location_name',
             'use_current_location', 'image', 'contact_phone', 'incident_datetime',
             'photos', 'college', 'category_new', 'block',
-            'brand', 'color', 'unique_mark', 'verification_questions', 'verification_answers'
+            'brand', 'color', 'unique_mark', 'verification_questions', 'verification_answers', 'product_price'
         ]
 
     def to_internal_value(self, data):
@@ -252,6 +382,34 @@ class ItemCreateSerializer(serializers.ModelSerializer):
                             # Let the JSONField validation catch actual syntax errors later if needed
                             pass
         
+        # Handle string block names
+        block_val = data.get('block')
+        if isinstance(block_val, str):
+            block_val = block_val.strip()
+            if block_val in ['', 'null', 'undefined']:
+                data['block'] = None
+            elif not block_val.isdigit():
+                from colleges.models import CampusLocation
+                loc = CampusLocation.objects.filter(name__iexact=block_val).first()
+                if loc:
+                    data['block'] = loc.id
+                else:
+                    data['block'] = None
+                    
+        # Handle string category_new
+        category_val = data.get('category_new')
+        if isinstance(category_val, str):
+            category_val = category_val.strip()
+            if category_val in ['', 'null', 'undefined']:
+                data['category_new'] = None
+            elif not category_val.isdigit():
+                from colleges.models import Category
+                cat = Category.objects.filter(name__iexact=category_val.replace('_', ' ')).first()
+                if cat:
+                    data['category_new'] = cat.id
+                else:
+                    data['category_new'] = None
+                    
         return super().to_internal_value(data)
 
     def validate_incident_datetime(self, value):

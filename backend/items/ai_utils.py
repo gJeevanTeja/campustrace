@@ -36,11 +36,11 @@ def call_groq_api(prompt):
         res_json = response.json()
         return res_json['choices'][0]['message']['content'].strip()
     except requests.exceptions.Timeout:
-        from campustrace_backend.api_utils import log_event
+        from unitrace.api_utils import log_event
         log_event("ai_timeout", {"service": "Groq", "prompt_len": len(prompt)}, level="warning")
         return None
     except Exception as e:
-        from campustrace_backend.api_utils import log_event
+        from unitrace.api_utils import log_event
         log_event("ai_error", {"service": "Groq", "error": str(e)}, level="error")
         return None
 
@@ -84,7 +84,7 @@ def generate_verification_questions(image_file, description=None, brand=None, co
         pil_img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 
         prompt = f"""
-You are an intelligent AI ownership verification assistant for CampusTrace.
+You are an intelligent AI ownership verification assistant for UniTrace.
 Your job is to verify whether a claimant is the real owner of the uploaded item.
 
 CONTEXT PROVIDED BY FOUNDER:

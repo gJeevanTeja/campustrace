@@ -187,13 +187,9 @@ const AdminRequestManager = ({ darkMode: dm }) => {
                             {/* Section 3 Documents */}
                             <div>
                                 <h3 style={{ fontSize: 14, fontWeight: 800, color: '#1e293b', borderBottom: '1px solid #e2e8f0', paddingBottom: 8, marginBottom: 16 }}>Documents</h3>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }}>
                                     <a href={selectedRequest.college_id_card} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 16, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, textDecoration: 'none', color: '#1e293b', fontWeight: 700, transition: 'all 0.2s' }}>
                                         <span>College ID Card</span>
-                                        <ExternalLink size={18} color="#2563eb" />
-                                    </a>
-                                    <a href={selectedRequest.aadhaar_card} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 16, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, textDecoration: 'none', color: '#1e293b', fontWeight: 700, transition: 'all 0.2s' }}>
-                                        <span>Aadhaar Card</span>
                                         <ExternalLink size={18} color="#2563eb" />
                                     </a>
                                 </div>

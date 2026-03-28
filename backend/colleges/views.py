@@ -287,10 +287,16 @@ class AdminAnalyticsView(APIView):
             td = resolved_items['avg_time']
             days = td.days
             hours = td.seconds // 3600
+            minutes = (td.seconds // 60) % 60
+            
             if days > 0:
                 avg_display = f"{days}d {hours}h"
+            elif hours > 0:
+                avg_display = f"{hours}h {minutes}m"
+            elif minutes > 0:
+                avg_display = f"{minutes}m"
             else:
-                avg_display = f"{hours}h"
+                avg_display = "< 1m"
 
         # Reporting Activity (Last 7 days)
         activity_data = []
@@ -326,7 +332,7 @@ class ExportCSVView(BaseExportView):
             return Response({'error': 'User not linked to any college'}, status=status.HTTP_400_BAD_REQUEST)
 
         response = HttpResponse(content_type='text/csv')
-        filename = f"CampusTrace_Report_{timezone.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        filename = f"UniTrace_Report_{timezone.now().strftime('%Y%m%d_%H%M%S')}.csv"
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
         writer = csv.writer(response)
@@ -355,7 +361,7 @@ class ExportExcelView(BaseExportView):
 
         wb = openpyxl.Workbook()
         ws = wb.active
-        ws.title = "CampusTrace Report"
+        ws.title = "UniTrace Report"
 
         # Headers
         headers = ['Item Name', 'Category', 'Type', 'Reported By', 'Status', 'Location', 'Date Reported', 'Claim Status']
@@ -399,7 +405,7 @@ class ExportExcelView(BaseExportView):
         wb.save(output)
         output.seek(0)
 
-        filename = f"CampusTrace_Report_{timezone.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+        filename = f"UniTrace_Report_{timezone.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
         response = HttpResponse(
             output.read(),
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -423,7 +429,7 @@ class ExportPDFView(BaseExportView):
         title_style.alignment = 1 # Center
         
         # Add Header
-        elements.append(Paragraph("CampusTrace Admin Report", title_style))
+        elements.append(Paragraph("UniTrace Admin Report", title_style))
         elements.append(Spacer(1, 12))
         
         # Add Statistics
@@ -468,7 +474,7 @@ class ExportPDFView(BaseExportView):
         doc.build(elements)
 
         buffer.seek(0)
-        filename = f"CampusTrace_Report_{timezone.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        filename = f"UniTrace_Report_{timezone.now().strftime('%Y%m%d_%H%M%S')}.pdf"
         response = HttpResponse(buffer.read(), content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response

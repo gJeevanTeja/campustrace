@@ -1,13 +1,13 @@
-# CampusTrace - Lost & Found Portal
+# UniTrace - Lost & Found Portal
 
 ## Project Structure
 
 ```
-campustrace/
+UniTrace/
 ├── backend/                    (Django REST Framework)
 │   ├── manage.py
 │   ├── requirements.txt
-│   ├── campustrace_backend/
+│   ├── UniTrace_backend/
 │   │   ├── __init__.py
 │   │   ├── settings.py
 │   │   ├── urls.py

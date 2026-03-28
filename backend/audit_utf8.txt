@@ -1,0 +1,31 @@
+﻿--- Data Schema Audit ---
+[OK] reward_points
+[OK] level
+[OK] successful_returns
+[OK] badges
+[MISSING] trust_score
+[OK] auth_provider
+[OK] google_id
+[OK] google_picture
+[OK] dark_mode
+[OK] notifications_enabled
+[OK] notification_sound
+[OK] email_notifications
+[OK] last_known_lat
+[OK] last_known_lng
+[OK] college_id
+[OK] is_blocked
+[OK] is_verified
+
+Total Missing Fields: 1
+
+--- Migration Table ---
+[APPLIED] 0001_initial
+[APPLIED] 0002_user_notification_enabled_user_sound_enabled_and_more
+[APPLIED] 0003_rename_notification_enabled_user_email_notifications_and_more
+[APPLIED] 0004_user_dark_mode
+[APPLIED] 0005_user_last_known_lat_user_last_known_lng
+[APPLIED] 0006_user_auth_provider_user_google_id_and_more
+[APPLIED] 0007_user_college_user_is_blocked_user_is_verified_and_more
+[APPLIED] 0008_user_points_user_successful_returns
+[APPLIED] 0009_rename_points_user_reward_points_user_badges_and_more

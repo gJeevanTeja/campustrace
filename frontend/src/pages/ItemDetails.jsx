@@ -16,10 +16,10 @@ import {
   ShieldCheck, 
   Brain, 
   Calendar,
-  AlertCircle,
   QrCode,
   PartyPopper,
-  CheckCircle2
+  CheckCircle2,
+  Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PremiumCard from '../components/ui/PremiumCard';
@@ -38,19 +38,52 @@ const ItemDetails = () => {
   const [confirming, setConfirming] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [rewardData, setRewardData] = useState(null);
-  const rewardShownRef = useRef(false); // prevent double-showing the popup
-  const prevStatusRef = useRef(null);   // track previous item.status to detect transition
+  const [selectedReward, setSelectedReward] = useState(null);
+  const [isPaying, setIsPaying] = useState(false);
+  const [customPrice, setCustomPrice] = useState('');
+  const rewardShownRef = useRef(false);
+  const prevStatusRef = useRef(null);
+
+  // Helper for automatic reward/commission calculation
+  const getAutomaticDetails = (price) => {
+    if (!price) return { suggested: 0, platform: 0 };
+    const p = parseFloat(price);
+    
+    let platform = 10;
+    if (p <= 500) platform = p * 0.10;
+    else if (p <= 5000) platform = p * 0.05;
+    else if (p <= 50000) platform = p * 0.03;
+    else platform = Math.min(p * 0.02, 1500);
+
+    let suggested = 50;
+    if (p <= 500) suggested = Math.max(p * 0.10, 50);
+    else if (p <= 5000) suggested = Math.max(p * 0.05, 100);
+    else if (p <= 50000) suggested = Math.max(p * 0.03, 300);
+    else suggested = Math.max(p * 0.02, 1000);
+
+    return { suggested: Math.round(suggested), platform: Math.round(platform) };
+  };
 
   const fetchItem = useCallback(async () => {
     try {
       const res = await itemsAPI.getById(id);
-      setItem(res.data);
+      const itemData = res.data;
+      setItem(itemData);
+      
+      // Auto-fill price from matching lost report if item itself has no price
+      if (!itemData.product_price && itemData.matching_lost_item_price) {
+        setCustomPrice(String(itemData.matching_lost_item_price));
+        const details = getAutomaticDetails(itemData.matching_lost_item_price);
+        setSelectedReward(details.suggested);
+      } else if (itemData.reward_suggestions && !selectedReward) {
+        setSelectedReward(itemData.reward_suggestions.suggested);
+      }
     } catch {
       setError('Item not found or has been removed.');
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, selectedReward]);
 
   useEffect(() => {
     fetchItem();
@@ -62,9 +95,7 @@ const ItemDetails = () => {
     }
   }, [lastItemUpdate, id, fetchItem]);
 
-  // ── Founder Reward Popup ─────────────────────────────────────────
-  // Triggers ONLY when item status transitions to 'returned' while founder is on the page.
-  // Uses authAPI.getProfile() to get fresh reward data — no WebSocket dependency.
+  // Founder Reward Popup
   useEffect(() => {
     if (!item || !user) return;
 
@@ -72,7 +103,6 @@ const ItemDetails = () => {
     const previousStatus = prevStatusRef.current;
     prevStatusRef.current = currentStatus;
 
-    // Only react when status CHANGES to 'returned' (not on initial load if already returned)
     if (currentStatus !== 'returned') return;
     if (previousStatus === 'returned' || previousStatus === null) return;
     if (rewardShownRef.current) return;
@@ -92,12 +122,10 @@ const ItemDetails = () => {
       });
       setShowSuccess(true);
     }).catch(() => {
-      setShowSuccess(true); // show simple congratulations even if profile fetch fails
+      setShowSuccess(true);
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [item?.status]);
+  }, [item, user, id]);
 
-  const isLost = item?.type === 'lost';
   const isElectronic = item?.is_electronics === true;
 
   const startAIVerification = async () => {
@@ -111,6 +139,64 @@ const ItemDetails = () => {
       setClaiming(false);
     }
   };
+
+  const handlePayment = async () => {
+    const priceToUse = item.product_price || customPrice;
+    if (!priceToUse) return alert("Please enter the product value first.");
+    if (!selectedReward) return alert("Please select a reward amount.");
+    
+    setIsPaying(true);
+    try {
+      const { data } = await itemsAPI.initiatePayment(id, { 
+        reward_amount: selectedReward,
+        product_price: priceToUse 
+      });
+      
+      const options = {
+        key: process.env.REACT_APP_RAZORPAY_KEY_ID || data.key_id,
+        amount: data.amount * 100,
+        currency: data.currency,
+        name: "UniTrace Reward",
+        description: `Reward for ${data.item_title}`,
+        order_id: data.order_id,
+        handler: async (response) => {
+          try {
+            await itemsAPI.verifyPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            });
+            alert("Payment successful! Contact unlocked.");
+            fetchItem();
+          } catch (err) {
+            alert("Payment verification failed. Please contact support.");
+          }
+        },
+        prefill: {
+          name: user.name,
+          email: user.email,
+          contact: user.phone
+        },
+        theme: { color: "#6366f1" }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (e) {
+      alert(e.response?.data?.error || 'Failed to initiate payment.');
+    } finally {
+      setIsPaying(false);
+    }
+  };
+
+  const currentPrice = item?.product_price || customPrice;
+  const autoDetails = getAutomaticDetails(currentPrice);
+  
+  useEffect(() => {
+    if (autoDetails.suggested > 0 && !selectedReward) {
+      setSelectedReward(autoDetails.suggested);
+    }
+  }, [autoDetails.suggested, selectedReward]);
 
   const startNormalClaimFlow = async () => {
     if (!window.confirm('Are you sure you want to claim this item?')) return;
@@ -153,14 +239,16 @@ const ItemDetails = () => {
     setConfirming(true);
     try {
       const res = await itemsAPI.confirmReturn(id, code);
-      // This API is called by the claimant (lost person).
-      // For FOUND items: item.user=founder gets reward via WebSocket — claimant sees nothing here.
-      // For LOST items: claimant IS the finder, so is_yours===true → show reward popup to them.
+      try {
+        await itemsAPI.releasePayment(id);
+      } catch (re) {
+        console.warn("Silent escrow release failure:", re);
+      }
+
       if (res.data?.reward?.is_yours === true) {
         setRewardData(res.data.reward);
         setShowSuccess(true);
       }
-      // Just refresh the item status — no popup for the lost person
       const updated = await itemsAPI.getById(id);
       setItem(updated.data);
     } catch (e) {
@@ -180,8 +268,6 @@ const ItemDetails = () => {
       navigate(`/chat/${roomId}`);
     } catch (e) {
       alert(e?.response?.data?.error || 'Could not start chat.');
-    } finally {
-      // Chat started
     }
   };
 
@@ -195,7 +281,7 @@ const ItemDetails = () => {
     const phone = item?.contact_phone || item?.user?.phone;
     if (!phone) return alert('No phone number available');
     const cleaned = phone.replace(/\D/g, '').slice(-10);
-    const msg = encodeURIComponent(`Hi, I saw your ${item.type} item "${item.title}" on CampusTrace.`);
+    const msg = encodeURIComponent(`Hi, I saw your ${item.type} item "${item.title}" on UniTrace.`);
     window.open(`https://wa.me/91${cleaned}?text=${msg}`, '_blank');
   };
 
@@ -224,7 +310,6 @@ const ItemDetails = () => {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-32">
-      {/* Top Navigation Bar */}
       <div className="flex items-center justify-between bg-white/70 backdrop-blur-md sticky top-0 z-40 py-4 border-b border-border -mx-4 px-4 sm:mx-0 sm:rounded-2xl sm:border sm:px-6">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
@@ -259,10 +344,8 @@ const ItemDetails = () => {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left Column: Media & Actions */}
         <div className="lg:col-span-12 xl:col-span-12 space-y-8">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-             {/* Media Gallery */}
              <div className="space-y-4">
                 <div className="aspect-video relative rounded-3xl overflow-hidden border border-border shadow-xl bg-gray-100 group">
                    <AnimatePresence mode="wait">
@@ -276,7 +359,7 @@ const ItemDetails = () => {
                         alt={item.title}
                       />
                    </AnimatePresence>
-                   <div className={`absolute top-4 left-4 px-4 py-1.5 rounded-xl font-black text-xs text-white uppercase shadow-lg ${isLost ? 'bg-danger' : 'bg-success'}`}>
+                   <div className={`absolute top-4 left-4 px-4 py-1.5 rounded-xl font-black text-xs text-white uppercase shadow-lg ${item.type === 'lost' ? 'bg-danger' : 'bg-success'}`}>
                       {item.type}
                    </div>
                    {allPhotos.length > 1 && (
@@ -306,7 +389,6 @@ const ItemDetails = () => {
                 )}
              </div>
 
-             {/* Basic Info & Controls */}
              <div className="space-y-6">
                 <div className="bg-white rounded-3xl p-8 border border-border shadow-sm">
                    <div className="flex flex-wrap gap-2 mb-6">
@@ -342,7 +424,6 @@ const ItemDetails = () => {
                    </div>
                 </div>
 
-                {/* Main Action Area */}
                 <div className="flex flex-col gap-4">
                    {item.can_be_claimed && !item.my_claim && (
                       <button 
@@ -361,29 +442,116 @@ const ItemDetails = () => {
                       </button>
                    )}
 
-                   {item.status === 'active' && !(user && (item.user?.id === user.id || item.user === user.id)) && (
-                      <div className="grid grid-cols-3 gap-3">
-                         <button 
-                           onClick={handleStartChat}
-                           className="bg-white border border-border p-4 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-all font-bold group"
-                         >
-                            <MessageSquare className="text-primary group-hover:scale-110 transition-transform" />
-                            <span className="text-[10px] uppercase">Chat</span>
-                         </button>
-                         <button 
-                           onClick={handleCall}
-                           className="bg-white border border-border p-4 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-all font-bold group"
-                         >
-                            <Phone className="text-emerald-500 group-hover:scale-110 transition-transform" />
-                            <span className="text-[10px] uppercase">Call</span>
-                         </button>
-                         <button 
-                           onClick={handleWhatsApp}
-                           className="bg-white border border-border p-4 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-all font-bold group"
-                         >
-                            <ExternalLink className="text-cyan-500 group-hover:scale-110 transition-transform" />
-                            <span className="text-[10px] uppercase">WhatsApp</span>
-                         </button>
+                   {item.status === 'active' && item.my_claim?.status === 'verified' && (
+                      <div className="space-y-4">
+                         {item.contact_phone === 'Locked' ? (
+                           <div className="bg-primary/5 border border-primary/20 rounded-3xl p-6 space-y-4">
+                              <div className="flex items-center gap-3">
+                                 <div className="p-3 bg-primary text-white rounded-2xl">
+                                    <ShieldCheck size={24} />
+                                 </div>
+                                 <div>
+                                    <h4 className="font-black text-text-primary uppercase tracking-tighter">Reward to Unlock Contact</h4>
+                                    <p className="text-xs text-text-secondary">Safety First: Pay the reward to view finder contact details.</p>
+                                 </div>
+                              </div>
+
+                              {!item.product_price && (
+                                <div className="space-y-2">
+                                  <label className="text-[10px] font-black text-primary uppercase tracking-wider flex items-center gap-2">
+                                    <Sparkles size={14} /> Confirm Product Market Price (₹)
+                                  </label>
+                                  <input 
+                                    type="number"
+                                    value={customPrice}
+                                    onChange={(e) => {
+                                      setCustomPrice(e.target.value);
+                                      const details = getAutomaticDetails(e.target.value);
+                                      setSelectedReward(details.suggested);
+                                    }}
+                                    placeholder="e.g. 5000"
+                                    className="w-full bg-white border-2 border-primary/20 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-black text-primary"
+                                  />
+                                  <p className="text-[9px] text-text-secondary font-bold uppercase">This price determines the fair reward suggestion.</p>
+                                </div>
+                              )}
+
+                              <div className="space-y-4">
+                                  <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-text-secondary uppercase">Select Reward Amount</label>
+                                    <p className="text-[11px] font-bold text-primary">
+                                      Suggested Reward Range based on item value ₹{currentPrice}
+                                    </p>
+                                    <p className="text-[10px] text-text-secondary">
+                                      Minimum reward: <span className="font-black">₹{autoDetails.suggested}</span>. You can choose a higher reward for a faster response.
+                                    </p>
+                                  </div>
+
+                                  <div className="grid grid-cols-2 gap-2">
+                                     {[
+                                       autoDetails.suggested,
+                                       Math.round(autoDetails.suggested * 1.5),
+                                       Math.round(autoDetails.suggested * 2),
+                                       Math.round(autoDetails.suggested * 3)
+                                     ].filter(amt => amt > 0).map((amt, i) => (
+                                       <button 
+                                         key={i} 
+                                         onClick={() => setSelectedReward(amt)}
+                                         className={`py-3 rounded-xl border-2 font-black text-sm transition-all ${selectedReward === amt ? 'bg-primary border-primary text-white ring-4 ring-primary/10 scale-[1.02]' : 'bg-white border-border text-text-secondary hover:border-primary/20'}`}
+                                       >
+                                         ₹{amt}
+                                       </button>
+                                     ))}
+                                  </div>
+                                  <div className="bg-white rounded-2xl p-4 border border-border space-y-2">
+                                     <div className="flex justify-between text-xs">
+                                        <span className="text-text-secondary font-bold">Reward for Finder:</span>
+                                        <span className="text-text-primary font-black">₹{selectedReward || 0}</span>
+                                     </div>
+                                     <div className="flex justify-between text-[10px]">
+                                        <span className="text-text-secondary italic">Commission will be deducted from reward.</span>
+                                     </div>
+                                     <div className="pt-2 border-t border-border flex justify-between text-sm">
+                                        <span className="font-black text-text-primary uppercase tracking-tighter">Total to Pay (Escrow):</span>
+                                        <span className="font-black text-primary text-lg">₹{selectedReward || 0}</span>
+                                     </div>
+                                  </div>
+                               </div>
+
+                              <button 
+                                onClick={handlePayment}
+                                disabled={isPaying || !currentPrice}
+                                className="w-full bg-primary text-white py-4 rounded-2xl font-black shadow-xl shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                              >
+                                {isPaying ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : "PROCEED TO PAY"}
+                              </button>
+                              <p className="text-[10px] text-center text-text-secondary font-bold">Payment is safe. Money will be released only after item confirmation.</p>
+                           </div>
+                         ) : (
+                           <div className="grid grid-cols-3 gap-3">
+                              <button 
+                                onClick={handleStartChat}
+                                className="bg-white border border-border p-4 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-all font-bold group"
+                              >
+                                 <MessageSquare className="text-primary group-hover:scale-110 transition-transform" />
+                                 <span className="text-[10px] uppercase">Chat</span>
+                              </button>
+                              <button 
+                                onClick={handleCall}
+                                className="bg-white border border-border p-4 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-all font-bold group"
+                              >
+                                 <Phone className="text-emerald-500 group-hover:scale-110 transition-transform" />
+                                 <span className="text-[10px] uppercase">Call</span>
+                              </button>
+                              <button 
+                                onClick={handleWhatsApp}
+                                className="bg-white border border-border p-4 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-all font-bold group"
+                              >
+                                 <ExternalLink className="text-cyan-500 group-hover:scale-110 transition-transform" />
+                                 <span className="text-[10px] uppercase">WhatsApp</span>
+                              </button>
+                           </div>
+                         )}
                       </div>
                    )}
                 </div>
@@ -391,7 +559,6 @@ const ItemDetails = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Location Card */}
               <div className="space-y-4">
                   <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider flex items-center gap-2">
                     <MapPin size={16} className="text-primary" />
@@ -400,9 +567,7 @@ const ItemDetails = () => {
                   <GoogleLocationCard item={item} />
               </div>
 
-              {/* Progress & Verification */}
               <div className="space-y-6">
-                {/* Status Stepper */}
                 <PremiumCard className="p-8" hover={false}>
                    <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider mb-6">Tracking Timeline</h3>
                    <div className="space-y-6 relative ml-2">
@@ -424,9 +589,7 @@ const ItemDetails = () => {
                    </div>
                 </PremiumCard>
 
-                {/* Verification Boxes (Claimant/Owner) */}
                 <AnimatePresence>
-                   {/* Owner: Approval Review */}
                    {item.user?.id === user?.id && item.pending_claims?.length > 0 && item.status !== 'returned' && (
                      item.pending_claims.map(claim => (
                         <motion.div key={claim.id} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-primary/5 border border-primary/20 rounded-3xl p-6 space-y-4">
@@ -442,16 +605,21 @@ const ItemDetails = () => {
                                 <span className="text-sm font-black text-primary px-3 py-1 bg-primary/10 rounded-lg">{claim.ai_result || 'PENDING'}</span>
                              </div>
                            )}
-                           <div className="flex gap-3">
-                              <button onClick={() => handleApproveClaim(claim.id)} className="flex-1 bg-primary text-white py-3 rounded-2xl font-bold text-sm shadow-lg shadow-primary/20">APPROVE</button>
-                              <button onClick={() => handleRejectClaim(claim.id)} className="px-6 border border-danger/30 text-danger py-3 rounded-2xl font-bold text-sm">REJECT</button>
-                           </div>
+                           {claim.status === 'verified' ? (
+                              <div className="w-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 py-3 rounded-2xl font-black text-center text-sm uppercase tracking-widest">
+                                 Claim Verified
+                              </div>
+                           ) : (
+                              <div className="flex gap-3 w-full">
+                                 <button onClick={() => handleApproveClaim(claim.id)} className="flex-1 bg-primary text-white py-3 rounded-2xl font-bold text-sm shadow-lg shadow-primary/20">APPROVE</button>
+                                 <button onClick={() => handleRejectClaim(claim.id)} className="px-6 border border-danger/30 text-danger py-3 rounded-2xl font-bold text-sm">REJECT</button>
+                              </div>
+                           )}
                         </motion.div>
                      ))
                    )}
 
-                   {/* Owner: Access Code Display */}
-                   {item.user?.id === user?.id && item.pending_claims?.some(c => c.status === 'verified') && item.status !== 'returned' && (
+                   {item.user?.id === user?.id && item.pending_claims?.some(c => c.status === 'verified' && c.has_paid) && item.status !== 'returned' && (
                       <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-slate-800 text-white rounded-3xl p-8 text-center space-y-4 shadow-2xl">
                          <div className="bg-primary/20 w-16 h-16 rounded-3xl flex items-center justify-center mx-auto mb-4">
                             <QrCode size={32} className="text-primary" />
@@ -460,16 +628,13 @@ const ItemDetails = () => {
                          <p className="text-xs text-white/60">Provide this code to the claimant only when handing over the item physically.</p>
                          <div className="bg-white/10 backdrop-blur-md rounded-2xl py-6 border border-white/10">
                             <span className="text-5xl font-black tracking-[10px] text-primary">
-                               {item.pending_claims.find(c => c.status === 'verified')?.claim_code || "------"}
+                               {item.pending_claims.find(c => c.status === 'verified' && c.has_paid)?.claim_code || "------"}
                             </span>
                          </div>
-                         <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-danger animate-pulse">
-                            <AlertCircle size={14} /> EXPIRES SOON
-                         </div>
+                         <p className="text-[10px] text-white/40 italic">This code confirms the item has been returned.</p>
                       </motion.div>
                    )}
 
-                   {/* Claimant: Receipt Verification UI */}
                    {item.my_claim && item.my_claim.status === 'verified' && item.status !== 'returned' && (
                       <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
                          <ClaimVerification 
@@ -484,7 +649,6 @@ const ItemDetails = () => {
         </div>
       </div>
 
-      {/* Success + Rewards Celebration Overlay */}
       <AnimatePresence>
         {showSuccess && (
           <motion.div 
@@ -534,7 +698,7 @@ const ItemDetails = () => {
                       <p className="text-xs font-black uppercase text-amber-700 mb-2">🎖 New Badge{rewardData.new_badges.length > 1 ? 's' : ''} Unlocked!</p>
                       <div className="flex flex-wrap gap-2">
                         {rewardData.new_badges.map((b, i) => (
-                          <span key={i} className="text-xs font-black bg-amber-100 text-amber-700 px-3 py-1 rounded-xl border border-amber-200">{b}</span>
+                           <span key={i} className="text-xs font-black bg-amber-100 text-amber-700 px-3 py-1 rounded-xl border border-amber-200">{b}</span>
                         ))}
                       </div>
                     </div>

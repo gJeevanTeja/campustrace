@@ -179,7 +179,7 @@ const Settings = ({ darkMode, setDarkMode }) => {
                                </div>
                                <div>
                                   <p className="text-sm font-black text-text-primary uppercase tracking-tight">System Identity</p>
-                                  <p className="text-[10px] font-medium text-text-secondary uppercase">CampusTrace Protocol</p>
+                                  <p className="text-[10px] font-medium text-text-secondary uppercase">UniTrace Protocol</p>
                                </div>
                             </div>
                             <span className="text-[10px] font-bold text-text-secondary uppercase">Active</span>

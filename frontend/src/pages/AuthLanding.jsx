@@ -21,10 +21,10 @@ const AuthLanding = () => {
                   className="text-center space-y-4"
                 >
                     <div className="flex items-center justify-center gap-4">
-                        <div className="w-16 h-16 bg-primary-gradient rounded-[24px] flex items-center justify-center text-white shadow-2xl rotate-12">
+                        <div className="w-16 h-16 bg-primary-gradient rounded-[24px] flex items-center justify-center text-white shadow-2xl">
                            <MapPin size={32} />
                         </div>
-                        <h1 className="text-5xl font-black text-text-primary tracking-tighter italic">CampusTrace</h1>
+                        <h1 className="text-5xl font-black text-text-primary tracking-tighter italic">UniTrace</h1>
                     </div>
                     <div className="space-y-1">
                        <p className="text-xl font-bold text-text-secondary">Advanced Asset Recovery Protocol</p>

@@ -205,7 +205,7 @@ const Help = () => {
                                 <p className="text-white/70 font-bold uppercase tracking-widest text-xs">Our strike team is standing by 24/7/365.</p>
                             </div>
                             <div className="flex flex-wrap justify-center gap-4">
-                                <a href="mailto:campustracehelp@gmail.com" className="flex items-center gap-3 bg-white text-primary px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-2xl shadow-black/20 hover:scale-105 transition-all">
+                                <a href="mailto:UniTracehelp@gmail.com" className="flex items-center gap-3 bg-white text-primary px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-2xl shadow-black/20 hover:scale-105 transition-all">
                                     <Mail size={16} /> Direct Link (Email)
                                 </a>
                                 <button className="flex items-center gap-3 bg-white/10 backdrop-blur-md text-white border border-white/20 px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-white/20 transition-all">

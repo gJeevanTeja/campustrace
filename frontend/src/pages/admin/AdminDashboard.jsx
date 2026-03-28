@@ -142,6 +142,7 @@ const AdminDashboard = () => {
 
     useEffect(() => {
         fetchReports(params);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [fetchReports, params.page, params.category, params.type, params.status, params.collegeId, params.startDate, params.endDate]);
 
     // Debounced search
@@ -154,12 +155,13 @@ const AdminDashboard = () => {
             }
         }, 500);
         return () => clearTimeout(timer);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [params.search, fetchReports]);
 
     const exportData = async (format) => {
         try {
             let response;
-            let filename = `CampusTrace_Report_${new Date().toISOString().split('T')[0]}`;
+            let filename = `UniTrace_Report_${new Date().toISOString().split('T')[0]}`;
             
             // Pass current filters to export
             const exportParams = { ...params };
@@ -195,6 +197,49 @@ const AdminDashboard = () => {
         setParams(prev => ({ ...prev, [name]: value, page: 1 }));
     };
 
+    const MobileReportCard = ({ item }) => (
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-5 border-b border-border last:border-0 hover:bg-primary/[0.02]"
+        >
+            <div className="flex justify-between items-start mb-3">
+                <div className="flex-1">
+                    <h5 className="text-sm font-bold text-text-primary mb-1">{item.title}</h5>
+                    <div className="flex flex-wrap gap-2">
+                        {getTypeBadge(item.type)}
+                        {getStatusBadge(item.status)}
+                    </div>
+                </div>
+                <span className="text-[10px] font-bold text-text-secondary whitespace-nowrap bg-gray-100 px-2 py-1 rounded-lg">
+                    {item.date_reported}
+                </span>
+            </div>
+            <div className="grid grid-cols-2 gap-y-3 gap-x-4 mt-4">
+                <div>
+                    <span className="text-[9px] font-bold text-text-secondary uppercase tracking-widest block mb-0.5">Category</span>
+                    <span className="text-xs font-semibold text-text-primary bg-gray-50 px-2 py-0.5 rounded-md inline-block">{item.category}</span>
+                </div>
+                <div>
+                    <span className="text-[9px] font-bold text-text-secondary uppercase tracking-widest block mb-0.5">Location</span>
+                    <span className="text-xs font-semibold text-text-primary truncate block">{item.location}</span>
+                </div>
+                {isAdmin && (
+                    <div className="col-span-2">
+                        <span className="text-[9px] font-bold text-text-secondary uppercase tracking-widest block mb-0.5">College</span>
+                        <span className="text-xs font-bold text-primary">{item.college_name}</span>
+                    </div>
+                )}
+                <div className="col-span-2 flex items-center gap-2 pt-1 border-t border-border/50">
+                    <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-[9px] font-bold text-primary">
+                        {(item.reported_by || 'U')[0].toUpperCase()}
+                    </div>
+                    <span className="text-[10px] font-medium text-text-secondary">Reported by <span className="text-text-primary font-bold">{item.reported_by}</span></span>
+                </div>
+            </div>
+        </motion.div>
+    );
+
     if (loading) return (
         <div className="space-y-8">
             <div className="h-8 w-48 bg-gray-200 animate-pulse rounded-lg" />
@@ -206,24 +251,24 @@ const AdminDashboard = () => {
     return (
         <div className="space-y-8 pb-12">
             {/* Header section remains similar but updated */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h2 className="text-3xl font-extrabold text-text-primary">
+                    <h2 className="text-2xl sm:text-3xl font-extrabold text-text-primary">
                         {isAdmin ? 'Global System Analytics' : 'College Analytics'}
                     </h2>
-                    <p className="text-text-secondary">Overview of reporting activity and system performance.</p>
+                    <p className="text-sm sm:text-base text-text-secondary">Overview of reporting activity and system performance.</p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button onClick={() => exportData('csv')} className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl font-bold text-sm bg-white hover:bg-gray-50 transition-colors shadow-sm text-text-secondary group">
-                        <FileText size={18} className="text-primary group-hover:scale-110 transition-transform" />
+                <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                    <button onClick={() => exportData('csv')} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2 hover:py-2.5 border border-border rounded-xl font-bold text-xs sm:text-sm bg-white hover:bg-gray-50 transition-all shadow-sm text-text-secondary group">
+                        <FileText size={16} className="text-primary group-hover:scale-110 transition-transform" />
                         CSV
                     </button>
-                    <button onClick={() => exportData('excel')} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl font-bold text-sm hover:shadow-lg hover:shadow-primary/20 transition-all active:scale-95">
-                        <Download size={18} />
-                        Excel Report
+                    <button onClick={() => exportData('excel')} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2 hover:py-2.5 bg-primary text-white rounded-xl font-bold text-xs sm:text-sm hover:shadow-lg hover:shadow-primary/20 transition-all active:scale-95">
+                        <Download size={16} />
+                        Excel
                     </button>
-                    <button onClick={() => exportData('pdf')} className="flex items-center gap-2 px-4 py-2 bg-danger text-white rounded-xl font-bold text-sm hover:shadow-lg hover:shadow-danger/20 transition-all active:scale-95">
-                        <FileText size={18} />
+                    <button onClick={() => exportData('pdf')} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2 hover:py-2.5 bg-danger text-white rounded-xl font-bold text-xs sm:text-sm hover:shadow-lg hover:shadow-danger/20 transition-all active:scale-95">
+                        <FileText size={16} />
                         PDF
                     </button>
                 </div>
@@ -261,7 +306,7 @@ const AdminDashboard = () => {
                             <span className="text-xs font-bold text-text-secondary">Reports</span>
                         </div>
                     </div>
-                    <div className="h-[300px] w-full">
+                    <div className="h-[250px] sm:h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={stats?.reportsByDay || []}>
                                 <defs>
@@ -284,22 +329,24 @@ const AdminDashboard = () => {
                 </PremiumCard>
 
                 {/* Distribution Chart */}
-                <PremiumCard className="p-8" hover={false}>
+                <PremiumCard className="p-6 sm:p-8" hover={false}>
                     <h4 className="text-lg font-bold text-text-primary mb-2">Distribution</h4>
                     <p className="text-sm text-text-secondary mb-8">Lost vs Found ratio.</p>
-                    <ResponsiveContainer width="100%" height={250}>
-                        <PieChart>
-                            <Pie
-                                data={[{ name: 'Lost', value: stats?.lostVsFound?.lost || 0 }, { name: 'Found', value: stats?.lostVsFound?.found || 0 }]}
-                                innerRadius={70} outerRadius={90} paddingAngle={5} dataKey="value" animationDuration={1500}
-                            >
-                                <Cell fill="#EF4444" />
-                                <Cell fill="#10B981" />
-                            </Pie>
-                            <Tooltip />
-                            <Legend align="center" verticalAlign="bottom" />
-                        </PieChart>
-                    </ResponsiveContainer>
+                    <div className="h-[200px] sm:h-[250px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie
+                                    data={[{ name: 'Lost', value: stats?.lostVsFound?.lost || 0 }, { name: 'Found', value: stats?.lostVsFound?.found || 0 }]}
+                                    innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value" animationDuration={1500}
+                                >
+                                    <Cell fill="#EF4444" />
+                                    <Cell fill="#10B981" />
+                                </Pie>
+                                <Tooltip />
+                                <Legend align="center" verticalAlign="bottom" iconType="circle" />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
                 </PremiumCard>
             </div>
 
@@ -307,10 +354,10 @@ const AdminDashboard = () => {
             <div className="mt-12">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
                     <div>
-                        <h4 className="text-2xl font-extrabold text-text-primary">
+                        <h4 className="text-xl sm:text-2xl font-extrabold text-text-primary">
                             {isAdmin ? 'Global Item Reports' : 'College Item Reports'}
                         </h4>
-                        <p className="text-text-secondary">Detailed log of all reported items with advanced filtering.</p>
+                        <p className="text-sm sm:text-base text-text-secondary">Detailed log of all reported items with advanced filtering.</p>
                     </div>
                     
                     {/* Search & Global Actions */}
@@ -329,68 +376,70 @@ const AdminDashboard = () => {
 
                 {/* Filter Toolbar */}
                 <PremiumCard className="p-4 mb-6" hover={false}>
-                    <div className="flex flex-wrap items-center gap-4">
-                        <div className="flex items-center gap-2 px-3 py-2 bg-primary/5 text-primary rounded-xl">
+                    <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-4">
+                        <div className="flex items-center justify-center sm:justify-start gap-2 px-3 py-2 bg-primary/5 text-primary rounded-xl">
                             <Filter size={18} />
                             <span className="text-sm font-bold uppercase tracking-wider">Filters</span>
                         </div>
                         
                         <div className="h-8 w-px bg-border hidden md:block" />
 
-                        {/* College Filter (Super Admin only) */}
-                        {isAdmin && (
+                        <div className="grid grid-cols-2 md:grid-cols-4 lg:flex gap-3 items-center">
+                            {/* College Filter (Super Admin only) */}
+                            {isAdmin && (
+                                <select
+                                    name="collegeId"
+                                    value={params.collegeId}
+                                    onChange={handleFilterChange}
+                                    className="px-4 py-2 bg-gray-50 border-none rounded-xl text-xs sm:text-sm font-bold text-text-primary outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                                >
+                                    <option value="">All Colleges</option>
+                                    {(Array.isArray(colleges) ? colleges : []).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                </select>
+                            )}
+
                             <select
-                                name="collegeId"
-                                value={params.collegeId}
+                                name="category"
+                                value={params.category}
                                 onChange={handleFilterChange}
-                                className="px-4 py-2 bg-gray-50 border-none rounded-xl text-sm font-bold text-text-primary outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                                className="px-4 py-2 bg-gray-50 border-none rounded-xl text-xs sm:text-sm font-bold text-text-primary outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
                             >
-                                <option value="">All Colleges</option>
-                                {(Array.isArray(colleges) ? colleges : []).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                <option value="">Categories</option>
+                                {(Array.isArray(categories) ? categories : []).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                             </select>
-                        )}
 
-                        <select
-                            name="category"
-                            value={params.category}
-                            onChange={handleFilterChange}
-                            className="px-4 py-2 bg-gray-50 border-none rounded-xl text-sm font-bold text-text-primary outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
-                        >
-                            <option value="">All Categories</option>
-                            {(Array.isArray(categories) ? categories : []).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                        </select>
+                            <select
+                                name="type"
+                                value={params.type}
+                                onChange={handleFilterChange}
+                                className="px-4 py-2 bg-gray-50 border-none rounded-xl text-xs sm:text-sm font-bold text-text-primary outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                            >
+                                <option value="">Types</option>
+                                <option value="lost">Lost</option>
+                                <option value="found">Found</option>
+                            </select>
 
-                        <select
-                            name="type"
-                            value={params.type}
-                            onChange={handleFilterChange}
-                            className="px-4 py-2 bg-gray-50 border-none rounded-xl text-sm font-bold text-text-primary outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
-                        >
-                            <option value="">All Types</option>
-                            <option value="lost">Lost</option>
-                            <option value="found">Found</option>
-                        </select>
+                            <select
+                                name="status"
+                                value={params.status}
+                                onChange={handleFilterChange}
+                                className="px-4 py-2 bg-gray-50 border-none rounded-xl text-xs sm:text-sm font-bold text-text-primary outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                            >
+                                <option value="">Status</option>
+                                <option value="active">Active</option>
+                                <option value="returned">Returned</option>
+                                <option value="claimed">Claimed</option>
+                                <option value="closed">Closed</option>
+                            </select>
+                        </div>
 
-                        <select
-                            name="status"
-                            value={params.status}
-                            onChange={handleFilterChange}
-                            className="px-4 py-2 bg-gray-50 border-none rounded-xl text-sm font-bold text-text-primary outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
-                        >
-                            <option value="">All Status</option>
-                            <option value="active">Active</option>
-                            <option value="returned">Returned</option>
-                            <option value="claimed">Claimed</option>
-                            <option value="closed">Closed</option>
-                        </select>
-
-                        <div className="flex items-center gap-2 ml-auto">
+                        <div className="flex items-center gap-2 mt-2 sm:mt-0 sm:ml-auto">
                             <input 
                                 type="date" 
                                 name="startDate"
                                 value={params.startDate}
                                 onChange={handleFilterChange}
-                                className="px-3 py-2 bg-gray-50 border-none rounded-xl text-xs font-bold text-text-secondary outline-none"
+                                className="flex-1 sm:flex-none px-3 py-2 bg-gray-50 border-none rounded-xl text-[10px] sm:text-xs font-bold text-text-secondary outline-none w-full sm:w-auto"
                             />
                             <span className="text-text-secondary">-</span>
                             <input 
@@ -398,7 +447,7 @@ const AdminDashboard = () => {
                                 name="endDate"
                                 value={params.endDate}
                                 onChange={handleFilterChange}
-                                className="px-3 py-2 bg-gray-50 border-none rounded-xl text-xs font-bold text-text-secondary outline-none"
+                                className="flex-1 sm:flex-none px-3 py-2 bg-gray-50 border-none rounded-xl text-[10px] sm:text-xs font-bold text-text-secondary outline-none w-full sm:w-auto"
                             />
                         </div>
                     </div>
@@ -406,7 +455,8 @@ const AdminDashboard = () => {
 
                 {/* Table Section */}
                 <PremiumCard className="overflow-hidden p-0" hover={false}>
-                    <div className="overflow-x-auto">
+                    {/* Desktop Table View */}
+                    <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-left">
                             <thead className="bg-gray-50/50 border-b border-border sticky top-0 z-10">
                                 <tr>
@@ -432,7 +482,7 @@ const AdminDashboard = () => {
                                                 ))}
                                             </tr>
                                         ))
-                                    ) : reports.length > 0 ? (
+                                    ) : reports.length > 0 && (
                                         reports.map((item, idx) => (
                                             <motion.tr
                                                 key={item.id}
@@ -475,37 +525,55 @@ const AdminDashboard = () => {
                                                 </td>
                                             </motion.tr>
                                         ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan={isAdmin ? 8 : 7} className="px-6 py-20 text-center">
-                                                <div className="flex flex-col items-center gap-4">
-                                                    <div className="p-4 bg-gray-50 rounded-full text-gray-400">
-                                                        <Package size={40} />
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-bold text-text-primary italic">No reports found matching your criteria.</p>
-                                                        <button 
-                                                            onClick={() => setParams({ ...params, search: '', category: '', type: '', status: '', startDate: '', endDate: '' })}
-                                                            className="text-primary text-sm font-bold mt-2 hover:underline"
-                                                        >
-                                                            Clear all filters
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
                                     )}
                                 </AnimatePresence>
                             </tbody>
                         </table>
                     </div>
 
+                    {/* Mobile Card View */}
+                    <div className="md:hidden">
+                        <AnimatePresence mode="popLayout">
+                            {loadingReports ? (
+                                [...Array(3)].map((_, i) => (
+                                    <div key={`skeleton-card-${i}`} className="p-5 border-b border-border animate-pulse">
+                                        <div className="h-4 bg-gray-100 rounded w-3/4 mb-2" />
+                                        <div className="h-4 bg-gray-100 rounded w-1/2" />
+                                    </div>
+                                ))
+                            ) : reports.length > 0 ? (
+                                <div className="divide-y divide-border">
+                                    {reports.map((item) => (
+                                        <MobileReportCard key={item.id} item={item} />
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="px-6 py-20 text-center">
+                                    <div className="flex flex-col items-center gap-4">
+                                        <div className="p-4 bg-gray-50 rounded-full text-gray-400">
+                                            <Package size={40} />
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-text-primary italic">No reports found matching your criteria.</p>
+                                            <button 
+                                                onClick={() => setParams({ ...params, search: '', category: '', type: '', status: '', startDate: '', endDate: '' })}
+                                                className="text-primary text-sm font-bold mt-2 hover:underline"
+                                            >
+                                                Clear all filters
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
                     {/* Pagination */}
-                    <div className="px-6 py-4 bg-gray-50/50 border-t border-border flex items-center justify-between">
-                        <p className="text-xs font-bold text-text-secondary">
-                            Showing <span className="text-text-primary">{reports.length}</span> of <span className="text-text-primary">{totalCount}</span> results
+                    <div className="px-4 sm:px-6 py-4 bg-gray-50/50 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <p className="text-xs font-bold text-text-secondary order-2 sm:order-1">
+                            Showing <span className="text-text-primary">{reports.length}</span> of <span className="text-text-primary">{totalCount}</span>
                         </p>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 sm:gap-2 order-1 sm:order-2">
                             <button
                                 onClick={() => setParams(p => ({ ...p, page: p.page - 1 }))}
                                 disabled={params.page === 1}

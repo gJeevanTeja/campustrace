@@ -37,7 +37,7 @@ class AdminRequestViewSet(viewsets.ModelViewSet):
         if recipient_list:
             try:
                 send_mail(
-                    subject='New Admin Access Request - CampusTrace',
+                    subject='New Admin Access Request - UniTrace',
                     message=(
                         f"A new admin request has been submitted.\n\n"
                         f"Name: {admin_req.full_name}\n"
@@ -107,7 +107,7 @@ class AdminRequestViewSet(viewsets.ModelViewSet):
                 try:
                     temp_pass = password if created else "your existing account password"
                     send_mail(
-                        subject='Welcome to CampusTrace Admin Panel',
+                        subject='Welcome to UniTrace Admin Panel',
                         message=(
                             f"Hi {user.name},\n\n"
                             f"Your request to manage {college.name} has been approved.\n\n"
@@ -141,10 +141,10 @@ class AdminRequestViewSet(viewsets.ModelViewSet):
         # Rejection Email
         try:
             send_mail(
-                subject='Update on your CampusTrace Admin Request',
+                subject='Update on your UniTrace Admin Request',
                 message=(
                     f"Hi {admin_req.full_name},\n\n"
-                    f"Thank you for your interest in CampusTrace.\n"
+                    f"Thank you for your interest in UniTrace.\n"
                     f"Unfortunately, your request for admin access has been rejected at this time.\n\n"
                     f"If you believe this is an error, please contact us."
                 ),

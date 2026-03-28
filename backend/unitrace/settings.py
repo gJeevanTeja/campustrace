@@ -38,10 +38,12 @@ INSTALLED_APPS = [
     'colleges',
     'analytics',
     'administration',
+    'payments',
 ]
 
 # ── Middleware ─────────────────────────────────────────────────
 MIDDLEWARE = [
+    'django.middleware.gzip.GZipMiddleware',     # ✅ Compress responses
     'corsheaders.middleware.CorsMiddleware',   # ✅ MUST be first
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -52,9 +54,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF     = 'campustrace_backend.urls'
-WSGI_APPLICATION = 'campustrace_backend.wsgi.application'
-ASGI_APPLICATION = 'campustrace_backend.asgi.application'
+ROOT_URLCONF     = 'unitrace.urls'
+WSGI_APPLICATION = 'unitrace.wsgi.application'
+ASGI_APPLICATION = 'unitrace.asgi.application'
 
 # ── Templates ──────────────────────────────────────────────────
 TEMPLATES = [
@@ -97,7 +99,7 @@ else:
     DATABASES = {
         'default': dj_database_url.config(
             default=os.environ.get('DATABASE_URL'),
-            conn_max_age=600,         # reuse connections for 10 minutes
+            conn_max_age=0,           # disable pooled connections, let Neon handle it
             conn_health_checks=True,  # auto-reconnect if connection drops
             ssl_require=True,         # Neon requires SSL
         )
@@ -126,8 +128,8 @@ EMAIL_PORT          = 587
 EMAIL_USE_TLS       = True
 EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL  = f'CampusTrace <{EMAIL_HOST_USER}>'
-EMAIL_SUBJECT_PREFIX = '[CampusTrace] '
+DEFAULT_FROM_EMAIL  = f'UniTrace <{EMAIL_HOST_USER}>'
+EMAIL_SUBJECT_PREFIX = '[UniTrace] '
 
 # ══════════════════════════════════════════════════════════════════
 # ✅ SMS OTP — Fast2SMS API Key (Indian SMS gateway)
@@ -193,7 +195,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
-    'EXCEPTION_HANDLER': 'campustrace_backend.utils.custom_exception_handler',
+    'EXCEPTION_HANDLER': 'unitrace.utils.custom_exception_handler',
 }
 
 # ── JWT Settings ───────────────────────────────────────────────
@@ -213,3 +215,10 @@ CORS_ALLOW_HEADERS = [
     'cache-control',
 ]
 CORS_ALLOW_METHODS = ['DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT']
+
+#  Razorpay Settings 
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'rzp_test_placeholder')
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', 'placeholder_secret')
+
+# Debug Log
+print("Razorpay Key:", RAZORPAY_KEY_ID)

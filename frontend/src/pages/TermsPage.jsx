@@ -29,11 +29,11 @@ import BottomNav from '../components/BottomNav';
 const TERMS = [
   { icon: <FileText size={18} />, title: 'Accurate Information', text: 'Users must provide accurate and truthful information when reporting lost or found items. False or misleading reports are strictly not permitted.' },
   { icon: <Ban size={18} />, title: 'No False Claims', text: 'Fraudulent claims of item ownership are prohibited. All claims are subject to verification by both parties.' },
-  { icon: <AlertCircle size={18} />, title: 'Liability Disclaimer', text: 'CampusTrace is not responsible for any fraudulent activities, disputes, or losses that occur between users.' },
+  { icon: <AlertCircle size={18} />, title: 'Liability Disclaimer', text: 'UniTrace is not responsible for any fraudulent activities, disputes, or losses that occur between users.' },
   { icon: <CheckCircle2 size={18} />, title: 'Item Verification', text: 'Claimed items must be verified by both parties before handover. We recommend meeting at well-lit, campus security-monitored locations.' },
   { icon: <Lock size={18} />, title: 'Data Privacy', text: 'Your personal data is securely stored and encrypted. We never sell or share your data with third parties for commercial purposes.' },
   { icon: <MessageSquare size={18} />, title: 'Messaging Conduct', text: 'Users must not misuse the messaging system for spam, harassment, or any purpose unrelated to lost and found items.' },
-  { icon: <UserX size={18} />, title: 'Account Suspension', text: 'Repeated violations may lead to temporary or permanent account suspension at the sole discretion of CampusTrace.' },
+  { icon: <UserX size={18} />, title: 'Account Suspension', text: 'Repeated violations may lead to temporary or permanent account suspension at the sole discretion of UniTrace.' },
   { icon: <Image size={18} />, title: 'Content Standards', text: 'All uploaded images and content must be appropriate and relevant. Offensive or inappropriate content will be removed.' },
   { icon: <GraduationCap size={18} />, title: 'Campus Community Only', text: 'This platform is exclusively for verified members of the campus community. Access will be revoked for false credentials.' },
   { icon: <PhoneCall size={18} />, title: 'Contact & Support', text: 'For any issues, disputes, or violations, contact the campus administration office immediately.' },
@@ -136,7 +136,7 @@ const TermsPage = () => {
                     <Sparkles size={32} className="mx-auto text-primary opacity-40" />
                     <div className="space-y-2">
                        <h4 className="text-xl font-black text-text-primary uppercase tracking-tighter italic">Agreement Disclosure</h4>
-                       <p className="text-sm font-medium text-text-secondary max-w-lg mx-auto leading-relaxed">By maintaining an active session on CampusTrace, you acknowledge and agree to the operational protocols outlined above. For institutional disputes, contact <span className="text-primary font-bold">compliance@campustrace.university</span></p>
+                       <p className="text-sm font-medium text-text-secondary max-w-lg mx-auto leading-relaxed">By maintaining an active session on UniTrace, you acknowledge and agree to the operational protocols outlined above. For institutional disputes, contact <span className="text-primary font-bold">compliance@UniTrace.university</span></p>
                     </div>
                 </div>
             </motion.div>

@@ -1,0 +1,97 @@
+﻿python : (0.125) 
+INSERT INTO "users" 
+("password", 
+"last_login", 
+"is_superuser", 
+"name", "username", 
+"email", "phone", 
+"role", "college_id", 
+"is_blocked", 
+"is_verified", 
+"last_active", 
+"department", 
+"section", 
+"college_year", 
+"student_id", 
+"avatar", "google_id", 
+"google_picture", 
+"auth_provider", "notif
+ications_enabled", 
+"notification_sound", 
+"email_notifications", 
+"dark_mode", 
+"last_known_lat", 
+"last_known_lng", 
+"reward_points", 
+"level", 
+"successful_returns", 
+"badges", 
+"trust_score", 
+"is_active", 
+"is_staff", 
+"created_at", 
+"updated_at") VALUES 
+('', NULL, false, 
+'test', NULL, 'test_sql
+3@mru.edu.in', NULL, 
+'student', NULL, 
+false, false, '2026-03-
+21T06:43:21.288243+00:0
+0'::timestamptz, NULL, 
+NULL, NULL, 'S100', 
+'', NULL, NULL, 
+'email', true, true, 
+true, false, NULL, 
+NULL, 0, 'Beginner 
+Helper', 0, '[]', 100, 
+true, false, '2026-03-2
+1T06:43:21.289366+00:00
+'::timestamptz, '2026-0
+3-21T06:43:21.289366+00
+:00'::timestamptz) 
+RETURNING 
+"users"."id"; 
+args=('', None, False, 
+'test', None, 'test_sql
+3@mru.edu.in', None, 
+'student', None, 
+False, False, datetime.
+datetime(2026, 3, 21, 
+6, 43, 21, 288243, tzin
+fo=datetime.timezone.ut
+c), None, None, None, 
+'S100', '', None, 
+None, 'email', True, 
+True, True, False, 
+None, None, 0, 
+'Beginner Helper', 0, 
+<psycopg2._json.Json 
+object at 
+0x0000023BE499C6B0>, 
+100, True, False, datet
+ime.datetime(2026, 3, 
+21, 6, 43, 21, 289366, 
+tzinfo=datetime.timezon
+e.utc), datetime.dateti
+me(2026, 3, 21, 6, 43, 
+21, 289366, tzinfo=date
+time.timezone.utc)); 
+alias=default
+At line:1 char:1
++ python test_sql.py > 
+sql_out.txt 2>&1 ; 
+Get-Content 
+sql_out.txt | Out ...
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: ((0.125) INSER   
+ T ...; alias=defau    
+lt:String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+INSERT INTO "users" ("password", "last_login", "is_superuser", "name", "username", "email", "phone", "role", "college_id", "is_blocked", "is_verified", "last_active", "department", "section", "college_year", "student_id", "avatar", "google_id", "google_picture", "auth_provider", "notifications_enabled", "notification_sound", "email_notifications", "dark_mode", "last_known_lat", "last_known_lng", "reward_points", "level", "successful_returns", "badges", "trust_score", "is_active", "is_staff", "created_at", "updated_at") VALUES ('', NULL, false, 'test', NULL, 'test_sql3@mru.edu.in', NULL, 'student', NULL, false, false, '2026-03-21T06:43:21.288243+00:00'::timestamptz, NULL, NULL, NULL, 'S100', '', NULL, NULL, 'email', true, true, true, false, NULL, NULL, 0, 'Beginner Helper', 0, '[]', 100, true, false, '2026-03-21T06:43:21.289366+00:00'::timestamptz, '2026-03-21T06:43:21.289366+00:00'::timestamptz) RETURNING "users"."id"

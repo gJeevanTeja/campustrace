@@ -153,12 +153,12 @@ const Login = () => {
           {/* Header */}
           <div className="text-center space-y-3">
              <div className="flex items-center justify-center gap-3">
-                <div className="w-12 h-12 bg-primary-gradient rounded-2xl flex items-center justify-center text-white shadow-2xl rotate-12">
+                <div className="w-12 h-12 bg-primary-gradient rounded-2xl flex items-center justify-center text-white shadow-2xl">
                    <ShieldCheck size={24} />
                 </div>
-                <span className="font-black text-2xl tracking-tighter text-primary italic">CampusTrace</span>
+                <span className="font-black text-2xl tracking-tighter text-primary italic">UniTrace</span>
              </div>
-             <p className="text-text-secondary font-black text-[10px] uppercase tracking-[4px]">Advanced Security Access</p>
+             <p className="text-text-secondary font-black text-[10px] uppercase tracking-[4px]">Log in to your account</p>
           </div>
 
           {/* Tab Switcher */}
@@ -176,7 +176,7 @@ const Login = () => {
 
           <div className="space-y-6">
              <div className="space-y-1">
-                <h3 className="text-2xl font-black text-text-primary tracking-tighter uppercase">Initiate Portal Access</h3>
+                <h3 className="text-2xl font-black text-text-primary tracking-tighter uppercase">Welcome Back</h3>
                 <p className="text-sm font-medium text-text-secondary">Please provide your credentials to proceed.</p>
              </div>
 
@@ -202,12 +202,11 @@ const Login = () => {
                     className="space-y-5"
                   >
                     <div className="space-y-1">
-                       <label className="text-[10px] font-black uppercase tracking-widest text-text-secondary ml-1">Identity (Email)</label>
+                       <label className="text-[10px] font-black uppercase tracking-widest text-text-secondary ml-1">Email</label>
                        <div className="relative group">
                           <input 
                             type="email" 
                             required 
-                            placeholder="student@university.edu"
                             value={form.identity}
                             onChange={(e) => setForm({...form, identity: e.target.value})}
                             className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-primary/30 transition-all"
@@ -218,14 +217,13 @@ const Login = () => {
 
                     <div className="space-y-1">
                        <div className="flex justify-between items-center ml-1">
-                          <label className="text-[10px] font-black uppercase tracking-widest text-text-secondary">Secret Key (Password)</label>
-                          <Link to="/forgot-password" size={14} className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">Revoke / Reset</Link>
+                          <label className="text-[10px] font-black uppercase tracking-widest text-text-secondary">Password</label>
+                          <Link to="/forgot-password" size={14} className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">Forgot password?</Link>
                        </div>
                        <div className="relative group">
                           <input 
                             type={showPass ? 'text' : 'password'} 
                             required 
-                            placeholder="••••••••"
                             value={form.secret_key}
                             onChange={(e) => setForm({...form, secret_key: e.target.value})}
                             className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-primary/30 transition-all"
@@ -244,7 +242,7 @@ const Login = () => {
                       disabled={loading}
                       className="w-full py-5 rounded-[24px] bg-primary text-white font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
                     >
-                       {loading ? <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <>Bypass Security <ArrowRight size={18} /></>}
+                       {loading ? <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <>Login <ArrowRight size={18} /></>}
                     </button>
                   </motion.form>
                 ) : (
@@ -268,7 +266,6 @@ const Login = () => {
                                  <input 
                                    value={otpId}
                                    onChange={(e) => setOtpId(e.target.value)}
-                                   placeholder={otpType === 'email' ? 'name@uni.edu' : '9876543210'}
                                    className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-primary/30 transition-all"
                                  />
                                  {otpType === 'email' ? <Mail size={16} className="absolute right-5 top-[18px] text-slate-300" /> : <Smartphone size={16} className="absolute right-5 top-[18px] text-slate-300" />}
@@ -290,7 +287,6 @@ const Login = () => {
                            <input 
                              value={otpCode}
                              onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                             placeholder="••••••"
                              className="w-full bg-slate-50 border-2 border-slate-100 rounded-3xl py-6 text-center text-4xl font-black tracking-[12px] outline-none focus:border-primary/30 transition-all"
                            />
                            <div className="space-y-3">
@@ -308,7 +304,7 @@ const Login = () => {
 
           <div className="pt-4 border-t border-slate-50 text-center">
              <p className="font-black uppercase text-[10px] tracking-[2px] text-text-secondary">
-                New Identity? <Link to="/signup" className="text-primary hover:underline">Register Protocol</Link>
+                Don't have an account? <Link to="/signup" className="text-primary hover:underline">Sign Up</Link>
              </p>
           </div>
         </PremiumCard>

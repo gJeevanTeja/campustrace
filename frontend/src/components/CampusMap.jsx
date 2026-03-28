@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Navigation, MapPin, Search, X, RotateCcw } from 'lucide-react';
@@ -24,6 +24,7 @@ const CampusMap = ({
     height = 400,
     selectedLat = null,
     selectedLng = null,
+    restrictedLocations = null, // Array of {name, latitude, longitude, description}
 }) => {
     const [position, setPosition] = useState(GLOBAL_CENTER);
     const [markerPos, setMarkerPos] = useState(null);
@@ -60,7 +61,7 @@ const CampusMap = ({
             const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`, {
                 headers: {
                     'Accept-Language': 'en',
-                    'User-Agent': 'CampusTrace/1.0'
+                    'User-Agent': 'UniTrace/1.0'
                 }
             });
             const data = await res.json();
@@ -89,18 +90,15 @@ const CampusMap = ({
     };
 
     // Component to handle map clicks
-    function MapEvents() {
+    const MapEvents = () => {
         useMapEvents({
             click(e) {
-                if (activeMode === 'manual') {
-                    const { lat, lng } = e.latlng;
-                    setMarkerPos([lat, lng]);
-                    reverseGeocode(lat, lng);
-                }
+                // Only allow manual selection if not in restricted mode
+                // or if the user clicks exactly on a location (handled by marker)
             },
         });
         return null;
-    }
+    };
 
     // Component to smoothly fly the map to a new center (avoids _leaflet_pos crash from remounting)
     function FlyTo({ center }) {
@@ -157,13 +155,30 @@ const CampusMap = ({
 
         setSearchLoading(true);
         searchTimeout.current = setTimeout(async () => {
+            if (restrictedLocations) {
+                // Search within verified library
+                const filtered = restrictedLocations.filter(loc => 
+                    loc.name.toLowerCase().includes(query.toLowerCase()) || 
+                    loc.description.toLowerCase().includes(query.toLowerCase())
+                ).map(loc => ({
+                    display_name: loc.name,
+                    lat: loc.latitude,
+                    lon: loc.longitude,
+                    address: { road: loc.name },
+                    isVerified: true
+                }));
+                setSuggestions(filtered);
+                setSearchLoading(false);
+                return;
+            }
+
             try {
                 // Biased search around Hyderabad/University area (for better local results)
                 const viewbox = '78.3,17.4,78.6,17.7'; // Broad Hyderabad viewbox
                 const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1&viewbox=${viewbox}`, {
                     headers: {
                         'Accept-Language': 'en',
-                        'User-Agent': 'CampusTrace/1.0'
+                        'User-Agent': 'UniTrace/1.0'
                     }
                 });
                 const data = await res.json();
@@ -173,7 +188,7 @@ const CampusMap = ({
                     const fallbackRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + " Malla Reddy")}&limit=5&addressdetails=1`, {
                         headers: {
                             'Accept-Language': 'en',
-                            'User-Agent': 'CampusTrace/1.0'
+                            'User-Agent': 'UniTrace/1.0'
                         }
                     });
                     const fallbackData = await fallbackRes.json();
@@ -210,14 +225,17 @@ const CampusMap = ({
         });
     };
 
-    const confirmManual = () => {
-        if (!markerPos) return;
+    const handleLocationChange = (lat, lng, name) => {
+        setPosition([lat, lng]);
+        setMarkerPos([lat, lng]);
+        setSelectedAddress(name);
         onLocationSelect?.({
-            location_name: selectedAddress,
-            lat: markerPos[0],
-            lng: markerPos[1]
+            location_name: name,
+            lat: lat,
+            lng: lng
         });
     };
+
 
     return (
         <div style={{ width: '100%', fontFamily: 'Inter, system-ui, sans-serif' }}>
@@ -347,23 +365,42 @@ const CampusMap = ({
                     />
                     <MapEvents />
                     <FlyTo center={position} />
-                    {markerPos && (
+                    
+                    {/* Render all campus locations if restricted */}
+                    {restrictedLocations && restrictedLocations.map((loc, idx) => (
+                        <Marker 
+                            key={idx} 
+                            position={[loc.latitude, loc.longitude]} 
+                            icon={customIcon}
+                            eventHandlers={{
+                                click: () => handleLocationChange(loc.latitude, loc.longitude, loc.name)
+                            }}
+                        >
+                            <Tooltip 
+                                permanent 
+                                direction="top" 
+                                offset={[0, -35]}
+                                className="custom-tooltip"
+                            >
+                                {loc.name}
+                            </Tooltip>
+                            <Popup>
+                                <div style={{ padding: '8px', minWidth: 150 }}>
+                                    <p style={{ margin: '0 0 4px', fontWeight: 700, color: ACCENT }}>✅ Verified Location</p>
+                                    <p style={{ margin: '0 0 8px', fontWeight: 600 }}>{loc.name}</p>
+                                    <p style={{ margin: 0, fontSize: '11px', color: '#666' }}>{loc.description}</p>
+                                </div>
+                            </Popup>
+                        </Marker>
+                    ))}
+
+                    {/* Manual selection marker (only if not restricted or if selected) */}
+                    {markerPos && !restrictedLocations?.some(l => l.latitude === markerPos[0] && l.longitude === markerPos[1]) && (
                         <Marker position={markerPos} icon={customIcon}>
                             <Popup>
                                 <div style={{ padding: '8px', minWidth: 150 }}>
-                                    <p style={{ margin: '0 0 8px', fontWeight: 600 }}>📍 {selectedAddress}</p>
-                                    {activeMode === 'manual' && (
-                                        <button
-                                            onClick={confirmManual}
-                                            style={{
-                                                width: '100%', background: ACCENT, color: 'white',
-                                                border: 'none', padding: '8px', borderRadius: 6,
-                                                fontWeight: 600, cursor: 'pointer', fontSize: 12
-                                            }}
-                                        >
-                                            Confirm Location
-                                        </button>
-                                    )}
+                                    <p style={{ margin: '0 0 8px', fontWeight: 600 }}>📍 Selected Location</p>
+                                    <p style={{ margin: '0 0 8px', fontWeight: 600 }}>{selectedAddress}</p>
                                 </div>
                             </Popup>
                         </Marker>

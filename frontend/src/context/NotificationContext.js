@@ -197,6 +197,11 @@ export const NotificationProvider = ({ children }) => {
     const token = localStorage.getItem('access_token');
     if (!token) return;
 
+    // Don't connect if already connecting or open
+    if (wsRef.current && (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING)) {
+      return;
+    }
+
     // Use environment variable IP or fallback to localhost
     const wsUrl = process.env.REACT_APP_WS_URL || `ws://${process.env.REACT_APP_API_IP || 'localhost'}:8000`;
     const ws = new WebSocket(`${wsUrl}/ws/notifications/?token=${token}`);
@@ -251,7 +256,7 @@ export const NotificationProvider = ({ children }) => {
           });
 
           if (window.Notification && Notification.permission === 'granted') {
-            new Notification('CampusTrace', { body: data.message, icon: '/favicon.ico' });
+            new Notification('UniTrace', { body: data.message, icon: '/favicon.ico' });
           }
         }
       } catch (err) {
@@ -259,13 +264,15 @@ export const NotificationProvider = ({ children }) => {
       }
     };
 
-    ws.onclose = () => {
-      // Reconnect after 3s if disconnected
-      setTimeout(() => {
-        if (user && wsRef.current?.readyState === WebSocket.CLOSED) {
-          connectWS();
-        }
-      }, 3000);
+    ws.onclose = (e) => {
+      // Reconnect after 3s if disconnected, but only if it wasn't a clean close from our side
+      if (!e.wasClean) {
+        setTimeout(() => {
+          if (user && (!wsRef.current || wsRef.current.readyState === WebSocket.CLOSED)) {
+            connectWS();
+          }
+        }, 3000);
+      }
     };
   }, [user]);
 
@@ -291,7 +298,10 @@ export const NotificationProvider = ({ children }) => {
 
     return () => {
       if (wsRef.current) {
-        wsRef.current.close();
+        // Try to close only if it's in a state that can be closed
+        if (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING) {
+          wsRef.current.close(1000, "Component unmounting"); // Use a normal closure code
+        }
         wsRef.current = null;
       }
     };

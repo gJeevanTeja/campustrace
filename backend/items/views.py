@@ -204,7 +204,7 @@ class ClaimItemView(APIView):
                 'message': 'Item not found'
             }, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            from campustrace_backend.api_utils import log_event
+            from unitrace.api_utils import log_event
             log_event("db_error_claim", {"error": str(e), "item_id": pk}, level="error")
             raise e
 
@@ -255,7 +255,7 @@ class ClaimItemView(APIView):
                 play_sound=item.user.notification_sound,
             )
             
-            from campustrace_backend.api_utils import log_event
+            from unitrace.api_utils import log_event
             log_event("item_claimed", {"item_id": item.id, "claimed_by": user.id})
 
             return Response({
@@ -264,7 +264,7 @@ class ClaimItemView(APIView):
                 'data': ItemSerializer(item, context={'request': request}).data
             })
         except Exception as e:
-            from campustrace_backend.api_utils import log_event
+            from unitrace.api_utils import log_event
             log_event("claim_save_error", {"error": str(e), "item_id": item.id}, level="error")
             raise e
 
@@ -309,6 +309,21 @@ class MyItemsView(generics.ListAPIView):
     def get_queryset(self):
         return Item.objects.filter(
             user=self.request.user
+        ).select_related('user', 'claimed_by').prefetch_related('photos')
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
+
+class MyClaimsView(generics.ListAPIView):
+    """View to list items that the current user has claimed."""
+    serializer_class = ItemSerializer
+
+    def get_queryset(self):
+        return Item.objects.filter(
+            claimed_by=self.request.user
         ).select_related('user', 'claimed_by').prefetch_related('photos')
 
     def get_serializer_context(self):
@@ -477,7 +492,7 @@ class VerifyClaimView(APIView):
                     notification_type='item_claimed'
                 )
                 
-                from campustrace_backend.api_utils import log_event
+                from unitrace.api_utils import log_event
                 log_event("claim_started", {"item_id": item.id, "claimant": request.user.id, "type": "electronic" if is_electronic else "normal"})
 
                 return Response({
@@ -490,7 +505,7 @@ class VerifyClaimView(APIView):
                     }
                 })
         except Exception as e:
-            from campustrace_backend.api_utils import log_event
+            from unitrace.api_utils import log_event
             log_event("verify_claim_error", {"error": str(e), "item_id": pk}, level="error")
             raise e
 
@@ -531,7 +546,7 @@ class SubmitAIAnswerView(APIView):
                 idx = claim.current_question_index
                 
                 # Robust logging
-                from campustrace_backend.api_utils import log_event
+                from unitrace.api_utils import log_event
                 log_event("ai_verification_step", {
                     "claim_id": claim.id,
                     "item_id": pk,
@@ -611,7 +626,7 @@ class SubmitAIAnswerView(APIView):
                         notification_type='item_claimed'
                     )
                     
-                    from campustrace_backend.api_utils import log_event
+                    from unitrace.api_utils import log_event
                     log_event("ai_verification_finished", {"claim_id": claim.id, "score": total_score, "result": label})
 
                     return Response({
@@ -634,7 +649,7 @@ class SubmitAIAnswerView(APIView):
                     }
                 })
         except Exception as e:
-            from campustrace_backend.api_utils import log_event
+            from unitrace.api_utils import log_event
             log_event("submit_answer_error", {"error": str(e), "item_id": pk}, level="error")
             raise e
 
@@ -662,7 +677,9 @@ class ConfirmReturnView(APIView):
 
                 entered_code = request.data.get("claim_code")
                 
-                # Security: Only the claimant can confirm their own received item
+                entered_code = request.data.get("claim_code")
+                
+                # Original Flow: Only the claimant can confirm their own received item
                 if claim.claimant != request.user:
                     return Response({
                         "success": False,
@@ -682,6 +699,14 @@ class ConfirmReturnView(APIView):
                 item.claimed_by = request.user
                 item.save()
                 claim.save()
+
+                # Atomically mark payment as completed if it exists
+                from payments.models import RewardPayment
+                payment = RewardPayment.objects.filter(item=item, payer=request.user, status='paid').first()
+                if payment:
+                    payment.status = 'completed'
+                    payment.save()
+                    print(f"PAYMENT_COMPLETED: Order={payment.razorpay_order_id}, Released to Finder={payment.finder_amount}")
 
                 # Award Rewards
                 # For "found" items: item.user = founder (gets rewards), claim.claimant = lost person (enters code, receives this response)
@@ -747,7 +772,7 @@ class ConfirmReturnView(APIView):
                             "items_returned": finder.successful_returns,
                         }
                 except Exception as reward_err:
-                    from campustrace_backend.api_utils import log_event
+                    from unitrace.api_utils import log_event
                     log_event("reward_error", {"error": str(reward_err), "item_id": item.id}, level="warning")
 
                 # Notify Both
@@ -764,7 +789,7 @@ class ConfirmReturnView(APIView):
                     notification_type='item_returned'
                 )
                 
-                from campustrace_backend.api_utils import log_event
+                from unitrace.api_utils import log_event
                 log_event("item_returned_confirmed", {"item_id": item.id, "claimant": claim.claimant.id, "finder": item.user.id})
 
                 return Response({
@@ -774,7 +799,7 @@ class ConfirmReturnView(APIView):
                     "reward": reward_info,
                 })
         except Exception as e:
-            from campustrace_backend.api_utils import log_event
+            from unitrace.api_utils import log_event
             log_event("confirm_return_error", {"error": str(e), "item_id": item_id}, level="error")
             raise e
 
@@ -799,25 +824,33 @@ class ApproveVerificationView(APIView):
                         "message": "Unauthorized"
                     }, status=status.HTTP_403_FORBIDDEN)
 
-                import random
-                claim_code = str(random.randint(100000, 999999))
+                has_price = bool(item.product_price)
+                claim_code = None
+                
+                if not has_price:
+                    import random
+                    claim_code = str(random.randint(100000, 999999))
+                    claim.claim_code = claim_code
+                    item.claim_code = claim_code
                 
                 claim.status = 'verified'
-                claim.claim_code = claim_code
                 claim.save()
-                
-                item.claim_code = claim_code
                 item.save()
 
-                # Notify claimant with code
+                # Notify claimant
+                if has_price:
+                    msg = f"Claim approved for '{item.title}'! Please pay the reward to unlock contact details and the exchange code."
+                else:
+                    msg = f"Claim approved! The founder generated the claim code: {claim_code}. Please verify it to confirm receipt."
+
                 send_in_app_notification(
                     user=claim.claimant,
                     item=item,
-                    message=f"Claim approved! The founder generated the claim code: {claim_code}. Please verify it to confirm receipt.",
+                    message=msg,
                     notification_type='claim_verified'
                 )
                 
-                from campustrace_backend.api_utils import log_event
+                from unitrace.api_utils import log_event
                 log_event("claim_approved", {"claim_id": claim.id, "approved_by": request.user.id})
 
                 return Response({
@@ -826,7 +859,7 @@ class ApproveVerificationView(APIView):
                     "data": {"claim_code": claim_code}
                 })
         except Exception as e:
-            from campustrace_backend.api_utils import log_event
+            from unitrace.api_utils import log_event
             log_event("approve_claim_error", {"error": str(e), "claim_id": claim_id}, level="error")
             raise e
 
@@ -853,7 +886,7 @@ class RejectClaimView(APIView):
                 claim.status = 'failed'
                 claim.save()
                 
-                from campustrace_backend.api_utils import log_event
+                from unitrace.api_utils import log_event
                 log_event("claim_rejected", {"claim_id": claim.id, "rejected_by": request.user.id})
 
                 return Response({
@@ -861,7 +894,7 @@ class RejectClaimView(APIView):
                     "message": "Claim rejected successfully"
                 })
         except Exception as e:
-            from campustrace_backend.api_utils import log_event
+            from unitrace.api_utils import log_event
             log_event("reject_claim_error", {"error": str(e), "claim_id": claim_id}, level="error")
             raise e
 
@@ -896,7 +929,7 @@ class GenerateElectronicQuestionsView(APIView):
                 unique_mark=unique_mark
             )
             
-            from campustrace_backend.api_utils import log_event
+            from unitrace.api_utils import log_event
             log_event("ai_questions_generated", {"brand": brand, "color": color})
 
             return Response({
@@ -905,7 +938,7 @@ class GenerateElectronicQuestionsView(APIView):
                 "data": {"questions": questions}
             })
         except Exception as e:
-            from campustrace_backend.api_utils import log_event
+            from unitrace.api_utils import log_event
             log_event("gen_questions_error", {"error": str(e)}, level="error")
             # The custom handler will catch and format this if we don't return here
             raise e

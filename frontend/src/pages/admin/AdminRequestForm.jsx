@@ -14,8 +14,7 @@ const AdminRequestForm = ({ darkMode: dm }) => {
         reason: ''
     });
     const [files, setFiles] = useState({
-        college_id_card: null,
-        aadhaar_card: null
+        college_id_card: null
     });
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
@@ -44,8 +43,8 @@ const AdminRequestForm = ({ darkMode: dm }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!files.college_id_card || !files.aadhaar_card) {
-            setError('Please upload both ID card and Aadhaar card for verification.');
+        if (!files.college_id_card) {
+            setError('Please upload your College ID card for verification.');
             return;
         }
 
@@ -54,7 +53,6 @@ const AdminRequestForm = ({ darkMode: dm }) => {
             const formData = new FormData();
             Object.entries(form).forEach(([k, v]) => formData.append(k, v));
             formData.append('college_id_card', files.college_id_card);
-            formData.append('aadhaar_card', files.aadhaar_card);
 
             await adminRequestAPI.submitRequest(formData);
             setSubmitted(true);
@@ -138,8 +136,7 @@ const AdminRequestForm = ({ darkMode: dm }) => {
                         <h3 style={{ fontSize: 16, fontWeight: 800, color: text, marginBottom: 12, borderBottom: `1px solid ${border}`, paddingBottom: 8 }}>Verification Documents</h3>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
-
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16, marginBottom: 20 }}>
                         <div>
                             <label style={labelStyle}>College ID Card *</label>
                             <div style={{ position: 'relative' }}>
@@ -148,18 +145,6 @@ const AdminRequestForm = ({ darkMode: dm }) => {
                                     <Upload size={16} color={files.college_id_card ? '#10b981' : '#64748b'} />
                                     <span style={{ fontSize: 12, color: files.college_id_card ? '#10b981' : '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                         {files.college_id_card ? files.college_id_card.name : 'Upload ID Proof'}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <label style={labelStyle}>Aadhaar Card *</label>
-                            <div style={{ position: 'relative' }}>
-                                <input required type="file" name="aadhaar_card" onChange={handleFile} accept="image/*,.pdf" style={{ opacity: 0, position: 'absolute', inset: 0, cursor: 'pointer', zIndex: 10 }} />
-                                <div style={{ ...inputStyle, display: 'flex', alignItems: 'center', gap: 10, background: files.aadhaar_card ? '#10b98110' : inputStyle.background }}>
-                                    <Upload size={16} color={files.aadhaar_card ? '#10b981' : '#64748b'} />
-                                    <span style={{ fontSize: 12, color: files.aadhaar_card ? '#10b981' : '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                        {files.aadhaar_card ? files.aadhaar_card.name : 'Upload Aadhaar'}
                                     </span>
                                 </div>
                             </div>

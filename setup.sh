@@ -1,9 +1,9 @@
 #!/bin/bash
 # =========================================
-# CampusTrace Complete Setup Script
+# UniTrace Complete Setup Script
 # =========================================
 
-echo "🚀 Setting up CampusTrace Lost & Found Portal..."
+echo "🚀 Setting up UniTrace Lost & Found Portal..."
 
 # ── BACKEND SETUP ────────────────────────────────────────
 echo ""
@@ -57,7 +57,7 @@ npm start
 
 echo ""
 echo "==========================================="
-echo "🎉 CampusTrace is running!"
+echo "🎉 UniTrace is running!"
 echo "==========================================="
 echo "Frontend: http://localhost:3000"
 echo "Backend:  http://localhost:8000"

@@ -4,7 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from colleges.views import AdminAnalyticsView, ExportCSVView, ExportExcelView, ExportPDFView, CategoryViewSet, BlockViewSet
 
-from campustrace_backend.health import HealthCheckView
+from unitrace.health import HealthCheckView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -15,6 +15,7 @@ urlpatterns = [
     path('api/chat/', include('chat.urls')),
     path('api/notifications/', include('notifications.urls')),
     path('api/administration/', include('administration.urls')),
+    path('api/payments/', include('payments.urls')),
     path('api/categories/', CategoryViewSet.as_view({'get': 'list'}), name='global-categories'),
     path('api/blocks/', BlockViewSet.as_view({'get': 'list'}), name='global-blocks'),
     path('api/admin/export/csv/', ExportCSVView.as_view(), name='export-csv'),

@@ -77,6 +77,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     level              = models.CharField(max_length=50, default='Beginner Helper')
     successful_returns = models.IntegerField(default=0)
     badges             = models.JSONField(default=list, blank=True)
+    trust_score        = models.IntegerField(default=100)
 
     # Django Required
     is_active  = models.BooleanField(default=True)

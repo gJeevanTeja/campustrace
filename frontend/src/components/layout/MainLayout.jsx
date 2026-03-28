@@ -18,7 +18,9 @@ import {
   TrendingUp,
   ShieldAlert,
   Settings,
-  CheckSquare
+  CheckSquare,
+  Menu,
+  X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -51,8 +53,11 @@ const MainLayout = ({ children }) => {
   const isSuperAdmin = user?.role === 'super_admin' || user?.is_superuser;
   const anyAdmin = isAdmin || isSuperAdmin;
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+
+  const closeMobileSidebar = () => setMobileSidebarOpen(false);
 
   return (
     <div className="flex min-h-screen bg-background font-sans">
@@ -71,7 +76,7 @@ const MainLayout = ({ children }) => {
                 exit={{ opacity: 0, x: -10 }}
                 className="font-extrabold text-2xl bg-primary-gradient bg-clip-text text-transparent"
               >
-                CampusTrace
+                UniTrace
               </motion.div>
             )}
           </AnimatePresence>
@@ -94,6 +99,7 @@ const MainLayout = ({ children }) => {
                 <NavLink
                   key={item.name}
                   to={item.href}
+                  id={`tour-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
                   className={({ isActive }) => `
                     flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group
                     ${isActive 
@@ -170,18 +176,128 @@ const MainLayout = ({ children }) => {
         </div>
       </motion.aside>
 
+      {/* Mobile Sidebar (Drawer) */}
+      <AnimatePresence>
+        {isMobileSidebarOpen && (
+          <>
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={closeMobileSidebar}
+              className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[1000]"
+            />
+            {/* Drawer */}
+            <motion.aside
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="lg:hidden fixed inset-y-0 left-0 w-[280px] bg-white z-[1001] shadow-2xl flex flex-col"
+            >
+              <div className="p-6 flex items-center justify-between border-b border-border/50">
+                <div className="font-extrabold text-2xl bg-primary-gradient bg-clip-text text-transparent">
+                  UniTrace
+                </div>
+                <button 
+                  onClick={closeMobileSidebar}
+                  className="p-2 rounded-xl bg-gray-100 text-text-secondary hover:bg-gray-200"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+                <div className="mb-6">
+                  <p className="px-3 mb-3 text-[10px] font-bold text-text-secondary uppercase tracking-[2px] opacity-50">Main Menu</p>
+                  {mainNavigation.map((item) => {
+                    return (
+                      <NavLink
+                        key={item.name}
+                        to={item.href}
+                        onClick={closeMobileSidebar}
+                        className={({ isActive }) => `
+                          flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200
+                          ${isActive 
+                            ? 'bg-primary text-white shadow-lg shadow-primary/30' 
+                            : 'text-text-secondary hover:bg-primary/5 hover:text-primary'}
+                        `}
+                      >
+                        <item.icon size={22} />
+                        <span className="font-bold">{item.name}</span>
+                      </NavLink>
+                    );
+                  })}
+                </div>
+
+                {anyAdmin && (
+                  <div className="pt-6 border-t border-border/50">
+                    <p className="px-3 mb-3 text-[10px] font-bold text-text-secondary uppercase tracking-[2px] opacity-50">Admin Panel</p>
+                    {adminNavigation.map((item) => {
+                      const showItem = item.role === 'any' || 
+                                     (item.role === 'super_admin' && isSuperAdmin) ||
+                                     (item.role === 'college_admin' && isAdmin);
+                      
+                      if (!showItem) return null;
+
+                      return (
+                        <NavLink
+                          key={item.name}
+                          to={item.href}
+                          onClick={closeMobileSidebar}
+                          className={({ isActive }) => `
+                            flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200
+                            ${isActive 
+                              ? 'bg-primary text-white shadow-lg shadow-primary/30' 
+                              : 'text-text-secondary hover:bg-primary/5 hover:text-primary'}
+                          `}
+                        >
+                          <item.icon size={22} />
+                          <span className="font-bold">{item.name}</span>
+                        </NavLink>
+                      );
+                    })}
+                  </div>
+                )}
+              </nav>
+
+              <div className="p-4 mt-auto pb-8">
+                <div className="glass-card bg-primary/5 border-primary/10 p-4 rounded-2xl">
+                  <p className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1">Account Mode</p>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
+                    <span className="text-xs font-bold text-text-primary uppercase tracking-tight">
+                      {isSuperAdmin ? 'Super Admin' : isAdmin ? 'College Admin' : 'Active User'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* Main Content Area */}
-      <main className={`flex-1 transition-all duration-300 ${isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-[260px]'} pb-[80px] lg:pb-0`}>
+      <main className={`flex-1 transition-all duration-300 ${isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-[260px]'} pb-0`}>
         {/* Top Header (Mobile & Desktop) */}
-        <header className="sticky top-0 z-40 glass-effect bg-white/70 border-b border-border/40 px-4 lg:px-8 py-4 flex items-center justify-between">
-          <div className="lg:hidden">
-             <motion.div 
-               whileHover={{ scale: 1.05 }}
-               className="font-extrabold text-xl bg-primary-gradient bg-clip-text text-transparent italic cursor-pointer"
-               onClick={() => navigate('/')}
-             >
-               CampusTrace
-             </motion.div>
+        <header className="sticky top-0 z-40 glass-effect bg-white/70 border-b border-border/40 px-4 lg:px-8 py-3 lg:py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setMobileSidebarOpen(true)}
+              className="lg:hidden p-2 rounded-xl bg-gray-100 text-text-secondary hover:bg-gray-200 transition-colors"
+            >
+              <Menu size={22} />
+            </button>
+            <div className="lg:hidden">
+               <motion.div 
+                 whileHover={{ scale: 1.05 }}
+                 className="font-extrabold text-lg sm:text-xl bg-primary-gradient bg-clip-text text-transparent italic cursor-pointer truncate"
+                 onClick={() => navigate('/')}
+               >
+                 UniTrace
+               </motion.div>
+            </div>
           </div>
           <div className="hidden lg:block">
               <h1 className="text-xl font-black text-text-primary uppercase tracking-tighter italic">
@@ -204,6 +320,7 @@ const MainLayout = ({ children }) => {
             <motion.div 
               whileHover={{ scale: 1.05 }}
               onClick={() => navigate('/profile')}
+              id="tour-profile"
               className="flex items-center gap-3 p-1.5 pr-4 bg-white border border-slate-100 rounded-[20px] cursor-pointer hover:border-primary/20 transition-all shadow-sm"
             >
               <div className="w-9 h-9 rounded-full bg-primary-gradient p-0.5 shadow-lg shadow-primary/20">

@@ -9,8 +9,8 @@ from rest_framework.permissions import IsAuthenticated
 
 
 SYSTEM_PROMPT = (
-    "You are CampusTrace AI assistant helping students report lost items, "
-    "found items, claim items, and solve problems related to the CampusTrace application."
+    "You are UniTrace AI assistant helping students report lost items, "
+    "found items, claim items, and solve problems related to the UniTrace application."
 )
 
 def is_telugu(text: str) -> bool:
@@ -20,7 +20,7 @@ def is_telugu(text: str) -> bool:
 
 def call_groq_chat(message: str, language: str = "en") -> str:
     """
-    Call Groq LLM API with a CampusTrace-specific system prompt.
+    Call Groq LLM API with a UniTrace-specific system prompt.
     Falls back to a friendly static response if the API is unavailable.
     """
     api_key = getattr(settings, "GROQ_API_KEY", os.getenv("GROQ_API_KEY", ""))
