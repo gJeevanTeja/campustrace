@@ -14,7 +14,7 @@ load_dotenv(override=True)
 BASE_DIR = Path(__file__).resolve().parent.parent
 # ── Django ───────────────────────────────────────────────────
 SECRET_KEY = os.environ.get('SECRET_KEY')
-DEBUG        = os.environ.get('DEBUG', 'True') == 'True'
+DEBUG        = os.environ.get('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = ['*']
 
 # ── Applications ───────────────────────────────────────────────
@@ -46,6 +46,7 @@ MIDDLEWARE = [
     'django.middleware.gzip.GZipMiddleware',     # ✅ Compress responses
     'corsheaders.middleware.CorsMiddleware',   # ✅ MUST be first
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # ✅ ADDED for Railway production
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -160,15 +161,10 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# ── Internationalization ───────────────────────────────────────
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE     = 'Asia/Kolkata'
-USE_I18N      = True
-USE_TZ        = True
-
 # ── Static & Media Files ───────────────────────────────────────
 STATIC_URL  = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL   = '/media/'
 MEDIA_ROOT  = BASE_DIR / 'media'
 
