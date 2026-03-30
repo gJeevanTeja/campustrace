@@ -17,6 +17,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG        = os.environ.get('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = ["*"]
 
+# ✅ SSL Header for Railway Proxy
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # ── Applications ───────────────────────────────────────────────
 INSTALLED_APPS = [
     'daphne',
@@ -102,9 +105,15 @@ else:
             default=os.environ.get('DATABASE_URL'),
             conn_max_age=0,           # disable pooled connections, let Neon handle it
             conn_health_checks=True,  # auto-reconnect if connection drops
-            ssl_require=True,         # Neon requires SSL
+            ssl_require=True,         # ✅ REQUIRED FOR NEON
         )
     }
+
+# ✅ Trusted Origins for CSRF (add project domain if known)
+CSRF_TRUSTED_ORIGINS = [
+    "http://*",
+    "https://*",
+]
 
 AUTHENTICATION_BACKENDS = [
     'users.backends.EmailBackend',
