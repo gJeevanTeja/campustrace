@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // ─── API Configuration ──────────────────────────────────────────────────────
 const API_IP = process.env.REACT_APP_API_IP || (typeof window !== 'undefined' ? window.location.hostname : 'localhost');
-const BASE_URL = `http://${API_IP}:8000/api/`;
+const BASE_URL = "https://uni-production-fe08.up.railway.app/api/";
 const WS_BASE = `ws://${API_IP}:8000`;
 
 const api = axios.create({
@@ -47,10 +47,10 @@ api.interceptors.response.use(
     if (!error.response) return Promise.reject(error);
 
     const original = error.config;
-    const isAuthRequest = original.url.includes('auth/login/') || 
-                         original.url.includes('auth/register/') || 
-                         original.url.includes('auth/verify-otp/') ||
-                         original.url.includes('auth/token/refresh/');
+    const isAuthRequest = original.url.includes('auth/login/') ||
+      original.url.includes('auth/register/') ||
+      original.url.includes('auth/verify-otp/') ||
+      original.url.includes('auth/token/refresh/');
 
     if (error.response.status === 401 && !original._retry && !isAuthRequest) {
       console.log("Interceptor: 401 detected on non-auth request:", original.url);

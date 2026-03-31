@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import Item, ItemPhoto, ClaimSession
 from users.serializers import UserSerializer
 import math
-
+from .ml_client import predict_category_from_ml
 
 def haversine_distance(lat1, lon1, lat2, lon2):
     """Distance in km between two GPS coordinates. Returns None if coords missing."""
@@ -101,6 +101,16 @@ class ItemSerializer(serializers.ModelSerializer):
             'matching_lost_item_price', 'matching_lost_item_id'
         ]
         read_only_fields = ['id', 'reference_number', 'user', 'created_at', 'updated_at', 'claim_code']
+
+    def create(self, validated_data):
+        description = validated_data.get("description")
+        
+        predicted_category = predict_category_from_ml(description)
+
+        if predicted_category:
+            validated_data["category_name"] = predicted_category
+
+        return super().create(validated_data)    
 
     def get_claim_code(self, obj):
         request = self.context.get('request')
