@@ -71,6 +71,8 @@ const ReportItem = () => {
   const [photoPreviews, setPhotoPreviews] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [submittedItem, setSubmittedItem] = useState(null);
 
   const selectedCategoryName = categories.find(c => String(c.id) === String(form.category_new))?.name;
   const isElectronic = ELECTRONICS_CATEGORIES.includes(selectedCategoryName);
@@ -219,8 +221,10 @@ const ReportItem = () => {
       };
       delete payload.incident_date;
       delete payload.incident_time;
-      await itemsAPI.create(payload);
-      navigate('/');
+      const res = await itemsAPI.create(payload);
+      setSubmittedItem(res.data);
+      setShowSuccess(true);
+      // navigate('/'); // Move to success button
     } catch (err) {
       const data = err.response?.data;
       if (data && typeof data === 'object' && !data.message && !data.detail) {
@@ -614,6 +618,98 @@ const ReportItem = () => {
             </div>
           )}
         </motion.div>
+      </AnimatePresence>
+
+      {/* Success Success Overlay */}
+      <AnimatePresence>
+        {showSuccess && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4"
+          >
+            <motion.div 
+               initial={{ scale: 0.8, y: 40, opacity: 0 }}
+               animate={{ scale: 1, y: 0, opacity: 1 }}
+               transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+               className="bg-white rounded-[40px] p-10 max-w-sm w-full text-center shadow-3xl space-y-6 relative overflow-hidden"
+            >
+              {/* Decorative Background */}
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-success via-emerald-400 to-success" />
+              
+              <div className="relative">
+                <motion.div 
+                  initial={{ rotate: -20, scale: 0 }}
+                  animate={{ rotate: 0, scale: 1 }}
+                  transition={{ delay: 0.2, type: 'spring' }}
+                  className="text-7xl mb-2"
+                >
+                  🎉
+                </motion.div>
+                <div className="absolute -top-2 -right-2">
+                   <Sparkles className="text-yellow-400 animate-pulse" size={24} />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <h2 className="text-3xl font-black text-text-primary uppercase tracking-tighter">Reported!</h2>
+                <p className="text-text-secondary font-medium px-2">
+                  Your {form.type} report has been successfully broadcasted to the campus.
+                </p>
+              </div>
+
+              {submittedItem && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="bg-gray-50 border border-border rounded-3xl p-5 text-left space-y-3"
+                >
+                  <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+                    <span className="text-[10px] font-black text-text-secondary uppercase">Reference ID</span>
+                    <span className="text-xs font-black text-primary">#{submittedItem.reference_number}</span>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black text-text-secondary uppercase">Item Details</p>
+                    <p className="text-sm font-bold text-text-primary truncate">{submittedItem.title}</p>
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-text-secondary">
+                      <Tag size={10} /> {submittedItem.category_display || 'General'} • {submittedItem.type.toUpperCase()}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              <div className="space-y-3 pt-2">
+                <button 
+                  onClick={() => navigate('/')}
+                  className="w-full bg-primary text-white py-4 rounded-2xl font-black shadow-xl shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-2 group"
+                >
+                   GO TO HOME
+                   <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                </button>
+                <button 
+                  onClick={() => {
+                    setShowSuccess(false);
+                    setStep(1);
+                    setForm({
+                      ...form,
+                      title: '',
+                      description: '',
+                      photos: [],
+                      product_price: '',
+                    });
+                    setPhotos([]);
+                    setPhotoPreviews([]);
+                  }}
+                  className="w-full text-text-secondary font-bold text-sm hover:text-primary transition-colors"
+                >
+                  Report Another Item
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );

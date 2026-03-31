@@ -357,7 +357,20 @@ const ItemDetails = () => {
                         exit={{ opacity: 0 }}
                         className="w-full h-full object-cover"
                         alt={item.title}
+                        onError={e => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
                       />
+                      <div 
+                        className="w-full h-full flex flex-col items-center justify-center bg-gray-50 text-slate-300 gap-2"
+                        style={{ display: 'none' }}
+                      >
+                         <div className="text-4xl font-black uppercase tracking-tighter opacity-20">
+                            {item.title?.[0] || '?'}
+                         </div>
+                         <span className="text-[10px] font-bold uppercase tracking-widest opacity-40">No Image Available</span>
+                      </div>
                    </AnimatePresence>
                    <div className={`absolute top-4 left-4 px-4 py-1.5 rounded-xl font-black text-xs text-white uppercase shadow-lg ${item.type === 'lost' ? 'bg-danger' : 'bg-success'}`}>
                       {item.type}

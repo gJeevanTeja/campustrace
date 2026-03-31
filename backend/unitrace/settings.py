@@ -19,6 +19,7 @@ ALLOWED_HOSTS = ["*"]
 
 # ✅ SSL Header for Railway Proxy
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
 
 # ── Applications ───────────────────────────────────────────────
 INSTALLED_APPS = [
