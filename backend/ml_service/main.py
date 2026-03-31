@@ -4,15 +4,17 @@ from services.prediction_service import predict_category
 
 app = FastAPI()
 
-class ItemInput(BaseModel):
-    title: str
-    description: str
 
-@app.get("/health")
-def health():
-    return {"status": "ML service running"}
+@app.get("/")
+def home():
+    return {"message": "ML service running successfully 🚀"}
 
-@app.post("/predict-category")
-def predict(data: ItemInput):
-    result = predict_category(data.title, data.description)
+
+class PredictInput(BaseModel):
+    text: str
+
+
+@app.post("/predict")
+def predict(data: PredictInput):
+    result = predict_category(data.text)
     return {"prediction": result}
