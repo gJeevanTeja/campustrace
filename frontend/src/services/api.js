@@ -1,9 +1,29 @@
 import axios from 'axios';
 
 // ─── API Configuration ──────────────────────────────────────────────────────
-const API_IP = process.env.REACT_APP_API_IP || (typeof window !== 'undefined' ? window.location.hostname : 'localhost');
-const BASE_URL = "https://uni-production-fe08.up.railway.app/api/";
-const WS_BASE = `ws://${API_IP}:8000`;
+const getBaseUrl = () => {
+  if (process.env.REACT_APP_API_URL) return process.env.REACT_APP_API_URL;
+  // Fallback to the known production URL if env is not set
+  return "https://uni-production-fe08.up.railway.app/api/";
+};
+
+const BASE_URL = getBaseUrl();
+
+// Derive WebSocket URL from API URL automatically
+const getWsBase = (apiUrl) => {
+  if (process.env.REACT_APP_WS_URL) return process.env.REACT_APP_WS_URL;
+  try {
+    const url = new URL(apiUrl);
+    const protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+    // Remove /api/ suffix if present for WS connection
+    return `${protocol}//${url.host}`;
+  } catch (e) {
+    return "ws://localhost:8000";
+  }
+};
+
+const WS_BASE = getWsBase(BASE_URL);
+
 
 const api = axios.create({
   baseURL: BASE_URL,

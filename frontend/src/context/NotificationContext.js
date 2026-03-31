@@ -202,8 +202,21 @@ export const NotificationProvider = ({ children }) => {
       return;
     }
 
-    // Use environment variable IP or fallback to localhost
-    const wsUrl = process.env.REACT_APP_WS_URL || `ws://${process.env.REACT_APP_API_IP || 'localhost'}:8000`;
+    // Use environment variable WS_URL, or derive it from the current API URL
+    const getWsUrl = () => {
+      if (process.env.REACT_APP_WS_URL) return process.env.REACT_APP_WS_URL;
+      try {
+        const apiUrl = process.env.REACT_APP_API_URL || "https://uni-production-fe08.up.railway.app/api/";
+        const url = new URL(apiUrl);
+        const protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+        return `${protocol}//${url.host}`;
+      } catch (e) {
+        return "ws://localhost:8000";
+      }
+    };
+    
+    const wsUrl = getWsUrl();
+
     const ws = new WebSocket(`${wsUrl}/ws/notifications/?token=${token}`);
 
     wsRef.current = ws;
