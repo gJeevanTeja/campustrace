@@ -1,7 +1,19 @@
 import joblib
+import os
 
-model = joblib.load("models/item_classifier.pkl")
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "models", "item_classifier.pkl")
 
-def predict_category(title, description):
-    text = f"{title} {description}"
-    return model.predict([text])[0]
+model = None
+
+
+def get_model():
+    global model
+    if model is None:
+        model = joblib.load(MODEL_PATH)
+    return model
+
+
+def predict_category(text: str):
+    clf = get_model()
+    return clf.predict([text])[0]
