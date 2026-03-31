@@ -109,7 +109,10 @@ class ItemListCreateView(generics.ListCreateAPIView):
             time_str = ""
             if item.incident_datetime:
                 # E.g., "(Lost on: 12 July 2026 at 02:30 PM)"
-                dt = timezone.localtime(item.incident_datetime)
+                dt = item.incident_datetime
+                if timezone.is_naive(dt):
+                    dt = timezone.make_aware(dt)
+                dt = timezone.localtime(dt)
                 formatted_dt = dt.strftime("%d %B %Y at %I:%M %p")
                 time_prefix = "Lost on: " if item.type == 'lost' else "Found on: "
                 time_str = f" ({time_prefix}{formatted_dt})"
