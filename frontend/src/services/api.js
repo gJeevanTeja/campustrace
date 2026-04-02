@@ -56,65 +56,48 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ── Auto-refresh on 401 ───────────────────────────────────────────
-let isRefreshing = false;
-let failedQueue = [];
-
-const processQueue = (error, token = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) prom.reject(error);
-    else prom.resolve(token);
-  });
-  failedQueue = [];
-};
-
+// ─── Response Interceptor ───────────────────────────────────────────────────
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
-    // Network error or canceled — don't retry
-    if (!error.response) return Promise.reject(error);
-
-    const original = error.config;
-    const isAuthRequest = original.url.includes('auth/login/') ||
-      original.url.includes('auth/register/') ||
-      original.url.includes('auth/verify-otp/') ||
-      original.url.includes('auth/token/refresh/');
-
-    if (error.response.status === 401 && !original._retry && !isAuthRequest) {
-      console.log("Interceptor: 401 detected on non-auth request:", original.url);
-      if (isRefreshing) {
-        // Queue the request until refresh completes
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            original.headers.Authorization = `Bearer ${token}`;
-            return api(original);
-          })
-          .catch((err) => Promise.reject(err));
+    const originalRequest = error.config;
+    
+    // 1. Explicitly Distinguish Network/CORS/Timeout Error
+    if (!error.response) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.error("🌐 Network Error Details:", {
+            message: error.message,
+            code: error.code,
+            config: originalRequest?.url
+        });
       }
+      // Attach a custom flag to the error for components to recognize
+      error.isNetworkError = true;
+      return Promise.reject(error);
+    }
 
-      original._retry = true;
-      isRefreshing = true;
+    // 2. Auth Errors (401)
+    const isAuthRequest = originalRequest.url.includes('auth/login/') ||
+      originalRequest.url.includes('auth/register/') ||
+      originalRequest.url.includes('auth/verify-otp/') ||
+      originalRequest.url.includes('auth/token/refresh/');
 
-      try {
-        const refresh = localStorage.getItem('refresh_token');
-        if (!refresh) throw new Error('No refresh token');
-
-        const { data } = await axios.post(`${BASE_URL}/auth/token/refresh/`, { refresh });
-        localStorage.setItem('access_token', data.access);
-        api.defaults.headers.common.Authorization = `Bearer ${data.access}`;
-        processQueue(null, data.access);
-        original.headers.Authorization = `Bearer ${data.access}`;
-        return api(original);
-      } catch (err) {
-        processQueue(err, null);
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        window.location.href = '/login';
-        return Promise.reject(err);
-      } finally {
-        isRefreshing = false;
+    if (error.response.status === 401 && !originalRequest._retry && !isAuthRequest) {
+      originalRequest._retry = true;
+      
+      const refreshToken = localStorage.getItem('refresh_token');
+      if (refreshToken) {
+        try {
+          const { data } = await axios.post(`${BASE_URL}auth/token/refresh/`, { refresh: refreshToken });
+          localStorage.setItem('access_token', data.access);
+          api.defaults.headers.common['Authorization'] = `Bearer ${data.access}`;
+          originalRequest.headers['Authorization'] = `Bearer ${data.access}`;
+          return api(originalRequest);
+        } catch (refreshError) {
+          localStorage.clear();
+          window.location.href = '/welcome';
+          return Promise.reject(refreshError);
+        }
       }
     }
 
@@ -122,10 +105,50 @@ api.interceptors.response.use(
   }
 );
 
-// ── Auth ──────────────────────────────────────────────────────────
+
+// ─── API Methods ─────────────────────────────────────────────────────────────
 export const authAPI = {
   register: (data) => api.post('auth/register/', data),
-  login: (data) => api.post('auth/login/', data),
+  
+  // Robust login that normalizes diverse backend response formats (standard DRF vs event/details)
+  login: async (credentials) => {
+    try {
+      const response = await api.post('auth/login/', credentials);
+      const data = response.data;
+      
+      // Normalize Success Data
+      // 1. Details Pattern: { event: 'login_success', details: { user_id, email } }
+      // 2. Standard Pattern: { success: true, user: { ... }, tokens: { access, refresh } }
+      const normalized = {
+        success: true,
+        user: data.user || (data.details ? { id: data.details.user_id, email: data.details.email } : null),
+        tokens: data.tokens || { access: data.token || data.access, refresh: data.refresh },
+        message: data.message || (data.event === 'login_success' ? 'Login Successful' : ''),
+        raw: data // Keep original for context
+      };
+      
+      // Ensure we have some role if missing (fallback to student)
+      if (normalized.user && !normalized.user.role) {
+         normalized.user.role = 'student'; 
+      }
+      
+      return { data: normalized };
+    } catch (error) {
+       // Log detailed auth failure in dev mode
+       if (process.env.NODE_ENV !== 'production') {
+          console.group('🔐 Auth Failure Trace');
+          console.error('Request:', credentials.email);
+          if (error.response) {
+            console.error('Status:', error.response.status);
+            console.error('Data:', error.response.data);
+          } else {
+            console.error('Error:', error.message);
+          }
+          console.groupEnd();
+       }
+       throw error;
+    }
+  },
   logout: (refresh) => api.post('auth/logout/', { refresh }),
   forgotPassword: (data) => api.post('auth/forgot-password/', data),
   resetPassword: (data) => api.post('auth/reset-password/', data),

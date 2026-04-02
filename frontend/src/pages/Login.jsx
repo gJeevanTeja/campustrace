@@ -41,56 +41,68 @@ const Login = () => {
   }, []);
 
   const redirectAfterLogin = (user) => {
-    if (user?.role === 'super_admin') window.location.href = '/super-admin-dashboard';
-    else if (user?.role === 'college_admin') window.location.href = '/admin-dashboard';
-    else if (user?.role === 'moderator') window.location.href = '/admin';
-    else window.location.href = '/';
+    if (!user) { window.location.href = '/dashboard'; return; }
+    
+    const role = user.role?.toLowerCase();
+    
+    // 1. Super Admin
+    if (role === 'super_admin') {
+       window.location.href = '/super-admin-dashboard';
+    } 
+    // 2. College Admin / Moderator
+    else if (role === 'college_admin' || role === 'moderator' || role === 'admin') {
+       window.location.href = '/admin';
+    } 
+    // 3. Student / Default
+    else {
+       window.location.href = '/dashboard';
+    }
   };
 
-    const handleLogin = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     if (submittingRef.current) return;
     submittingRef.current = true;
     setError('');
     setLoading(true);
 
-    // Clear old tokens before starting a new login session
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('user');
-
     try {
-      // Use user-provided values exclusively (removed bypass logic)
       const identityToUse = form.identity.trim();
       const secretKeyToUse = form.secret_key;
 
       if (!identityToUse || !secretKeyToUse) {
-        throw new Error('Email/phone and secret key are required');
+        throw new Error('Email and password are required');
       }
 
-      const data = await login({
+      // login returns normalized data { success, user, tokens }
+      const { data } = await login({
         email: identityToUse.toLowerCase(),
         password: secretKeyToUse,
       });
-      redirectAfterLogin(data.user);
+
+      if (data.success) {
+        redirectAfterLogin(data.user);
+      } else {
+        throw new Error(data.message || 'Authentication failed');
+      }
     } catch (err) {
-      // Extraction of error message
+      // 1. Categorize Error Type
+      const isNetworkError = err.isNetworkError || !err.response;
       const errorData = err.response?.data;
-      const rawError = errorData?.message || errorData?.detail || errorData?.error || err.message;
       
-      let finalMsg = 'Invalid email or password';
-      if (typeof rawError === 'string') {
-        finalMsg = rawError;
-      } else if (Array.isArray(rawError) && rawError.length > 0) {
-        finalMsg = rawError[0];
-      } else if (typeof rawError === 'object' && rawError !== null) {
-        const firstKey = Object.keys(rawError)[0];
-        const firstVal = rawError[firstKey];
-        finalMsg = Array.isArray(firstVal) ? firstVal[0] : String(firstVal);
+      let displayMessage = 'Invalid email or password';
+      
+      if (isNetworkError) {
+        displayMessage = 'Network Error: Cannot connect to server. Please check your connection.';
+      } else if (errorData) {
+        displayMessage = errorData.message || errorData.detail || errorData.error || displayMessage;
+      } else if (err.message) {
+         displayMessage = err.message;
       }
       
-      setError(finalMsg);
-      // Ensure local storage remains clean on error
+      setError(displayMessage);
+      
+      // Clear persistence on critical failure
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       localStorage.removeItem('user');

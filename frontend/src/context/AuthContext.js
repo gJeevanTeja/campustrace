@@ -25,18 +25,27 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (credentials) => {
+    // 1. Call the robust login service (already normalizes details vs user pattern)
     const { data } = await authAPI.login(credentials);
-    const access = data?.tokens?.access || data?.token || data?.access;
-    const refresh = data?.tokens?.refresh || data?.refresh;
     
+    // 2. Extract normalized fields
+    const access = data?.tokens?.access;
+    const refresh = data?.tokens?.refresh;
+    const userData = data?.user;
+
+    // 3. Persist session
     if (access) localStorage.setItem('access_token', access);
     if (refresh) localStorage.setItem('refresh_token', refresh);
     
-    const userData = data?.user || data?.data?.user;
     if (userData) {
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
+      
+      if (process.env.NODE_ENV !== 'production') {
+        console.log("👤 Auth session established:", userData.role, userData.email);
+      }
     }
+
     return data;
   };
 
