@@ -85,7 +85,16 @@ api.interceptors.response.use(
       originalRequest.url.includes('auth/verify-otp/') ||
       originalRequest.url.includes('auth/token/refresh/');
 
+    const isNotificationRequest = originalRequest.url.includes('notifications/') || 
+      originalRequest.url.includes('unread-count/');
+
     if (error.response.status === 401 && !originalRequest._retry && !isAuthRequest) {
+      // For background notification polls, don't trigger global UI failure logs or retries if they fail once
+      if (isNotificationRequest) {
+          console.warn("🔔 Notification sync delayed - waiting for valid session");
+          return Promise.reject(error);
+      }
+
       originalRequest._retry = true;
       
       const refreshToken = localStorage.getItem('refresh_token');
@@ -170,6 +179,11 @@ export const authAPI = {
   getColleges: () => api.get('admin/manage/'),
   checkUsername: (username) => api.get(`auth/check-username/?username=${username}`),
   getLeaderboard: () => api.get('auth/leaderboard/'),
+  // Helper to sync headers immediately without waiting for interceptor
+  setAuthToken: (token) => {
+    if (token) api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    else delete api.defaults.headers.common['Authorization'];
+  }
 };
 
 export const adminRequestAPI = {

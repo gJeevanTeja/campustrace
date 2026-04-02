@@ -34,7 +34,12 @@ export const AuthProvider = ({ children }) => {
     const userData = data?.user;
 
     // 3. Persist session
-    if (access) localStorage.setItem('access_token', access);
+    if (access) {
+      localStorage.setItem('access_token', access);
+      // 🔥 CRITICAL: Update axios defaults IMMEDIATELY so side-effects (like NotificationContext)
+      // fetch with the new token even before the interceptor runs.
+      authAPI.setAuthToken(access); 
+    }
     if (refresh) localStorage.setItem('refresh_token', refresh);
     
     if (userData) {
@@ -53,7 +58,10 @@ export const AuthProvider = ({ children }) => {
     const { data } = await authAPI.register(formData);
     const access = data?.tokens?.access || data?.access;
     const refresh = data?.tokens?.refresh || data?.refresh;
-    if (access) localStorage.setItem('access_token', access);
+    if (access) {
+      localStorage.setItem('access_token', access);
+      authAPI.setAuthToken(access);
+    }
     if (refresh) localStorage.setItem('refresh_token', refresh);
     if (data.user) {
       setUser(data.user);

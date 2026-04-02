@@ -143,6 +143,8 @@ export const NotificationProvider = ({ children }) => {
   const [popups, setPopups] = useState([]); // Currently active toasts
   const [lastItemUpdate, setLastItemUpdate] = useState(null); // Real-time item refresh triggers
   const [pendingReward, setPendingReward] = useState(null); // Reward data for founder popup
+  const [notifError, setNotifError] = useState(false); // 🔥 For "Notifications unavailable" fallback
+
 
   const wsRef = useRef(null);
   const audioRef = useRef(null);
@@ -175,20 +177,30 @@ export const NotificationProvider = ({ children }) => {
     setPopups(prev => prev.filter(p => p.id !== id));
   }, []);
 
-  const fetchNotifications = useCallback(async () => {
-    if (!user) return;
+  const fetchNotifications = useCallback(async (retry = true) => {
+    // 🛡️ Safety check: Don't call without user AND token
+    if (!user || !localStorage.getItem('access_token')) return;
+    
     try {
       const { data } = await notificationsAPI.getAll();
       const list = Array.isArray(data) ? data : (data.results || []);
       setNotifications(list);
       setUnreadCount(list.filter(n => !n.is_read).length);
+      setNotifError(false);
 
       // Fetch initial chat unread count too
       const chatData = await notificationsAPI.getUnreadCount();
       if (chatData?.data?.unread_count !== undefined) {
         setUnreadChatCount(chatData.data.unread_count);
       }
-    } catch { }
+    } catch (err) {
+      // If 401 happens immediately after login, retry once after 500ms
+      if (err.response?.status === 401 && retry) {
+        setTimeout(() => fetchNotifications(false), 500);
+      } else {
+        setNotifError(true);
+      }
+    }
   }, [user]);
 
   // Connect to WebSocket for real-time notifications (No Polling)
@@ -362,6 +374,7 @@ export const NotificationProvider = ({ children }) => {
       markAllRead,
       deleteNotif,
       pendingReward,
+      notifError, // Expose for UI components
       clearPendingReward: () => setPendingReward(null),
     }}>
       {children}
