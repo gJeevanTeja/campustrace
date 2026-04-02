@@ -35,7 +35,7 @@ const StatCard = ({ title, value, icon: Icon, color, trend, delay }) => (
     </motion.div>
 );
 
-const SuperAdminDashboard = ({ darkMode }) => {
+const SuperAdminDashboard = () => {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);

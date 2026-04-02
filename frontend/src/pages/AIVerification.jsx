@@ -19,7 +19,7 @@ const AIVerification = () => {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const [, setItem] = useState(null);
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -36,8 +36,7 @@ const AIVerification = () => {
         const initVerification = async () => {
             try {
                 setLoading(true);
-                const resItem = await api.get(`items/${id}/`, { timeout: 30000 });
-                setItem(resItem.data);
+                await api.get(`items/${id}/`, { timeout: 30000 });
 
                 const resQ = await api.post(`items/${id}/submit-ai-answer/`, { answer: "" }, { timeout: 30000 });
                 console.log("AI Init Response:", resQ.data);

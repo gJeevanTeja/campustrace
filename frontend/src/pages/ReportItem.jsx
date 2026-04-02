@@ -11,7 +11,6 @@ import {
   CheckCircle2, 
   Calendar, 
   Clock as ClockIcon, 
-  MapPin, 
   Tag, 
   ArrowRight,
   Sparkles,
