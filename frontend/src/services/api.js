@@ -5,12 +5,12 @@ const getBaseUrl = () => {
     // 1. Environment variable (from .env or Vercel config)
     if (process.env.REACT_APP_API_URL) return process.env.REACT_APP_API_URL;
     
-    // 2. Browser origin (if combined deployment or proxy)
+    // 2. Browser origin (if combined deployment on Railway)
     if (typeof window !== 'undefined' && window.location.origin.includes('up.railway.app')) {
        return window.location.origin + "/api/";
     }
     
-    // 3. Standard Local Development Fallback
+    // 3. Default Fallback
     return "http://localhost:8000/api/";
 };
 
@@ -19,11 +19,14 @@ console.log("🚀 UniTrace API Base:", BASE_URL);
 
 // Derive WebSocket URL from API URL automatically
 const getWsBase = (apiUrl) => {
+  // 1. Explicit environment override
   if (process.env.REACT_APP_WS_URL) return process.env.REACT_APP_WS_URL;
+  
+  // 2. Automatic discovery from active API URL
   try {
     const url = new URL(apiUrl);
     const protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
-    // Remove /api/ suffix if present for WS connection
+    // Remove /api/ suffix for WebSocket root
     return `${protocol}//${url.host}`;
   } catch (e) {
     return "ws://localhost:8000";
