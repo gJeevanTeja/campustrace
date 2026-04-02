@@ -5,10 +5,9 @@ import {
     TrendingUp, Layers, CheckCircle, AlertCircle,
     ArrowUpRight, ArrowDownRight, Activity
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
-    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-    BarChart, Bar, Cell
+    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 
 const StatCard = ({ title, value, icon: Icon, color, trend, delay }) => (

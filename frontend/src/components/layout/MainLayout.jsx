@@ -6,7 +6,6 @@ import {
   PlusSquare, 
   MessageSquare, 
   BarChart3, 
-  User, 
   ShieldCheck, 
   ChevronLeft, 
   ChevronRight,
