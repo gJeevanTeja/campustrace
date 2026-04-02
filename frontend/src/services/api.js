@@ -2,12 +2,20 @@ import axios from 'axios';
 
 // ─── API Configuration ──────────────────────────────────────────────────────
 const getBaseUrl = () => {
-  if (process.env.REACT_APP_API_URL) return process.env.REACT_APP_API_URL;
-  // Fallback to the known production URL if env is not set
-  return "https://uni-production-fe08.up.railway.app/api/";
+    // 1. Environment variable (from .env or Vercel config)
+    if (process.env.REACT_APP_API_URL) return process.env.REACT_APP_API_URL;
+    
+    // 2. Browser origin (if combined deployment or proxy)
+    if (typeof window !== 'undefined' && window.location.origin.includes('up.railway.app')) {
+       return window.location.origin + "/api/";
+    }
+    
+    // 3. Standard Local Development Fallback
+    return "http://localhost:8000/api/";
 };
 
 const BASE_URL = getBaseUrl();
+console.log("🚀 UniTrace API Base:", BASE_URL);
 
 // Derive WebSocket URL from API URL automatically
 const getWsBase = (apiUrl) => {

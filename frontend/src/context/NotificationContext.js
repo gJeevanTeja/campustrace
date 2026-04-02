@@ -204,9 +204,12 @@ export const NotificationProvider = ({ children }) => {
 
     // Use environment variable WS_URL, or derive it from the current API URL
     const getWsUrl = () => {
+      // 1. Environment variable (explicit override)
       if (process.env.REACT_APP_WS_URL) return process.env.REACT_APP_WS_URL;
+      
       try {
-        const apiUrl = process.env.REACT_APP_API_URL || "https://uni-production-fe08.up.railway.app/api/";
+        // 2. Discover based on active API URL (automatically handles localhost vs production)
+        const apiUrl = process.env.REACT_APP_API_URL || (typeof window !== 'undefined' && window.location.origin.includes('up.railway.app') ? window.location.origin + "/api/" : "http://localhost:8000/api/");
         const url = new URL(apiUrl);
         const protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
         return `${protocol}//${url.host}`;
