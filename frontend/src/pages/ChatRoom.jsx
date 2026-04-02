@@ -100,7 +100,7 @@ const ChatRoom = () => {
   const connectWS = useCallback(() => {
     if (wsRef.current) wsRef.current.close();
     const token = localStorage.getItem('access_token');
-    const wsUrl = process.env.REACT_APP_WS_URL || `ws://${process.env.REACT_APP_API_IP || window.location.hostname}:8000`;
+    const wsUrl = import.meta.env.VITE_WS_URL || `ws://${import.meta.env.VITE_API_IP || window.location.hostname}:8000`;
     const ws = new WebSocket(`${wsUrl}/ws/chat/${roomId}/?token=${token}`);
     wsRef.current = ws;
 

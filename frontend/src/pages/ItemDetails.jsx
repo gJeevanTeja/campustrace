@@ -153,7 +153,7 @@ const ItemDetails = () => {
       });
       
       const options = {
-        key: process.env.REACT_APP_RAZORPAY_KEY_ID || data.key_id,
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || data.key_id,
         amount: data.amount * 100,
         currency: data.currency,
         name: "UniTrace Reward",

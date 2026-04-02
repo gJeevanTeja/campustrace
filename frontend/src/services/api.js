@@ -2,24 +2,26 @@ import axios from 'axios';
 
 // ─── API Configuration ──────────────────────────────────────────────────────
 const getBaseUrl = () => {
-    // 1. Environment variable (from .env or Vercel config)
-    if (process.env.REACT_APP_API_URL) return process.env.REACT_APP_API_URL;
+    // Vite-style environment access
+    const envUrl = import.meta.env.VITE_API_URL;
+    if (envUrl) return envUrl;
     
-    // 2. Browser origin (if combined deployment or proxy)
+    // Discovery fallback for Railway environments
     if (typeof window !== 'undefined' && window.location.origin.includes('up.railway.app')) {
        return window.location.origin + "/api/";
     }
     
-    // 3. Standard Local Development Fallback
+    // Default fallback
     return "http://localhost:8000/api/";
 };
 
 const BASE_URL = getBaseUrl();
-console.log("🚀 UniTrace API Base:", BASE_URL);
 
 // Derive WebSocket URL from API URL automatically
 const getWsBase = (apiUrl) => {
-  if (process.env.REACT_APP_WS_URL) return process.env.REACT_APP_WS_URL;
+  const envWs = import.meta.env.VITE_WS_URL;
+  if (envWs) return envWs;
+  
   try {
     const url = new URL(apiUrl);
     const protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -32,13 +34,16 @@ const getWsBase = (apiUrl) => {
 
 const WS_BASE = getWsBase(BASE_URL);
 
-
 const api = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
   timeout: 60000,
 });
-console.log("Axios initialized with timeout:", api.defaults.timeout);
+
+// UniTrace Requirement: Explicit debug log for API Base
+console.log("UniTrace API Base:", api.defaults.baseURL);
+console.log("UniTrace WS Base:", WS_BASE);
+
 
 // ── Attach JWT token & Handle FormData headers ──────────────────────
 api.interceptors.request.use(
@@ -64,7 +69,7 @@ api.interceptors.response.use(
     
     // 1. Explicitly Distinguish Network/CORS/Timeout Error
     if (!error.response) {
-      if (process.env.NODE_ENV !== 'production') {
+      if (import.meta.env.DEV) {
         console.error("🌐 Network Error Details:", {
             message: error.message,
             code: error.code,
@@ -135,7 +140,7 @@ export const authAPI = {
       return { data: normalized };
     } catch (error) {
        // Log detailed auth failure in dev mode
-       if (process.env.NODE_ENV !== 'production') {
+       if (import.meta.env.DEV) {
           console.group('🔐 Auth Failure Trace');
           console.error('Request:', credentials.email);
           if (error.response) {
