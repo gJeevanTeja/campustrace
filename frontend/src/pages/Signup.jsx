@@ -132,24 +132,24 @@ const Signup = () => {
     }
   };
 
-  const inputClass = (err) => `w-full px-4 py-3 rounded-xl border ${err ? 'border-red-500' : 'border-slate-200'} bg-slate-50 text-slate-800 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-medium`;
-  const labelClass = "block text-sm font-bold text-slate-800 mb-1.5";
+  const inputClass = (err) => `w-full px-4 py-3 rounded-xl border ${err ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'} bg-slate-50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-medium`;
+  const labelClass = "block text-sm font-bold text-slate-800 dark:text-slate-300 mb-1.5";
   const errorClass = "text-red-500 text-xs font-bold mt-1.5";
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0b0f1a] flex items-center justify-center p-6 font-sans transition-colors duration-300">
       <motion.div 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-[650px] bg-white rounded-[24px] p-8 sm:p-10 shadow-[0_10px_30px_rgba(0,0,0,0.05)] relative z-10"
+        className="w-full max-w-[650px] bg-white dark:bg-card rounded-[24px] p-8 sm:p-10 shadow-[0_10px_30px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-800 relative z-10"
       >
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-11 h-11 bg-blue-600 rounded-xl flex items-center justify-center shadow-sm">
+          <div className="w-11 h-11 bg-primary-gradient rounded-xl flex items-center justify-center shadow-sm">
              <Sparkles className="text-white" size={24} />
           </div>
           <div>
-             <h2 className="text-[22px] font-extrabold text-slate-800 m-0 leading-tight">Create Student Account</h2>
-             <p className="text-[13px] text-slate-500 m-0 mt-0.5">Join our verified community to secure your belongings.</p>
+             <h2 className="text-[22px] font-extrabold text-slate-800 dark:text-slate-100 m-0 leading-tight transition-colors">Create Student Account</h2>
+             <p className="text-[13px] text-slate-500 dark:text-slate-400 m-0 mt-0.5 transition-colors">Join our verified community to secure your belongings.</p>
           </div>
         </div>
 
@@ -312,8 +312,8 @@ const Signup = () => {
              </div>
           </div>
 
-          <div className="mt-6 mb-8 bg-slate-50 p-4 rounded-xl flex gap-3 items-start border border-slate-100">
-             <Info className="text-blue-600 shrink-0 mt-0.5" size={20} />
+          <div className="mt-6 mb-8 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl flex gap-3 items-start border border-slate-100 dark:border-slate-700">
+             <Info className="text-blue-600 dark:text-primary-light shrink-0 mt-0.5" size={20} />
              <div>
                 <div className="flex items-start gap-2 mb-1">
                    <input 
@@ -323,11 +323,11 @@ const Signup = () => {
                      onChange={handleChange}
                      className="mt-1 w-4 h-4 cursor-pointer accent-blue-600"
                    />
-                   <span className="font-bold text-slate-800 text-sm">
-                      I agree to the <Link to="/terms" className="text-blue-600 hover:underline">Terms of Protocol</Link> *
+                   <span className="font-bold text-slate-800 dark:text-slate-200 text-sm">
+                      I agree to the <Link to="/terms" className="text-blue-600 dark:text-primary-light hover:underline">Terms of Protocol</Link> *
                    </span>
                 </div>
-                <p className="text-xs text-slate-500 leading-relaxed ml-6">
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed ml-6">
                    By creating an account, your identity proofs and academic details will be securely stored to verify you belong to this campus community.
                 </p>
                 {errors.terms_accepted && <p className="text-red-500 text-xs font-bold mt-1.5 ml-6">{errors.terms_accepted}</p>}

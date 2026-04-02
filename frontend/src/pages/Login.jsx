@@ -140,13 +140,13 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0b0f1a] flex items-center justify-center p-6 font-sans relative overflow-hidden transition-colors duration-300">
       {/* Back Button */}
       <Link 
         to="/welcome" 
         className="absolute top-8 left-8 flex items-center gap-2 text-text-secondary hover:text-primary transition-colors font-black uppercase tracking-widest text-xs z-50 group"
       >
-        <div className="p-2 rounded-xl bg-white shadow-sm border border-slate-100 group-hover:border-primary/20 transition-all">
+        <div className="p-2 rounded-xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 group-hover:border-primary/20 transition-all">
           <ChevronLeft size={18} />
         </div>
         <span>Back</span>
@@ -168,18 +168,18 @@ const Login = () => {
                 <div className="w-12 h-12 bg-primary-gradient rounded-2xl flex items-center justify-center text-white shadow-2xl">
                    <ShieldCheck size={24} />
                 </div>
-                <span className="font-black text-2xl tracking-tighter text-primary">UniTrace</span>
+                <span className="font-black text-2xl tracking-tighter text-primary dark:text-primary-light transition-colors">UniTrace</span>
              </div>
-             <p className="text-text-secondary font-black text-[10px] uppercase tracking-[4px]">Log in to your account</p>
+             <p className="text-text-secondary dark:text-slate-400 font-black text-[10px] uppercase tracking-[4px] transition-colors">Log in to your account</p>
           </div>
 
           {/* Tab Switcher */}
-          <div className="bg-slate-50 p-1 rounded-2xl flex border border-slate-100">
+          <div className="bg-slate-50 dark:bg-slate-800/50 p-1 rounded-2xl flex border border-slate-100 dark:border-slate-700">
              {[['password', 'Secure Key'], ['otp', 'Passcode']].map(([t, lbl]) => (
                <button 
                  key={t}
                  onClick={() => { setTab(t); setOtpSent(false); }}
-                 className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${tab === t ? 'bg-white text-primary shadow-sm' : 'text-text-secondary hover:bg-white/50'}`}
+                 className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${tab === t ? 'bg-white dark:bg-slate-800 text-primary shadow-sm' : 'text-text-secondary hover:bg-white/50 dark:hover:bg-slate-800/50'}`}
                >
                   {lbl}
                </button>
@@ -188,8 +188,8 @@ const Login = () => {
 
           <div className="space-y-6">
              <div className="space-y-1">
-                <h3 className="text-2xl font-black text-text-primary tracking-tighter uppercase">Welcome Back</h3>
-                <p className="text-sm font-medium text-text-secondary">Please provide your credentials to proceed.</p>
+                <h3 className="text-2xl font-black text-text-primary dark:text-slate-100 tracking-tighter uppercase transition-colors">Welcome Back</h3>
+                <p className="text-sm font-medium text-text-secondary dark:text-slate-400 transition-colors">Please provide your credentials to proceed.</p>
              </div>
 
              {error && (
@@ -221,7 +221,7 @@ const Login = () => {
                             required 
                             value={form.identity}
                             onChange={(e) => setForm({...form, identity: e.target.value})}
-                            className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-primary/30 transition-all"
+                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-primary/30 transition-all dark:text-slate-100"
                           />
                           <Mail size={16} className="absolute right-5 top-[18px] text-slate-300 group-focus-within:text-primary transition-colors" />
                        </div>
@@ -238,7 +238,7 @@ const Login = () => {
                             required 
                             value={form.secret_key}
                             onChange={(e) => setForm({...form, secret_key: e.target.value})}
-                            className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-primary/30 transition-all"
+                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-primary/30 transition-all dark:text-slate-100"
                           />
                           <button 
                             type="button" 
@@ -267,9 +267,9 @@ const Login = () => {
                   >
                      {!otpSent ? (
                         <form onSubmit={handleSendOTP} className="space-y-5">
-                           <div className="bg-slate-50/50 p-1 rounded-xl flex border border-slate-200/50">
+                           <div className="bg-slate-50/50 dark:bg-slate-800/50 p-1 rounded-xl flex border border-slate-200/50 dark:border-slate-700/50">
                               {[['email', 'Email'], ['phone', 'Phone']].map(([t, lbl]) => (
-                                <button key={t} type="button" onClick={() => setOtpType(t)} className={`flex-1 py-2 text-[10px] font-black uppercase rounded-lg transition-all ${otpType === t ? 'bg-white text-primary shadow-sm' : 'text-text-secondary'}`}>{lbl}</button>
+                                <button key={t} type="button" onClick={() => setOtpType(t)} className={`flex-1 py-2 text-[10px] font-black uppercase rounded-lg transition-all ${otpType === t ? 'bg-white dark:bg-slate-800 text-primary shadow-sm' : 'text-text-secondary'}`}>{lbl}</button>
                               ))}
                            </div>
                            <div className="space-y-1">
@@ -278,7 +278,7 @@ const Login = () => {
                                  <input 
                                    value={otpId}
                                    onChange={(e) => setOtpId(e.target.value)}
-                                   className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-primary/30 transition-all"
+                                   className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-primary/30 transition-all dark:text-slate-100"
                                  />
                                  {otpType === 'email' ? <Mail size={16} className="absolute right-5 top-[18px] text-slate-300" /> : <Smartphone size={16} className="absolute right-5 top-[18px] text-slate-300" />}
                               </div>
@@ -290,7 +290,7 @@ const Login = () => {
                      ) : (
                         <form onSubmit={handleVerifyOTP} className="space-y-6">
                            <div className="text-center space-y-2">
-                              <div className="w-16 h-16 bg-slate-100 rounded-[24px] flex items-center justify-center mx-auto text-primary">
+                              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-[24px] flex items-center justify-center mx-auto text-primary">
                                  <Fingerprint size={32} />
                               </div>
                               <h4 className="font-black uppercase tracking-widest text-xs text-text-primary">Verification Code Sent</h4>
@@ -299,7 +299,7 @@ const Login = () => {
                            <input 
                              value={otpCode}
                              onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                             className="w-full bg-slate-50 border-2 border-slate-100 rounded-3xl py-6 text-center text-4xl font-black tracking-[12px] outline-none focus:border-primary/30 transition-all"
+                             className="w-full bg-slate-50 dark:bg-slate-900/50 border-2 border-slate-100 dark:border-slate-700 rounded-3xl py-6 text-center text-4xl font-black tracking-[12px] outline-none focus:border-primary/30 transition-all dark:text-slate-100"
                            />
                            <div className="space-y-3">
                               <button disabled={loading || otpCode.length !== 6} className="w-full py-5 rounded-[24px] bg-primary text-white font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 shadow-2xl shadow-primary/30 disabled:opacity-50">
@@ -314,7 +314,7 @@ const Login = () => {
              </AnimatePresence>
           </div>
 
-          <div className="pt-4 border-t border-slate-50 text-center">
+          <div className="pt-4 border-t border-slate-50 dark:border-slate-800 text-center">
              <p className="font-black uppercase text-[10px] tracking-[2px] text-text-secondary">
                 Don't have an account? <Link to="/signup" className="text-primary hover:underline">Sign Up</Link>
              </p>

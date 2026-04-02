@@ -15,7 +15,7 @@ const StatCard = ({ title, value, icon: Icon, color, trend, delay }) => (
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay }}
-        className="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm hover:shadow-md transition-all group"
+        className="bg-white dark:bg-card p-6 rounded-[24px] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group"
     >
         <div className="flex justify-between items-start mb-4">
             <div className={`p-3 rounded-2xl bg-gradient-to-br ${color} text-white shadow-lg shadow-current/10 group-hover:scale-110 transition-transform`}>
@@ -161,14 +161,14 @@ const SuperAdminDashboard = ({ darkMode }) => {
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Main Activity Chart */}
-                <div className="lg:col-span-2 bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm relative overflow-hidden group">
+                <div className="lg:col-span-2 bg-white dark:bg-card p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm relative overflow-hidden group">
                     <div className="flex items-center justify-between mb-8 relative z-10">
                         <div className="space-y-1">
                             <h4 className="text-xl font-black text-text-primary tracking-tighter uppercase">Network Activity</h4>
                             <p className="text-[10px] font-bold text-text-secondary uppercase tracking-widest opacity-60">Visualizing global incident volume (7D)</p>
                         </div>
-                        <div className="flex items-center gap-4 bg-slate-50 p-1.5 rounded-xl border border-slate-100">
-                             <div className="flex items-center gap-1.5 px-3 py-1 bg-white shadow-sm border border-slate-100 rounded-lg">
+                        <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/50 p-1.5 rounded-xl border border-slate-100 dark:border-slate-700">
+                             <div className="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 rounded-lg">
                                 <div className="w-2 h-2 rounded-full bg-primary" />
                                 <span className="text-[10px] font-black uppercase tracking-widest text-text-primary">Reports</span>
                              </div>
@@ -191,28 +191,29 @@ const SuperAdminDashboard = ({ darkMode }) => {
                                         <stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/>
                                         <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
                                     </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                 </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                                 <XAxis 
                                     dataKey="name" 
                                     axisLine={false} 
                                     tickLine={false} 
-                                    tick={{fontSize: 10, fontWeight: 700, fill: '#94a3b8'}}
+                                    tick={{fontSize: 10, fontWeight: 700, fill: 'var(--text-secondary)'}}
                                     dy={10}
                                 />
                                 <YAxis 
                                     axisLine={false} 
                                     tickLine={false} 
-                                    tick={{fontSize: 10, fontWeight: 700, fill: '#94a3b8'}}
+                                    tick={{fontSize: 10, fontWeight: 700, fill: 'var(--text-secondary)'}}
                                 />
                                 <Tooltip 
                                     contentStyle={{ 
+                                        backgroundColor: 'var(--card)', 
                                         borderRadius: '20px', 
-                                        border: '1px solid #f1f5f9',
+                                        border: '1px solid var(--border)',
                                         boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
                                         padding: '12px'
                                     }}
-                                    labelStyle={{ fontWeight: 900, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '10px' }}
+                                    labelStyle={{ color: 'var(--text-secondary)', fontWeight: 900, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '10px' }}
                                 />
                                 <Area type="monotone" dataKey="reports" stroke="#7c3aed" strokeWidth={3} fillOpacity={1} fill="url(#colorReports)" />
                                 <Area type="monotone" dataKey="resolved" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorResolved)" />

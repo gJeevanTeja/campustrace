@@ -319,8 +319,15 @@ const AdminDashboard = () => {
                                 <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280', fontWeight: 500 }} dy={10} />
                                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280', fontWeight: 500 }} />
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', padding: '12px' }}
+                                    contentStyle={{ 
+                                        backgroundColor: 'var(--card)', 
+                                        borderRadius: '16px', 
+                                        border: '1px solid var(--border)', 
+                                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', 
+                                        padding: '12px' 
+                                    }}
                                     itemStyle={{ fontSize: 12, fontWeight: 700, color: '#4F46E5' }}
+                                    labelStyle={{ color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '4px' }}
                                 />
                                 <Line type="monotone" dataKey="count" stroke="#4F46E5" strokeWidth={4} dot={false} activeDot={{ r: 6, strokeWidth: 0, fill: '#4F46E5' }} animationDuration={1500} />
                             </LineChart>
@@ -369,7 +376,7 @@ const AdminDashboard = () => {
                             value={params.search}
                             onChange={handleFilterChange}
                             placeholder="Search items, reference #..."
-                            className="w-full pl-12 pr-4 py-3 bg-white border border-border rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all shadow-sm font-medium"
+                            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-800 border border-border dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all shadow-sm font-medium dark:text-slate-100"
                         />
                     </div>
                 </div>
@@ -391,7 +398,7 @@ const AdminDashboard = () => {
                                     name="collegeId"
                                     value={params.collegeId}
                                     onChange={handleFilterChange}
-                                    className="px-4 py-2 bg-gray-50 border-none rounded-xl text-xs sm:text-sm font-bold text-text-primary outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                                    className="px-4 py-2 bg-gray-50 dark:bg-slate-800 border-none rounded-xl text-xs sm:text-sm font-bold text-text-primary outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
                                 >
                                     <option value="">All Colleges</option>
                                     {(Array.isArray(colleges) ? colleges : []).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -402,7 +409,7 @@ const AdminDashboard = () => {
                                 name="category"
                                 value={params.category}
                                 onChange={handleFilterChange}
-                                className="px-4 py-2 bg-gray-50 border-none rounded-xl text-xs sm:text-sm font-bold text-text-primary outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                                className="px-4 py-2 bg-gray-50 dark:bg-slate-800 border-none rounded-xl text-xs sm:text-sm font-bold text-text-primary outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
                             >
                                 <option value="">Categories</option>
                                 {(Array.isArray(categories) ? categories : []).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -412,7 +419,7 @@ const AdminDashboard = () => {
                                 name="type"
                                 value={params.type}
                                 onChange={handleFilterChange}
-                                className="px-4 py-2 bg-gray-50 border-none rounded-xl text-xs sm:text-sm font-bold text-text-primary outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                                className="px-4 py-2 bg-gray-50 dark:bg-slate-800 border-none rounded-xl text-xs sm:text-sm font-bold text-text-primary outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
                             >
                                 <option value="">Types</option>
                                 <option value="lost">Lost</option>
@@ -423,7 +430,7 @@ const AdminDashboard = () => {
                                 name="status"
                                 value={params.status}
                                 onChange={handleFilterChange}
-                                className="px-4 py-2 bg-gray-50 border-none rounded-xl text-xs sm:text-sm font-bold text-text-primary outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                                className="px-4 py-2 bg-gray-50 dark:bg-slate-800 border-none rounded-xl text-xs sm:text-sm font-bold text-text-primary outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
                             >
                                 <option value="">Status</option>
                                 <option value="active">Active</option>
@@ -439,7 +446,7 @@ const AdminDashboard = () => {
                                 name="startDate"
                                 value={params.startDate}
                                 onChange={handleFilterChange}
-                                className="flex-1 sm:flex-none px-3 py-2 bg-gray-50 border-none rounded-xl text-[10px] sm:text-xs font-bold text-text-secondary outline-none w-full sm:w-auto"
+                                className="flex-1 sm:flex-none px-3 py-2 bg-gray-50 dark:bg-slate-800 border-none rounded-xl text-[10px] sm:text-xs font-bold text-text-secondary outline-none w-full sm:w-auto"
                             />
                             <span className="text-text-secondary">-</span>
                             <input 
@@ -447,7 +454,7 @@ const AdminDashboard = () => {
                                 name="endDate"
                                 value={params.endDate}
                                 onChange={handleFilterChange}
-                                className="flex-1 sm:flex-none px-3 py-2 bg-gray-50 border-none rounded-xl text-[10px] sm:text-xs font-bold text-text-secondary outline-none w-full sm:w-auto"
+                                className="flex-1 sm:flex-none px-3 py-2 bg-gray-50 dark:bg-slate-800 border-none rounded-xl text-[10px] sm:text-xs font-bold text-text-secondary outline-none w-full sm:w-auto"
                             />
                         </div>
                     </div>
@@ -458,7 +465,7 @@ const AdminDashboard = () => {
                     {/* Desktop Table View */}
                     <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-gray-50/50 border-b border-border sticky top-0 z-10">
+                            <thead className="bg-gray-50/50 dark:bg-slate-800/50 border-b border-border dark:border-slate-700 sticky top-0 z-10">
                                 <tr>
                                     <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em]">Item Name</th>
                                     <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em]">Category</th>
@@ -568,8 +575,8 @@ const AdminDashboard = () => {
                         </AnimatePresence>
                     </div>
 
-                    {/* Pagination */}
-                    <div className="px-4 sm:px-6 py-4 bg-gray-50/50 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+                     {/* Pagination */}
+                    <div className="px-4 sm:px-6 py-4 bg-gray-50/50 dark:bg-slate-800/50 border-t border-border dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
                         <p className="text-xs font-bold text-text-secondary order-2 sm:order-1">
                             Showing <span className="text-text-primary">{reports.length}</span> of <span className="text-text-primary">{totalCount}</span>
                         </p>
@@ -577,7 +584,7 @@ const AdminDashboard = () => {
                             <button
                                 onClick={() => setParams(p => ({ ...p, page: p.page - 1 }))}
                                 disabled={params.page === 1}
-                                className="p-2 border border-border rounded-xl hover:bg-white disabled:opacity-40 disabled:hover:bg-transparent transition-all"
+                                className="p-2 border border-border dark:border-slate-700 rounded-xl hover:bg-white dark:hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-transparent transition-all"
                             >
                                 <ChevronLeft size={18} />
                             </button>

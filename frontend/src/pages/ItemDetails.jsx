@@ -310,23 +310,23 @@ const ItemDetails = () => {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-32">
-      <div className="flex items-center justify-between bg-white/70 backdrop-blur-md sticky top-0 z-40 py-4 border-b border-border -mx-4 px-4 sm:mx-0 sm:rounded-2xl sm:border sm:px-6">
+      <div className="flex items-center justify-between bg-white/70 dark:bg-card/80 backdrop-blur-md sticky top-0 z-40 py-4 border-b border-border dark:border-slate-800 -mx-4 px-4 sm:mx-0 sm:rounded-2xl sm:border sm:px-6 transition-colors">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
-            <ChevronLeft size={20} />
+          <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
+            <ChevronLeft size={20} className="dark:text-slate-100" />
           </button>
           <div>
-            <h1 className="text-lg font-black text-text-primary truncate max-w-[150px] sm:max-w-sm">{item.title}</h1>
+            <h1 className="text-lg font-black text-text-primary dark:text-slate-100 truncate max-w-[150px] sm:max-w-sm">{item.title}</h1>
             <div className="flex items-center gap-2">
                 <span className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase ${item.status === 'active' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'}`}>
                     {item.status}
                 </span>
-                <span className="text-[10px] font-bold text-text-secondary uppercase">#{item.reference_number}</span>
+                <span className="text-[10px] font-bold text-text-secondary dark:text-slate-400 uppercase">#{item.reference_number}</span>
             </div>
           </div>
         </div>
         <div className="flex gap-2">
-            <button className="p-2 hover:bg-gray-100 rounded-xl transition-colors text-text-secondary">
+            <button className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors text-text-secondary dark:text-slate-400">
                 <Share2 size={20} />
             </button>
         </div>
@@ -347,7 +347,7 @@ const ItemDetails = () => {
         <div className="lg:col-span-12 xl:col-span-12 space-y-8">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
              <div className="space-y-4">
-                <div className="aspect-video relative rounded-3xl overflow-hidden border border-border shadow-xl bg-gray-100 group">
+                <div className="aspect-video relative rounded-3xl overflow-hidden border border-border dark:border-slate-800 shadow-xl bg-gray-100 dark:bg-slate-900 group transition-colors">
                    <AnimatePresence mode="wait">
                       <motion.img 
                         key={activePhoto}
@@ -363,7 +363,7 @@ const ItemDetails = () => {
                         }}
                       />
                       <div 
-                        className="w-full h-full flex flex-col items-center justify-center bg-gray-50 text-slate-300 gap-2"
+                        className="w-full h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-900 text-slate-300 dark:text-slate-700 gap-2"
                         style={{ display: 'none' }}
                       >
                          <div className="text-4xl font-black uppercase tracking-tighter opacity-20">
@@ -403,35 +403,35 @@ const ItemDetails = () => {
              </div>
 
              <div className="space-y-6">
-                <div className="bg-white rounded-3xl p-8 border border-border shadow-sm">
+                <div className="bg-white dark:bg-card rounded-3xl p-8 border border-border dark:border-slate-800 shadow-sm transition-colors">
                    <div className="flex flex-wrap gap-2 mb-6">
-                      <span className="bg-primary/5 text-primary text-xs font-black px-3 py-1 rounded-lg uppercase tracking-wider border border-primary/10">
+                      <span className="bg-primary/5 dark:bg-primary/10 text-primary text-xs font-black px-3 py-1 rounded-lg uppercase tracking-wider border border-primary/10 dark:border-primary/20">
                         {item.category}
                       </span>
-                      <span className="bg-secondary/5 text-secondary text-xs font-black px-3 py-1 rounded-lg uppercase tracking-wider border border-secondary/10">
+                      <span className="bg-secondary/5 dark:bg-secondary/10 text-secondary text-xs font-black px-3 py-1 rounded-lg uppercase tracking-wider border border-secondary/10 dark:border-secondary/20">
                         {item.status}
                       </span>
                    </div>
-                   <h2 className="text-3xl font-black text-text-primary mb-4 leading-tight">{item.title}</h2>
-                   <p className="text-text-secondary text-lg leading-relaxed mb-6">{item.description}</p>
+                   <h2 className="text-3xl font-black text-text-primary dark:text-slate-100 mb-4 leading-tight">{item.title}</h2>
+                   <p className="text-text-secondary dark:text-slate-400 text-lg leading-relaxed mb-6">{item.description}</p>
                    
-                   <div className="grid grid-cols-2 gap-4 pt-6 border-t border-border">
+                   <div className="grid grid-cols-2 gap-4 pt-6 border-t border-border dark:border-slate-800">
                       <div className="flex items-center gap-3">
-                         <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-primary">
+                         <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center text-primary">
                             <Calendar size={18} />
                          </div>
                          <div>
-                            <p className="text-[10px] font-bold text-text-secondary uppercase">Date Reported</p>
-                            <p className="text-sm font-black text-text-primary">{new Date(item.created_at).toLocaleDateString()}</p>
+                            <p className="text-[10px] font-bold text-text-secondary dark:text-slate-400 uppercase">Date Reported</p>
+                            <p className="text-sm font-black text-text-primary dark:text-slate-100">{new Date(item.created_at).toLocaleDateString()}</p>
                          </div>
                       </div>
                       <div className="flex items-center gap-3">
-                         <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-secondary">
+                         <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center text-secondary">
                             <Clock size={18} />
                          </div>
                          <div>
-                            <p className="text-[10px] font-bold text-text-secondary uppercase">Time Ago</p>
-                            <p className="text-sm font-black text-text-primary">{item.time_ago}</p>
+                            <p className="text-[10px] font-bold text-text-secondary dark:text-slate-400 uppercase">Time Ago</p>
+                            <p className="text-sm font-black text-text-primary dark:text-slate-100">{item.time_ago}</p>
                          </div>
                       </div>
                    </div>
@@ -458,14 +458,14 @@ const ItemDetails = () => {
                    {item.status === 'active' && item.my_claim?.status === 'verified' && (
                       <div className="space-y-4">
                          {item.contact_phone === 'Locked' ? (
-                           <div className="bg-primary/5 border border-primary/20 rounded-3xl p-6 space-y-4">
+                           <div className="bg-primary/5 dark:bg-primary/10 border border-primary/20 dark:border-primary/30 rounded-3xl p-6 space-y-4 transition-colors">
                               <div className="flex items-center gap-3">
                                  <div className="p-3 bg-primary text-white rounded-2xl">
                                     <ShieldCheck size={24} />
                                  </div>
                                  <div>
-                                    <h4 className="font-black text-text-primary uppercase tracking-tighter">Reward to Unlock Contact</h4>
-                                    <p className="text-xs text-text-secondary">Safety First: Pay the reward to view finder contact details.</p>
+                                    <h4 className="font-black text-text-primary dark:text-slate-100 uppercase tracking-tighter">Reward to Unlock Contact</h4>
+                                    <p className="text-xs text-text-secondary dark:text-slate-400">Safety First: Pay the reward to view finder contact details.</p>
                                  </div>
                               </div>
 
@@ -483,23 +483,22 @@ const ItemDetails = () => {
                                       setSelectedReward(details.suggested);
                                     }}
                                     placeholder="e.g. 5000"
-                                    className="w-full bg-white border-2 border-primary/20 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-black text-primary"
+                                    className="w-full bg-white dark:bg-slate-900 border-2 border-primary/20 dark:border-primary/40 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-black text-primary"
                                   />
-                                  <p className="text-[9px] text-text-secondary font-bold uppercase">This price determines the fair reward suggestion.</p>
+                                  <p className="text-[9px] text-text-secondary dark:text-slate-400 font-bold uppercase">This price determines the fair reward suggestion.</p>
                                 </div>
                               )}
 
                               <div className="space-y-4">
                                   <div className="space-y-1">
-                                    <label className="text-[10px] font-black text-text-secondary uppercase">Select Reward Amount</label>
+                                    <label className="text-[10px] font-black text-text-secondary dark:text-slate-400 uppercase">Select Reward Amount</label>
                                     <p className="text-[11px] font-bold text-primary">
                                       Suggested Reward Range based on item value ₹{currentPrice}
                                     </p>
-                                    <p className="text-[10px] text-text-secondary">
+                                    <p className="text-[10px] text-text-secondary dark:text-slate-400">
                                       Minimum reward: <span className="font-black">₹{autoDetails.suggested}</span>. You can choose a higher reward for a faster response.
                                     </p>
                                   </div>
-
                                   <div className="grid grid-cols-2 gap-2">
                                      {[
                                        autoDetails.suggested,
@@ -510,22 +509,22 @@ const ItemDetails = () => {
                                        <button 
                                          key={i} 
                                          onClick={() => setSelectedReward(amt)}
-                                         className={`py-3 rounded-xl border-2 font-black text-sm transition-all ${selectedReward === amt ? 'bg-primary border-primary text-white ring-4 ring-primary/10 scale-[1.02]' : 'bg-white border-border text-text-secondary hover:border-primary/20'}`}
+                                         className={`py-3 rounded-xl border-2 font-black text-sm transition-all ${selectedReward === amt ? 'bg-primary border-primary text-white ring-4 ring-primary/10 scale-[1.02]' : 'bg-white dark:bg-slate-900 border-border dark:border-slate-800 text-text-secondary dark:text-slate-400 hover:border-primary/20'}`}
                                        >
                                          ₹{amt}
                                        </button>
                                      ))}
                                   </div>
-                                  <div className="bg-white rounded-2xl p-4 border border-border space-y-2">
+                                  <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-border dark:border-slate-800 space-y-2 transition-colors">
                                      <div className="flex justify-between text-xs">
-                                        <span className="text-text-secondary font-bold">Reward for Finder:</span>
-                                        <span className="text-text-primary font-black">₹{selectedReward || 0}</span>
+                                        <span className="text-text-secondary dark:text-slate-400 font-bold">Reward for Finder:</span>
+                                        <span className="text-text-primary dark:text-slate-100 font-black">₹{selectedReward || 0}</span>
                                      </div>
                                      <div className="flex justify-between text-[10px]">
-                                        <span className="text-text-secondary">Commission will be deducted from reward.</span>
+                                        <span className="text-text-secondary dark:text-slate-500">Commission will be deducted from reward.</span>
                                      </div>
-                                     <div className="pt-2 border-t border-border flex justify-between text-sm">
-                                        <span className="font-black text-text-primary uppercase tracking-tighter">Total to Pay (Escrow):</span>
+                                     <div className="pt-2 border-t border-border dark:border-slate-800 flex justify-between text-sm">
+                                        <span className="font-black text-text-primary dark:text-slate-100 uppercase tracking-tighter">Total to Pay (Escrow):</span>
                                         <span className="font-black text-primary text-lg">₹{selectedReward || 0}</span>
                                      </div>
                                   </div>
@@ -544,24 +543,24 @@ const ItemDetails = () => {
                            <div className="grid grid-cols-3 gap-3">
                               <button 
                                 onClick={handleStartChat}
-                                className="bg-white border border-border p-4 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-all font-bold group"
+                                className="bg-white dark:bg-card border border-border dark:border-slate-800 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-bold group"
                               >
                                  <MessageSquare className="text-primary group-hover:scale-110 transition-transform" />
-                                 <span className="text-[10px] uppercase">Chat</span>
+                                 <span className="text-[10px] uppercase dark:text-slate-400">Chat</span>
                               </button>
                               <button 
                                 onClick={handleCall}
-                                className="bg-white border border-border p-4 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-all font-bold group"
+                                className="bg-white dark:bg-card border border-border dark:border-slate-800 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-bold group"
                               >
                                  <Phone className="text-emerald-500 group-hover:scale-110 transition-transform" />
-                                 <span className="text-[10px] uppercase">Call</span>
+                                 <span className="text-[10px] uppercase dark:text-slate-400">Call</span>
                               </button>
                               <button 
                                 onClick={handleWhatsApp}
-                                className="bg-white border border-border p-4 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-all font-bold group"
+                                className="bg-white dark:bg-card border border-border dark:border-slate-800 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-bold group"
                               >
                                  <ExternalLink className="text-cyan-500 group-hover:scale-110 transition-transform" />
-                                 <span className="text-[10px] uppercase">WhatsApp</span>
+                                 <span className="text-[10px] uppercase dark:text-slate-400">WhatsApp</span>
                               </button>
                            </div>
                          )}
@@ -584,7 +583,7 @@ const ItemDetails = () => {
                 <PremiumCard className="p-8" hover={false}>
                    <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider mb-6">Tracking Timeline</h3>
                    <div className="space-y-6 relative ml-2">
-                      <div className="absolute left-[7px] top-2 bottom-2 w-[2px] bg-slate-100" />
+                      <div className="absolute left-[7px] top-2 bottom-2 w-[2px] bg-slate-100 dark:bg-slate-800 transition-colors" />
                       {[
                         { label: 'Item Reported', active: true, desc: 'Initial report submitted to network' },
                         { label: 'Claim Initiated', active: item.status === 'returned' || !!item.my_claim || item.pending_claims?.length > 0 || !!item.claimed_by, desc: 'Security questions or manual claim started' },
@@ -592,10 +591,10 @@ const ItemDetails = () => {
                         { label: 'Handoff Complete', active: item.status === 'returned', desc: 'Secure exchange code verified' },
                       ].map((step, i) => (
                         <div key={i} className="flex gap-4 relative z-10">
-                           <div className={`w-4 h-4 rounded-full mt-1 flex-shrink-0 transition-all duration-300 ${step.active ? 'bg-primary shadow-lg shadow-primary/30 scale-125' : 'bg-slate-200 shadow-inner'}`} />
+                           <div className={`w-4 h-4 rounded-full mt-1 flex-shrink-0 transition-all duration-300 ${step.active ? 'bg-primary shadow-lg shadow-primary/30 scale-125' : 'bg-slate-200 dark:bg-slate-700 shadow-inner'}`} />
                            <div>
-                              <p className={`text-sm font-black uppercase tracking-tighter ${step.active ? 'text-text-primary' : 'text-slate-400'}`}>{step.label}</p>
-                              <p className="text-[10px] text-text-secondary leading-tight mt-0.5">{step.desc}</p>
+                              <p className={`text-sm font-black uppercase tracking-tighter ${step.active ? 'text-text-primary dark:text-slate-100' : 'text-slate-400 dark:text-slate-600'}`}>{step.label}</p>
+                              <p className="text-[10px] text-text-secondary dark:text-slate-400 leading-tight mt-0.5">{step.desc}</p>
                            </div>
                         </div>
                       ))}
@@ -633,18 +632,18 @@ const ItemDetails = () => {
                    )}
 
                    {item.user?.id === user?.id && item.pending_claims?.some(c => c.status === 'verified' && c.has_paid) && item.status !== 'returned' && (
-                      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-slate-800 text-white rounded-3xl p-8 text-center space-y-4 shadow-2xl">
+                      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-slate-800 dark:bg-card border dark:border-slate-800 text-white rounded-3xl p-8 text-center space-y-4 shadow-2xl transition-colors">
                          <div className="bg-primary/20 w-16 h-16 rounded-3xl flex items-center justify-center mx-auto mb-4">
                             <QrCode size={32} className="text-primary" />
                          </div>
                          <h4 className="text-xl font-black uppercase tracking-widest text-primary">Exchange Code</h4>
-                         <p className="text-xs text-white/60">Provide this code to the claimant only when handing over the item physically.</p>
-                         <div className="bg-white/10 backdrop-blur-md rounded-2xl py-6 border border-white/10">
+                         <p className="text-xs text-white/60 dark:text-slate-400">Provide this code to the claimant only when handing over the item physically.</p>
+                         <div className="bg-white/10 dark:bg-slate-900 backdrop-blur-md rounded-2xl py-6 border border-white/10 dark:border-slate-800 transition-colors">
                             <span className="text-5xl font-black tracking-[10px] text-primary">
                                {item.pending_claims.find(c => c.status === 'verified' && c.has_paid)?.claim_code || "------"}
                             </span>
                          </div>
-                         <p className="text-[10px] text-white/40 italic">This code confirms the item has been returned.</p>
+                         <p className="text-[10px] text-white/40 dark:text-slate-500 italic">This code confirms the item has been returned.</p>
                       </motion.div>
                    )}
 
@@ -674,11 +673,11 @@ const ItemDetails = () => {
                initial={{ scale: 0.8, y: 40 }}
                animate={{ scale: 1, y: 0 }}
                transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-               className="bg-white rounded-[40px] p-10 max-w-sm w-full text-center shadow-3xl space-y-5"
+               className="bg-white dark:bg-card rounded-[40px] p-10 max-w-sm w-full text-center shadow-3xl space-y-5 border border-slate-100 dark:border-slate-800 transition-colors"
             >
               <div className="text-7xl">🎉</div>
-              <h2 className="text-3xl font-black text-text-primary uppercase tracking-tighter">Congratulations!</h2>
-              <p className="text-text-secondary font-medium leading-relaxed">
+              <h2 className="text-3xl font-black text-text-primary dark:text-slate-100 uppercase tracking-tighter">Congratulations!</h2>
+              <p className="text-text-secondary dark:text-slate-400 font-medium leading-relaxed">
                 {rewardData ? 'You helped someone recover their item. The campus is safer because of you!' : 'The item has been successfully returned!'}
               </p>
 
@@ -687,31 +686,31 @@ const ItemDetails = () => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-3xl p-6 space-y-4 text-left"
+                  className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 border border-amber-200 dark:border-amber-800/50 rounded-3xl p-6 space-y-4 text-left transition-colors"
                 >
-                  <p className="text-center text-xs font-black uppercase tracking-widest text-amber-700">🏆 Rewards Earned</p>
+                  <p className="text-center text-xs font-black uppercase tracking-widest text-amber-700 dark:text-amber-500">🏆 Rewards Earned</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-text-secondary">⭐ Points Earned</span>
-                    <span className="text-lg font-black text-amber-600">+{rewardData.points_earned}</span>
+                    <span className="text-sm font-bold text-text-secondary dark:text-slate-400">⭐ Points Earned</span>
+                    <span className="text-lg font-black text-amber-600 dark:text-amber-400">+{rewardData.points_earned}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-text-secondary">🎖 Total Points</span>
+                    <span className="text-sm font-bold text-text-secondary dark:text-slate-400">🎖 Total Points</span>
                     <span className="text-lg font-black text-primary">{rewardData.total_points}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-text-secondary">🌟 Level</span>
-                    <span className="text-sm font-black text-emerald-600">{rewardData.level}</span>
+                    <span className="text-sm font-bold text-text-secondary dark:text-slate-400">🌟 Level</span>
+                    <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">{rewardData.level}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-text-secondary">📦 Items Returned</span>
-                    <span className="text-lg font-black text-text-primary">{rewardData.items_returned}</span>
+                    <span className="text-sm font-bold text-text-secondary dark:text-slate-400">📦 Items Returned</span>
+                    <span className="text-lg font-black text-text-primary dark:text-slate-100">{rewardData.items_returned}</span>
                   </div>
                   {rewardData.new_badges?.length > 0 && (
-                    <div className="pt-2 border-t border-amber-200">
-                      <p className="text-xs font-black uppercase text-amber-700 mb-2">🎖 New Badge{rewardData.new_badges.length > 1 ? 's' : ''} Unlocked!</p>
+                    <div className="pt-2 border-t border-amber-200 dark:border-amber-800/50">
+                      <p className="text-xs font-black uppercase text-amber-700 dark:text-amber-500 mb-2">🎖 New Badge{rewardData.new_badges.length > 1 ? 's' : ''} Unlocked!</p>
                       <div className="flex flex-wrap gap-2">
                         {rewardData.new_badges.map((b, i) => (
-                           <span key={i} className="text-xs font-black bg-amber-100 text-amber-700 px-3 py-1 rounded-xl border border-amber-200">{b}</span>
+                           <span key={i} className="text-xs font-black bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-3 py-1 rounded-xl border border-amber-200 dark:border-amber-800/50">{b}</span>
                         ))}
                       </div>
                     </div>

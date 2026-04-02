@@ -171,7 +171,7 @@ const TutorialModal = ({ isOpen, onClose, userId }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] pointer-events-auto"
+        className="absolute inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-[2px] pointer-events-auto"
         style={{
             clipPath: coords ? `polygon(
                 0% 0%, 
@@ -197,14 +197,14 @@ const TutorialModal = ({ isOpen, onClose, userId }) => {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
           style={getPopoverStyle()}
-          className="bg-white rounded-[32px] shadow-2xl pointer-events-auto border border-slate-100 overflow-hidden"
+          className="bg-white dark:bg-card rounded-[32px] shadow-2xl pointer-events-auto border border-slate-100 dark:border-slate-800 overflow-hidden transition-colors duration-300"
         >
           {/* Progress Bar */}
           <div className="absolute top-0 left-0 right-0 h-1.5 flex gap-0.5">
             {STEPS.map((_, idx) => (
               <div 
                 key={idx}
-                className={`flex-1 h-full transition-colors duration-500 ${idx <= currentStep ? `bg-gradient-to-r ${STEPS[idx].color}` : 'bg-slate-100'}`}
+                className={`flex-1 h-full transition-colors duration-500 ${idx <= currentStep ? `bg-gradient-to-r ${STEPS[idx].color}` : 'bg-slate-100 dark:bg-slate-800'}`}
               />
             ))}
           </div>
@@ -216,17 +216,17 @@ const TutorialModal = ({ isOpen, onClose, userId }) => {
               </div>
               <button 
                 onClick={handleComplete}
-                className="p-2 text-text-secondary hover:bg-slate-50 rounded-full transition-colors"
+                className="p-2 text-text-secondary dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-full transition-colors"
                 title="Skip tour"
               >
                 <X size={20} />
               </button>
             </div>
 
-            <h3 className="text-xl font-black text-text-primary mb-2">
+            <h3 className="text-xl font-black text-text-primary dark:text-slate-100 mb-2 transition-colors">
               {step.title}
             </h3>
-            <p className="text-text-secondary text-sm leading-relaxed mb-6">
+            <p className="text-text-secondary dark:text-slate-400 text-sm leading-relaxed mb-6 transition-colors">
               {step.description}
             </p>
 
@@ -234,8 +234,8 @@ const TutorialModal = ({ isOpen, onClose, userId }) => {
                 <button
                 onClick={handleBack}
                 disabled={currentStep === 0}
-                className={`flex items-center gap-1 font-bold text-xs transition-opacity ${
-                    currentStep === 0 ? 'opacity-0' : 'text-text-secondary hover:text-text-primary'
+                className={`flex items-center gap-1 font-bold text-xs transition-all ${
+                    currentStep === 0 ? 'opacity-0' : 'text-text-secondary dark:text-slate-400 hover:text-text-primary dark:hover:text-slate-200'
                 }`}
                 >
                 <ChevronLeft size={16} /> Previous
@@ -245,7 +245,7 @@ const TutorialModal = ({ isOpen, onClose, userId }) => {
                     {currentStep !== STEPS.length -1 && (
                         <button 
                             onClick={handleComplete}
-                            className="text-xs font-bold text-text-secondary hover:text-text-primary mr-2"
+                            className="text-xs font-bold text-text-secondary dark:text-slate-400 hover:text-text-primary dark:hover:text-slate-200 mr-2 transition-colors"
                         >
                             Skip
                         </button>
@@ -269,7 +269,7 @@ const TutorialModal = ({ isOpen, onClose, userId }) => {
             initial={{ opacity: 0, scale: 1.2 }}
             animate={{ opacity: 1, scale: 1 }}
             key={`ring-${currentStep}`}
-            className="absolute border-4 border-primary rounded-xl shadow-[0_0_0_9999px_rgba(15,23,42,0.5)] pointer-events-none"
+            className="absolute border-4 border-primary rounded-xl shadow-[0_0_0_9999px_rgba(15,23,42,0.7)] dark:shadow-[0_0_0_9999px_rgba(0,0,0,0.8)] pointer-events-none"
             style={{
                 top: coords.top - 8,
                 left: coords.left - 8,

@@ -97,12 +97,12 @@ const Settings = ({ darkMode, setDarkMode }) => {
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-12">
                 <div className="space-y-2">
                    <div className="flex items-center gap-4">
-                       <button onClick={() => navigate(-1)} className="p-3 bg-white border border-slate-100 rounded-2xl hover:bg-slate-50 transition-all shadow-sm">
-                           <ChevronLeft size={20} className="text-text-primary" />
+                       <button onClick={() => navigate(-1)} className="p-3 bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm">
+                           <ChevronLeft size={20} className="text-text-primary dark:text-slate-100" />
                        </button>
-                       <h1 className="text-4xl font-black text-text-primary uppercase tracking-tighter">System Config</h1>
+                       <h1 className="text-4xl font-black text-text-primary dark:text-slate-100 uppercase tracking-tighter">System Config</h1>
                    </div>
-                   <p className="text-text-secondary font-medium ml-16 flex items-center gap-2 uppercase text-[10px] tracking-widest">
+                   <p className="text-text-secondary dark:text-slate-400 font-medium ml-16 flex items-center gap-2 uppercase text-[10px] tracking-widest">
                        {saving ? <><Sparkles size={14} className="text-primary animate-pulse" /> Synchronizing changes...</> : <><ShieldCheck size={14} className="text-primary" /> Hardware & Identity encryption active.</>}
                    </p>
                 </div>
@@ -111,8 +111,8 @@ const Settings = ({ darkMode, setDarkMode }) => {
             <div className="space-y-10">
                 {/* Visuals */}
                 <section className="space-y-4">
-                    <h3 className="text-[10px] font-black uppercase tracking-[3px] text-text-secondary pl-2">Atmospheric Control</h3>
-                    <PremiumCard className="p-2 space-y-1 divide-y divide-slate-50">
+                    <h3 className="text-[10px] font-black uppercase tracking-[3px] text-text-secondary dark:text-slate-500 pl-2">Atmospheric Control</h3>
+                    <PremiumCard className="p-2 space-y-1 divide-y divide-slate-50 dark:divide-slate-800">
                         <SettingRow 
                             icon={<Moon />} 
                             title="Luminance Mode" 
@@ -126,8 +126,8 @@ const Settings = ({ darkMode, setDarkMode }) => {
 
                 {/* Telemetry */}
                 <section className="space-y-4">
-                    <h3 className="text-[10px] font-black uppercase tracking-[3px] text-text-secondary pl-2">Neural Link (Notifications)</h3>
-                    <PremiumCard className="p-2 space-y-1 divide-y divide-slate-50">
+                    <h3 className="text-[10px] font-black uppercase tracking-[3px] text-text-secondary dark:text-slate-500 pl-2">Neural Link (Notifications)</h3>
+                    <PremiumCard className="p-2 space-y-1 divide-y divide-slate-50 dark:divide-slate-800">
                         <SettingRow 
                             icon={<Bell />} 
                             title="Signal Alerts" 
@@ -158,31 +158,31 @@ const Settings = ({ darkMode, setDarkMode }) => {
 
                 {/* System Info */}
                 <section className="space-y-4">
-                    <h3 className="text-[10px] font-black uppercase tracking-[3px] text-text-secondary pl-2">Hardware Info</h3>
-                    <PremiumCard className="p-2 space-y-1 divide-y divide-slate-50">
+                    <h3 className="text-[10px] font-black uppercase tracking-[3px] text-text-secondary dark:text-slate-500 pl-2">Hardware Info</h3>
+                    <PremiumCard className="p-2 space-y-1 divide-y divide-slate-50 dark:divide-slate-800">
                         <div className="flex items-center justify-between p-6">
                             <div className="flex items-center gap-4">
-                               <div className="w-12 h-12 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center">
+                               <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 rounded-2xl flex items-center justify-center">
                                   <Info size={20} />
                                </div>
                                <div>
-                                  <p className="text-sm font-black text-text-primary uppercase tracking-tight">Mainframe Version</p>
-                                  <p className="text-[10px] font-medium text-text-secondary uppercase">Build CT-V1.0.4-LATEST</p>
+                                  <p className="text-sm font-black text-text-primary dark:text-slate-100 uppercase tracking-tight">Mainframe Version</p>
+                                  <p className="text-[10px] font-medium text-text-secondary dark:text-slate-400 uppercase">Build CT-V1.0.4-LATEST</p>
                                </div>
                             </div>
-                            <span className="text-[10px] font-black text-primary px-3 py-1 bg-primary/5 rounded-full">v1.0.0</span>
+                            <span className="text-[10px] font-black text-primary px-3 py-1 bg-primary/5 dark:bg-primary/10 rounded-full">v1.0.0</span>
                         </div>
-                        <div className="flex items-center justify-between p-6">
+                        <div className="flex items-center justify-between p-6 transition-colors">
                             <div className="flex items-center gap-4">
-                               <div className="w-12 h-12 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center">
+                               <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 rounded-2xl flex items-center justify-center">
                                   <Zap size={20} />
                                </div>
                                <div>
-                                  <p className="text-sm font-black text-text-primary uppercase tracking-tight">System Identity</p>
-                                  <p className="text-[10px] font-medium text-text-secondary uppercase">UniTrace Protocol</p>
-                               </div>
+                                  <p className="text-sm font-black text-text-primary dark:text-slate-100 uppercase tracking-tight">System Identity</p>
+                                  <p className="text-[10px] font-medium text-text-secondary dark:text-slate-400 uppercase">UniTrace Protocol</p>
+                                </div>
                             </div>
-                            <span className="text-[10px] font-bold text-text-secondary uppercase">Active</span>
+                            <span className="text-[10px] font-bold text-text-secondary dark:text-slate-500 uppercase">Active</span>
                         </div>
                     </PremiumCard>
                 </section>
@@ -216,20 +216,20 @@ const Settings = ({ darkMode, setDarkMode }) => {
 const SettingRow = ({ icon, title, subtitle, value, onToggle, disabled, color }) => (
     <div className={`p-6 flex items-center justify-between transition-opacity ${disabled ? 'opacity-30 cursor-not-allowed' : 'opacity-100'}`}>
         <div className="flex items-center gap-4">
-            <div className={`w-12 h-12 ${color} bg-current bg-opacity-5 rounded-2xl flex items-center justify-center`}>
+            <div className={`w-12 h-12 ${color} bg-current bg-opacity-5 dark:bg-opacity-10 rounded-2xl flex items-center justify-center`}>
                 {React.cloneElement(icon, { size: 20 })}
             </div>
             <div>
-                <p className="text-sm font-black text-text-primary uppercase tracking-tight">{title}</p>
-                <p className="text-[10px] font-medium text-text-secondary">{subtitle}</p>
+                <p className="text-sm font-black text-text-primary dark:text-slate-100 uppercase tracking-tight">{title}</p>
+                <p className="text-[10px] font-medium text-text-secondary dark:text-slate-400">{subtitle}</p>
             </div>
         </div>
         <button 
           onClick={onToggle}
           disabled={disabled}
-          className={`relative w-14 h-8 rounded-full transition-all duration-300 ${value ? 'bg-primary shadow-lg shadow-primary/20' : 'bg-slate-200'}`}
+          className={`relative w-14 h-8 rounded-full transition-all duration-300 ${value ? 'bg-primary shadow-lg shadow-primary/20' : 'bg-slate-200 dark:bg-slate-800'}`}
         >
-            <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-300 ${value ? 'translate-x-6' : 'translate-x-0'}`} />
+            <div className={`absolute top-1 left-1 w-6 h-6 bg-white dark:bg-slate-100 rounded-full shadow-md transition-transform duration-300 ${value ? 'translate-x-6' : 'translate-x-0'}`} />
         </button>
     </div>
 );

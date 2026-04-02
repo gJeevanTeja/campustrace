@@ -54,8 +54,8 @@ const BrowseItems = () => {
         <div className="relative z-10">
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h2 className="text-2xl sm:text-3xl font-extrabold text-text-primary">Discover Items</h2>
-                    <p className="text-text-secondary text-[11px] sm:text-sm">Browse and filter lost/found reports.</p>
+                    <h2 className="text-2xl sm:text-3xl font-extrabold text-text-primary dark:text-slate-100 transition-colors">Discover Items</h2>
+                    <p className="text-text-secondary dark:text-slate-400 text-[11px] sm:text-sm transition-colors">Browse and filter lost/found reports.</p>
                 </div>
                 <button 
                   onClick={() => navigate('/report')}
@@ -70,24 +70,24 @@ const BrowseItems = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
                 {/* Search */}
                 <div className="lg:col-span-5 relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" size={16} />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary dark:text-slate-500" size={16} />
                     <input
                       value={search}
                       onChange={e => setFilter('search', e.target.value)}
                       placeholder="Search items..."
-                      className="w-full bg-white/50 backdrop-blur-sm border border-border rounded-xl sm:rounded-2xl pl-11 pr-4 py-3 sm:py-3.5 outline-none focus:ring-4 focus:ring-primary/10 transition-all shadow-sm text-sm"
+                      className="w-full bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-border dark:border-slate-800 rounded-xl sm:rounded-2xl pl-11 pr-4 py-3 sm:py-3.5 outline-none focus:ring-4 focus:ring-primary/10 transition-all shadow-sm text-sm dark:text-slate-100 placeholder:text-slate-500"
                     />
                 </div>
 
                 {/* Type & Category Desktop Pills */}
                 <div className="lg:col-span-7 flex flex-wrap gap-2 items-center">
-                    <div className="h-11 sm:h-12 bg-white/50 backdrop-blur-sm border border-border p-1 rounded-xl sm:rounded-2xl flex gap-1 w-full sm:w-auto">
+                    <div className="h-11 sm:h-12 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-border dark:border-slate-800 p-1 rounded-xl sm:rounded-2xl flex gap-1 w-full sm:w-auto transition-colors">
                         {['all', 'lost', 'found'].map(t => (
                             <button 
                               key={t} 
                               onClick={() => setFilter('type', t)} 
                               className={`flex-1 sm:flex-none px-4 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-xs uppercase tracking-tighter transition-all ${
-                                type === t ? 'bg-primary text-white shadow-md' : 'text-text-secondary hover:bg-gray-100'
+                                type === t ? 'bg-primary text-white shadow-md' : 'text-text-secondary dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'
                               }`}
                             >
                                 {t}
@@ -99,7 +99,7 @@ const BrowseItems = () => {
                         <button 
                             onClick={() => setFilter('category', 'all')}
                             className={`whitespace-nowrap px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-tighter border transition-all ${
-                                category === 'all' ? 'bg-slate-800 text-white border-slate-800 shadow-md' : 'bg-white text-text-secondary border-border hover:border-primary/30'
+                                category === 'all' ? 'bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 border-slate-800 dark:border-slate-100 shadow-md' : 'bg-white dark:bg-card text-text-secondary dark:text-slate-400 border-border dark:border-slate-800 hover:border-primary/30'
                             }`}
                         >
                             All Categories
@@ -109,7 +109,7 @@ const BrowseItems = () => {
                                 key={c} 
                                 onClick={() => setFilter('category', c)}
                                 className={`whitespace-nowrap px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-tighter border transition-all ${
-                                    category === c ? 'bg-slate-800 text-white border-slate-800 shadow-md' : 'bg-white text-text-secondary border-border hover:border-primary/30'
+                                    category === c ? 'bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 border-slate-800 dark:border-slate-100 shadow-md' : 'bg-white dark:bg-card text-text-secondary dark:text-slate-400 border-border dark:border-slate-800 hover:border-primary/30'
                                 }`}
                             >
                                 {c.replace('_', ' ')}
@@ -123,7 +123,7 @@ const BrowseItems = () => {
 
       {/* Results Grid */}
       <div className="space-y-6">
-        <div className="flex items-center justify-between text-sm text-text-secondary px-2">
+        <div className="flex items-center justify-between text-sm text-text-secondary dark:text-slate-500 px-2 transition-colors">
             <div className="flex items-center gap-2">
                 <Filter size={14} className="text-secondary" />
                 <span className="font-bold">{items.length} items found</span>
@@ -148,10 +148,10 @@ const BrowseItems = () => {
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center py-32 bg-gray-50/50 rounded-3xl border border-dashed border-gray-300"
+            className="flex flex-col items-center justify-center py-32 bg-gray-50/50 dark:bg-slate-900/50 rounded-3xl border border-dashed border-gray-300 dark:border-slate-700 transition-colors"
           >
             <div className="relative mb-6">
-                <Search size={64} className="text-gray-300" />
+                <Search size={64} className="text-gray-300 dark:text-slate-700" />
                 <motion.div 
                    animate={{ x: [0, 5, -5, 0], y: [0, -5, 5, 0] }}
                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -160,8 +160,8 @@ const BrowseItems = () => {
                     🔍
                 </motion.div>
             </div>
-            <h3 className="text-xl font-bold text-text-primary mb-2">No matching items found</h3>
-            <p className="text-text-secondary mb-8 max-w-xs text-center">We couldn't find any items matching your current filters. Try adjusting your search or category.</p>
+            <h3 className="text-xl font-bold text-text-primary dark:text-slate-100 mb-2">No matching items found</h3>
+            <p className="text-text-secondary dark:text-slate-400 mb-8 max-w-xs text-center">We couldn't find any items matching your current filters. Try adjusting your search or category.</p>
             <button 
               onClick={() => {
                   setSearchParams({});

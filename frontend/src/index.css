@@ -21,10 +21,23 @@
   --bottom-nav-height: 70px;
 }
 
+.dark {
+  --bg: #0b0f1a;
+  --card: #111827;
+  --border: #1f2937;
+  --text-primary: #f9fafb;
+  --text-secondary: #9ca3af;
+  --shadow-premium: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+}
+
 @layer base {
+  * {
+    @apply transition-colors duration-300;
+  }
+  
   body {
-    @apply bg-background text-text-primary antialiased;
-    font-family: "Times New Roman", Times, serif;
+    @apply bg-background text-text-primary antialiased transition-colors duration-300;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     line-height: 1.5;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
@@ -61,13 +74,13 @@
   }
 
   .ct-input {
-    @apply border-border bg-white rounded-xl py-3 px-4 w-full text-[15px] outline-none
-           focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-200;
+    @apply border-border dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl py-3 px-4 w-full text-[15px] outline-none
+           focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-200 dark:text-slate-100;
   }
 
   /* Glassmorphism */
   .glass-effect {
-    @apply backdrop-blur-md bg-white/70 border border-white/20 shadow-xl;
+    @apply backdrop-blur-md bg-white/70 dark:bg-slate-900/70 border border-white/20 dark:border-slate-800 shadow-xl;
   }
 
   .glass-card {
@@ -128,10 +141,10 @@
   @apply bg-transparent;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-200 rounded-full transition-colors;
+  @apply bg-slate-200 dark:bg-slate-800 rounded-full transition-colors;
 }
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-300;
+  @apply bg-slate-300 dark:bg-slate-700;
 }
 
 /* No scrollbar class */

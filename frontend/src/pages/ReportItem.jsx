@@ -257,9 +257,9 @@ const ReportItem = () => {
         <div className="flex items-center gap-4">
           <button 
             onClick={() => step > 1 ? prevStep() : navigate(-1)}
-            className="p-2 bg-white rounded-xl border border-border shadow-sm hover:bg-gray-50 transition-colors"
+            className="p-2 bg-white dark:bg-card rounded-xl border border-border dark:border-slate-800 shadow-sm hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
           >
-            <ChevronLeft size={20} />
+            <ChevronLeft size={20} className="dark:text-slate-100" />
           </button>
           <div>
             <h2 className="text-2xl font-extrabold text-text-primary">
@@ -270,16 +270,16 @@ const ReportItem = () => {
         </div>
         
         {/* Toggle */}
-        <div className="hidden sm:flex bg-white p-1 rounded-2xl border border-border shadow-sm">
+        <div className="hidden sm:flex bg-white dark:bg-card p-1 rounded-2xl border border-border dark:border-slate-800 shadow-sm transition-colors">
            <button 
              onClick={() => setForm(prev => ({ ...prev, type: 'lost' }))}
-             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${isLost ? 'bg-danger text-white shadow-md' : 'text-text-secondary hover:bg-gray-50'}`}
+             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${isLost ? 'bg-danger text-white shadow-md' : 'text-text-secondary dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
            >
              LOST
            </button>
            <button 
              onClick={() => setForm(prev => ({ ...prev, type: 'found' }))}
-             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${!isLost ? 'bg-success text-white shadow-md' : 'text-text-secondary hover:bg-gray-50'}`}
+             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${!isLost ? 'bg-success text-white shadow-md' : 'text-text-secondary dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
            >
              FOUND
            </button>
@@ -287,7 +287,7 @@ const ReportItem = () => {
       </div>
 
       {/* Progress Bar */}
-      <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+      <div className="h-2 w-full bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden transition-colors">
         <motion.div 
           initial={{ width: 0 }}
           animate={{ width: `${(step / 3) * 100}%` }}
@@ -328,7 +328,7 @@ const ReportItem = () => {
                     value={form.title} 
                     onChange={handleChange}
                     placeholder="What did you lose/find? (e.g. Blue Samsung Galaxy)"
-                    className="w-full bg-gray-50 border border-border rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium"
+                      className="w-full bg-gray-50 dark:bg-slate-900/50 border border-border dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium dark:text-slate-100 placeholder:text-slate-500"
                   />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <select 
@@ -347,12 +347,11 @@ const ReportItem = () => {
                       value={form.contact_phone} 
                       onChange={handleChange}
                       placeholder="Your Contact Phone (Optional)"
-                      className="w-full bg-gray-50 border border-border rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium"
+                       className="w-full bg-gray-50 dark:bg-slate-900/50 border border-border dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium dark:text-slate-100 placeholder:text-slate-500"
                       inputMode="numeric"
                     />
-                  </div>
-                  {isLost && (
-                    <div className="bg-primary/5 p-6 rounded-2xl border border-primary/10 space-y-2">
+                         {isLost && (
+                    <div className="bg-primary/5 dark:bg-primary/10 p-6 rounded-2xl border border-primary/10 dark:border-primary/20 space-y-2">
                        <label className="text-sm font-black text-primary uppercase tracking-wider flex items-center gap-2">
                          <Sparkles size={16} /> Product Market Price (₹)
                        </label>
@@ -362,11 +361,12 @@ const ReportItem = () => {
                          value={form.product_price} 
                          onChange={handleChange}
                          placeholder=""
-                         className="w-full bg-white border border-primary/20 rounded-xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-black text-lg text-primary"
+                         className="w-full bg-white dark:bg-slate-900 border border-primary/20 rounded-xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-black text-lg text-primary"
                        />
-                       <p className="text-[10px] text-primary/60 font-bold uppercase">This helps us calculate the fair reward and platform commission.</p>
+                       <p className="text-[10px] text-primary/60 dark:text-primary/40 font-bold uppercase">This helps us calculate the fair reward and platform commission.</p>
                     </div>
                   )}
+                  </div>
                 </div>
 
                 <div className="space-y-4">
@@ -377,7 +377,7 @@ const ReportItem = () => {
                      onChange={handleChange}
                      rows={4}
                      placeholder="Provide details about the item's condition, unique features, or surroundings..."
-                     className="w-full bg-gray-50 border border-border rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium resize-none"
+                     className="w-full bg-gray-50 dark:bg-slate-900/50 border border-border dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium resize-none dark:text-slate-100 placeholder:text-slate-500"
                    />
                 </div>
               </PremiumCard>
@@ -407,7 +407,7 @@ const ReportItem = () => {
                         value={form.incident_date} 
                         onChange={handleChange}
                         max={new Date().toISOString().split('T')[0]}
-                        className="w-full bg-gray-50 border border-border rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium"
+                         className="w-full bg-gray-50 dark:bg-slate-900/50 border border-border dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium dark:text-slate-100 placeholder:text-slate-500"
                       />
                    </div>
                    <div className="space-y-4">
@@ -420,20 +420,17 @@ const ReportItem = () => {
                         name="incident_time" 
                         value={form.incident_time} 
                         onChange={handleChange}
-                        className="w-full bg-gray-50 border border-border rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium"
+                         className="w-full bg-gray-50 dark:bg-slate-900/50 border border-border dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium dark:text-slate-100 placeholder:text-slate-500"
                       />
                    </div>
                 </div>
                  <div className="space-y-4">
-                   <label className="text-sm font-bold text-text-primary uppercase tracking-wider flex items-center gap-2">
-                     <MapPin size={16} className="text-primary" />
-                     Select Verified Campus Location
-                   </label>
+                   <label className="text-sm font-bold text-text-primary uppercase tracking-wider">Select Verified Campus Location</label>
                    <select 
                      name="block" 
                      value={form.block} 
                      onChange={handleChange}
-                     className="w-full bg-gray-50 border border-border rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium appearance-none"
+                     className="w-full bg-gray-50 dark:bg-slate-900/50 border border-border dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium appearance-none dark:text-slate-100"
                    >
                      <option value="">Choose a verified place...</option>
                      {Object.entries(GROUPED_LOCATIONS).map(([group, locations]) => (
@@ -447,8 +444,8 @@ const ReportItem = () => {
                 </div>
 
                 <div className="space-y-4">
-                   <label className="text-sm font-bold text-text-primary uppercase tracking-wider">Pinpoint Exact Location</label>
-                   <div className="rounded-3xl overflow-hidden border border-border h-[300px] shadow-inner relative">
+                   <label className="text-sm font-bold text-text-primary uppercase tracking-wider dark:text-slate-300">Pinpoint Exact Location</label>
+                   <div className="rounded-3xl overflow-hidden border border-border dark:border-slate-800 h-[300px] shadow-inner relative transition-colors">
                       <CampusMap
                         onLocationSelect={handleLocationSelect}
                         selectedLat={form.latitude}
@@ -459,9 +456,9 @@ const ReportItem = () => {
                 </div>
 
                 {form.location_name && (
-                  <div className="bg-gray-50 p-4 rounded-2xl border border-border">
-                    <p className="text-[10px] font-black text-text-secondary uppercase tracking-tighter mb-1">Identified Address</p>
-                    <p className="text-sm font-bold text-text-primary">{form.location_name}</p>
+                  <div className="bg-gray-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-border dark:border-slate-700 transition-colors">
+                    <p className="text-[10px] font-black text-text-secondary dark:text-slate-400 uppercase tracking-tighter mb-1">Identified Address</p>
+                    <p className="text-sm font-bold text-text-primary dark:text-slate-100">{form.location_name}</p>
                   </div>
                 )}
 
@@ -472,7 +469,7 @@ const ReportItem = () => {
                      value={form.location_detail} 
                      onChange={handleChange}
                      placeholder="e.g. Near the main entrance, 2nd floor, under the stairs..."
-                     className="w-full bg-gray-50 border border-border rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium"
+                     className="w-full bg-gray-50 dark:bg-slate-900/50 border border-border dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium dark:text-slate-100 placeholder:text-slate-500"
                    />
                 </div>
               </PremiumCard>
@@ -480,7 +477,7 @@ const ReportItem = () => {
               <div className="flex gap-4">
                 <button 
                   onClick={prevStep}
-                  className="w-1/3 py-5 rounded-3xl font-bold bg-white border border-border text-text-secondary hover:bg-gray-50 active:scale-95 transition-all"
+                  className="w-1/3 py-5 rounded-3xl font-bold bg-white dark:bg-slate-800 border border-border dark:border-slate-700 text-text-secondary dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700 active:scale-95 transition-all"
                 >
                   BACK
                 </button>
@@ -520,8 +517,8 @@ const ReportItem = () => {
                         </div>
                       ))}
                       {photoPreviews.length < 5 && (
-                        <label className="aspect-square border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all gap-2 text-text-secondary group">
-                           <Camera size={24} className="group-hover:scale-110 transition-transform text-gray-400 group-hover:text-primary" />
+                        <label className="aspect-square border-2 border-dashed border-border dark:border-slate-700 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 dark:hover:bg-primary/10 transition-all gap-2 text-text-secondary dark:text-slate-400 group">
+                           <Camera size={24} className="group-hover:scale-110 transition-transform text-gray-400 dark:text-slate-500 group-hover:text-primary" />
                            <span className="text-[10px] font-black group-hover:text-primary">ADD PHOTO</span>
                            <input type="file" accept="image/*" multiple onChange={handlePhotoChange} className="hidden" />
                         </label>
@@ -530,18 +527,18 @@ const ReportItem = () => {
                 </div>
 
                 {!isLost && isElectronic && (
-                   <div className="pt-8 border-t border-border space-y-6">
-                      <div className="bg-primary/5 p-6 rounded-3xl border border-primary/10">
+                   <div className="pt-8 border-t border-border dark:border-slate-700 space-y-6">
+                      <div className="bg-primary/5 dark:bg-primary/10 p-6 rounded-3xl border border-primary/10 dark:border-primary/20">
                          <div className="flex items-center gap-3 mb-4">
                             <div className="p-3 bg-primary text-white rounded-2xl">
                                <Brain size={24} />
                             </div>
                             <div>
-                               <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
+                               <h3 className="text-lg font-bold text-text-primary dark:text-slate-100 flex items-center gap-2">
                                  AI Verification Engine
                                  <Sparkles size={16} className="text-yellow-500" />
                                </h3>
-                               <p className="text-sm text-text-secondary">We'll generate security questions based on your photo.</p>
+                               <p className="text-sm text-text-secondary dark:text-slate-400">We'll generate security questions based on your photo.</p>
                             </div>
                          </div>
 
@@ -551,7 +548,7 @@ const ReportItem = () => {
                              onClick={generateQuestions}
                              disabled={isGeneratingQuestions || photos.length === 0}
                              className={`w-full py-4 rounded-2xl font-black transition-all flex items-center justify-center gap-2 ${
-                               photos.length === 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-primary text-white hover:shadow-lg hover:shadow-primary/30 active:scale-95'
+                                photos.length === 0 ? 'bg-gray-200 dark:bg-slate-800 text-gray-400 dark:text-slate-600 cursor-not-allowed' : 'bg-primary text-white hover:shadow-lg hover:shadow-primary/30 active:scale-95'
                              }`}
                            >
                              {isGeneratingQuestions ? (
@@ -564,12 +561,12 @@ const ReportItem = () => {
                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4 mt-6">
                               {(form.verification_questions || []).map((q, i) => (
                                 <div key={i} className="space-y-2">
-                                   <p className="text-sm font-bold text-text-primary">{i+1}. {q}</p>
+                                   <p className="text-sm font-bold text-text-primary dark:text-slate-200">{i+1}. {q}</p>
                                    <input 
                                      placeholder="Correct security answer..."
-                                     value={form.verification_answers[`Q${i+1}`]?.answer || ''}
+                                     value={form.verification_answers[`Q${i + 1}`]?.answer || ''}
                                      onChange={(e) => handleAnswerChange(i, e.target.value)}
-                                     className="w-full bg-white border border-border rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 transition-all text-sm font-medium"
+                                     className="w-full bg-white dark:bg-slate-900 border border-border dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 transition-all text-sm font-medium dark:text-slate-100 placeholder:text-slate-500"
                                    />
                                 </div>
                               ))}

@@ -131,20 +131,20 @@ const Notifications = () => {
        {/* Header */}
        <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pt-8">
           <div className="space-y-1">
-             <h1 className="text-4xl font-black text-text-primary uppercase tracking-tighter flex items-center gap-3">
+             <h1 className="text-4xl font-black text-text-primary dark:text-slate-100 uppercase tracking-tighter flex items-center gap-3">
                 Inbox 
-                {unreadCount > 0 && <span className="bg-primary text-white text-[10px] h-6 w-6 flex items-center justify-center rounded-full border-2 border-white shadow-xl">{unreadCount}</span>}
+                {unreadCount > 0 && <span className="bg-primary text-white text-[10px] h-6 w-6 flex items-center justify-center rounded-full border-2 border-white dark:border-slate-900 shadow-xl">{unreadCount}</span>}
              </h1>
-             <p className="text-text-secondary font-medium uppercase text-[10px] tracking-widest flex items-center gap-2">
+             <p className="text-text-secondary dark:text-slate-400 font-medium uppercase text-[10px] tracking-widest flex items-center gap-2">
                 <ShieldCheck size={14} className="text-success" />
                 Real-time security alerts & updates
              </p>
           </div>
           <div className="flex items-center gap-3">
-             <button onClick={handleMarkAllRead} className="px-5 py-3 bg-white border border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary hover:text-white transition-all shadow-sm">
+             <button onClick={handleMarkAllRead} className="px-5 py-3 bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-2xl text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary hover:text-white transition-all shadow-sm">
                 Mark all read
              </button>
-             <button onClick={handleClearAll} className="p-3 bg-white border border-slate-100 rounded-2xl text-danger hover:bg-danger/10 transition-all shadow-sm">
+             <button onClick={handleClearAll} className="p-3 bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-2xl text-danger hover:bg-danger/10 transition-all shadow-sm">
                 <Trash2 size={20} />
              </button>
           </div>
@@ -156,7 +156,7 @@ const Notifications = () => {
              <button 
                key={tab.id}
                onClick={() => setFilter(tab.id)}
-               className={`flex-shrink-0 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === tab.id ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'bg-white text-text-secondary border border-slate-100 hover:bg-slate-50'}`}
+               className={`flex-shrink-0 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === tab.id ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'bg-white dark:bg-card text-text-secondary dark:text-slate-400 border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
              >
                 {tab.label}
              </button>
@@ -166,16 +166,16 @@ const Notifications = () => {
        {/* Notifications List */}
        <div className="space-y-4">
           <AnimatePresence initial={false}>
-            {displayed.length === 0 ? (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-20 text-center space-y-6">
-                  <div className="w-24 h-24 bg-slate-100 rounded-[32px] flex items-center justify-center mx-auto text-slate-300">
-                     <Inbox size={48} />
-                  </div>
-                  <div className="space-y-2">
-                     <h3 className="text-xl font-black text-text-primary uppercase tracking-tighter">Pure Silence</h3>
-                     <p className="text-sm font-medium text-text-secondary">Your inbox is empty. We'll alert you of any activity.</p>
-                  </div>
-              </motion.div>
+             {displayed.length === 0 ? (
+               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-20 text-center space-y-6">
+                   <div className="w-24 h-24 bg-slate-100 dark:bg-slate-800/50 rounded-[32px] flex items-center justify-center mx-auto text-slate-300 dark:text-slate-700">
+                      <Inbox size={48} />
+                   </div>
+                   <div className="space-y-2">
+                      <h3 className="text-xl font-black text-text-primary dark:text-slate-100 uppercase tracking-tighter">Pure Silence</h3>
+                      <p className="text-sm font-medium text-text-secondary dark:text-slate-400">Your inbox is empty. We'll alert you of any activity.</p>
+                   </div>
+               </motion.div>
             ) : (
               displayed.map((notif, idx) => {
                 const cfg = TYPE_CONFIG[notif.notification_type] || TYPE_CONFIG.default;
@@ -186,26 +186,26 @@ const Notifications = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.05 }}
                     onClick={() => handleTap(notif)}
-                    className={`relative p-6 rounded-[32px] border transition-all cursor-pointer group hover:shadow-2xl hover:scale-[1.01] active:scale-[0.99] ${notif.is_read ? 'bg-white border-slate-100' : 'bg-white border-primary/20 shadow-xl shadow-primary/5'}`}
+                    className={`relative p-6 rounded-[32px] border transition-all cursor-pointer group hover:shadow-2xl hover:scale-[1.01] active:scale-[0.99] ${notif.is_read ? 'bg-white dark:bg-card border-slate-100 dark:border-slate-800' : 'bg-white dark:bg-slate-900/50 border-primary/20 dark:border-primary/40 shadow-xl shadow-primary/5 dark:shadow-primary/20'}`}
                   >
                      <div className="flex gap-6 items-start">
-                        <div className={`w-14 h-14 rounded-2xl flex-shrink-0 flex items-center justify-center text-2xl shadow-sm ${cfg.bg} ${cfg.color}`}>
+                        <div className={`w-14 h-14 rounded-2xl flex-shrink-0 flex items-center justify-center text-2xl shadow-sm ${cfg.bg} ${cfg.color} dark:bg-opacity-20`}>
                            <cfg.icon size={28} />
                         </div>
                         <div className="flex-1 space-y-2">
                            <div className="flex items-center justify-between">
                               <span className={`text-[9px] font-black uppercase tracking-[2px] ${cfg.color} opacity-80`}>{cfg.label}</span>
-                              <span className="text-[10px] font-bold text-text-secondary flex items-center gap-1">
+                              <span className="text-[10px] font-bold text-text-secondary dark:text-slate-500 flex items-center gap-1">
                                  <Clock size={10} /> {new Date(notif.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </span>
                            </div>
-                           <h4 className={`text-base font-bold leading-relaxed text-text-primary ${!notif.is_read ? 'pr-8' : ''}`}>
+                           <h4 className={`text-base font-bold leading-relaxed text-text-primary dark:text-slate-100 ${!notif.is_read ? 'pr-8' : ''}`}>
                               {notif.message}
                            </h4>
                            <div className="flex items-center justify-between pt-2">
                               <div className="flex items-center gap-2">
                                  {notif.is_read ? (
-                                    <span className="text-[10px] font-black text-slate-300 uppercase">Read</span>
+                                    <span className="text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase">Read</span>
                                  ) : (
                                     <span className="flex items-center gap-1.5 text-[10px] font-black text-primary uppercase">
                                        <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
@@ -214,7 +214,7 @@ const Notifications = () => {
                                  )}
                               </div>
                               <div className="flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                 <button onClick={(e) => handleDelete(notif.id, e)} className="p-2 text-text-secondary hover:text-danger transition-colors">
+                                 <button onClick={(e) => handleDelete(notif.id, e)} className="p-2 text-text-secondary dark:text-slate-500 hover:text-danger transition-colors">
                                     <Trash2 size={16} />
                                  </button>
                                  <ChevronRight size={16} className="text-primary" />
@@ -223,7 +223,7 @@ const Notifications = () => {
                         </div>
                      </div>
                      {!notif.is_read && (
-                        <div className="absolute top-6 right-6 w-3 h-3 bg-primary rounded-full border-2 border-white shadow-lg" />
+                        <div className="absolute top-6 right-6 w-3 h-3 bg-primary rounded-full border-2 border-white dark:border-slate-900 shadow-lg" />
                      )}
                   </motion.div>
                 );

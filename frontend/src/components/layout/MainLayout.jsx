@@ -24,6 +24,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { useAuth } from '../../context/AuthContext';
+import ThemeToggle from '../ui/ThemeToggle';
 
 const mainNavigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -58,12 +59,12 @@ const MainLayout = ({ children }) => {
   const closeMobileSidebar = () => setMobileSidebarOpen(false);
 
   return (
-    <div className="flex min-h-screen bg-background font-sans">
+    <div className="flex min-h-screen bg-background dark:bg-[#0b0f1a] font-sans transition-colors duration-300">
       {/* Desktop Sidebar (visible for >= 1024px) */}
       <motion.aside 
         initial={false}
         animate={{ width: isSidebarCollapsed ? '80px' : '260px' }}
-        className="hidden lg:flex flex-col fixed inset-y-0 left-0 glass-effect border-r border-border/50 z-50 overflow-hidden"
+        className="hidden lg:flex flex-col fixed inset-y-0 left-0 glass-effect dark:bg-card/80 border-r border-border/50 dark:border-slate-800 z-50 overflow-hidden"
       >
         <div className="p-6 flex items-center justify-between">
           <AnimatePresence mode="wait">
@@ -80,7 +81,7 @@ const MainLayout = ({ children }) => {
           </AnimatePresence>
           <button 
             onClick={() => setSidebarCollapsed(!isSidebarCollapsed)}
-            className="p-1.5 rounded-lg bg-primary/5 text-primary hover:bg-primary/10 transition-colors"
+            className="p-1.5 rounded-lg bg-primary/5 dark:bg-primary/10 text-primary hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors"
           >
             {isSidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
           </button>
@@ -89,7 +90,7 @@ const MainLayout = ({ children }) => {
         <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto custom-scrollbar">
           <div className="mb-4">
             {!isSidebarCollapsed && (
-              <p className="px-3 mb-2 text-[10px] font-bold text-text-secondary uppercase tracking-[2px] opacity-50">Menu</p>
+              <p className="px-3 mb-2 text-[10px] font-bold text-text-secondary dark:text-slate-500 uppercase tracking-[2px] opacity-70">Menu</p>
             )}
             {mainNavigation.map((item) => {
               const isActive = location.pathname === item.href;
@@ -99,12 +100,18 @@ const MainLayout = ({ children }) => {
                   to={item.href}
                   id={`tour-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
                   className={({ isActive }) => `
-                    flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group
+                    flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative
                     ${isActive 
-                      ? 'bg-primary text-white shadow-lg shadow-primary/30' 
-                      : 'text-text-secondary hover:bg-primary/5 hover:text-primary'}
+                      ? 'bg-primary text-white shadow-lg shadow-primary/30 dark:shadow-primary/10' 
+                      : 'text-text-secondary dark:text-slate-400 hover:bg-primary/5 dark:hover:bg-primary/10 hover:text-primary dark:hover:text-primary-light'}
                   `}
                 >
+                  {isActive && (
+                    <motion.div 
+                      layoutId="activeGlow"
+                      className="absolute inset-0 bg-primary/20 blur-md rounded-xl -z-10"
+                    />
+                  )}
                   <item.icon size={22} className={isActive ? 'text-white' : 'group-hover:scale-110 transition-transform'} />
                   {!isSidebarCollapsed && (
                     <motion.span
@@ -121,9 +128,9 @@ const MainLayout = ({ children }) => {
           </div>
 
           {anyAdmin && (
-            <div className="pt-4 border-t border-border/50">
+            <div className="pt-4 border-t border-border/50 dark:border-slate-800">
               {!isSidebarCollapsed && (
-                <p className="px-3 mb-2 text-[10px] font-bold text-text-secondary uppercase tracking-[2px] opacity-50">Admin Panel</p>
+                <p className="px-3 mb-2 text-[10px] font-bold text-text-secondary dark:text-slate-500 uppercase tracking-[2px] opacity-70">Admin Panel</p>
               )}
               {adminNavigation.map((item) => {
                 const showItem = item.role === 'any' || 
@@ -138,12 +145,18 @@ const MainLayout = ({ children }) => {
                     key={item.name}
                     to={item.href}
                     className={({ isActive }) => `
-                      flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group
+                      flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative
                       ${isActive 
-                        ? 'bg-primary text-white shadow-lg shadow-primary/30' 
-                        : 'text-text-secondary hover:bg-primary/5 hover:text-primary'}
+                        ? 'bg-primary text-white shadow-lg shadow-primary/30 dark:shadow-primary/10' 
+                        : 'text-text-secondary dark:text-slate-400 hover:bg-primary/5 dark:hover:bg-primary/10 hover:text-primary dark:hover:text-primary-light'}
                     `}
                   >
+                    {isActive && (
+                      <motion.div 
+                        layoutId="activeGlowAdmin"
+                        className="absolute inset-0 bg-primary/20 blur-md rounded-xl -z-10"
+                      />
+                    )}
                     <item.icon size={22} className={isActive ? 'text-white' : 'group-hover:scale-110 transition-transform'} />
                     {!isSidebarCollapsed && (
                       <motion.span
@@ -163,11 +176,11 @@ const MainLayout = ({ children }) => {
 
         <div className="p-4 mt-auto">
           {!isSidebarCollapsed && (
-            <div className="glass-card bg-primary/5 border-primary/10 p-4">
-              <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1">Status</p>
+            <div className="glass-card bg-primary/5 dark:bg-primary/10 border-primary/10 dark:border-primary/20 p-4">
+              <p className="text-xs font-bold text-primary dark:text-primary-light uppercase tracking-wider mb-1">Status</p>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                <span className="text-sm font-medium text-text-primary">System Online</span>
+                <div className="w-2 h-2 rounded-full bg-success animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                <span className="text-sm font-medium text-text-primary dark:text-slate-200">System Online</span>
               </div>
             </div>
           )}
@@ -192,15 +205,15 @@ const MainLayout = ({ children }) => {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="lg:hidden fixed inset-y-0 left-0 w-[280px] bg-white z-[1001] shadow-2xl flex flex-col"
+              className="lg:hidden fixed inset-y-0 left-0 w-[280px] bg-white dark:bg-card z-[1001] shadow-2xl flex flex-col border-r border-border/50 dark:border-slate-800"
             >
-              <div className="p-6 flex items-center justify-between border-b border-border/50">
+              <div className="p-6 flex items-center justify-between border-b border-border/50 dark:border-slate-800">
                 <div className="font-extrabold text-2xl bg-primary-gradient bg-clip-text text-transparent">
                   UniTrace
                 </div>
                 <button 
                   onClick={closeMobileSidebar}
-                  className="p-2 rounded-xl bg-gray-100 text-text-secondary hover:bg-gray-200"
+                  className="p-2 rounded-xl bg-gray-100 dark:bg-slate-800 text-text-secondary dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-700"
                 >
                   <X size={20} />
                 </button>
@@ -208,7 +221,7 @@ const MainLayout = ({ children }) => {
 
               <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
                 <div className="mb-6">
-                  <p className="px-3 mb-3 text-[10px] font-bold text-text-secondary uppercase tracking-[2px] opacity-50">Main Menu</p>
+                  <p className="px-3 mb-3 text-[10px] font-bold text-text-secondary dark:text-slate-500 uppercase tracking-[2px] opacity-70">Main Menu</p>
                   {mainNavigation.map((item) => {
                     return (
                       <NavLink
@@ -219,7 +232,7 @@ const MainLayout = ({ children }) => {
                           flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200
                           ${isActive 
                             ? 'bg-primary text-white shadow-lg shadow-primary/30' 
-                            : 'text-text-secondary hover:bg-primary/5 hover:text-primary'}
+                            : 'text-text-secondary dark:text-slate-400 hover:bg-primary/5 dark:hover:bg-primary/10 hover:text-primary dark:hover:text-primary-light'}
                         `}
                       >
                         <item.icon size={22} />
@@ -230,8 +243,8 @@ const MainLayout = ({ children }) => {
                 </div>
 
                 {anyAdmin && (
-                  <div className="pt-6 border-t border-border/50">
-                    <p className="px-3 mb-3 text-[10px] font-bold text-text-secondary uppercase tracking-[2px] opacity-50">Admin Panel</p>
+                  <div className="pt-6 border-t border-border/50 dark:border-slate-800">
+                    <p className="px-3 mb-3 text-[10px] font-bold text-text-secondary dark:text-slate-500 uppercase tracking-[2px] opacity-70">Admin Panel</p>
                     {adminNavigation.map((item) => {
                       const showItem = item.role === 'any' || 
                                      (item.role === 'super_admin' && isSuperAdmin) ||
@@ -248,7 +261,7 @@ const MainLayout = ({ children }) => {
                             flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200
                             ${isActive 
                               ? 'bg-primary text-white shadow-lg shadow-primary/30' 
-                              : 'text-text-secondary hover:bg-primary/5 hover:text-primary'}
+                              : 'text-text-secondary dark:text-slate-400 hover:bg-primary/5 dark:hover:bg-primary/10 hover:text-primary dark:hover:text-primary-light'}
                           `}
                         >
                           <item.icon size={22} />
@@ -259,18 +272,6 @@ const MainLayout = ({ children }) => {
                   </div>
                 )}
               </nav>
-
-              <div className="p-4 mt-auto pb-8">
-                <div className="glass-card bg-primary/5 border-primary/10 p-4 rounded-2xl">
-                  <p className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1">Account Mode</p>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                    <span className="text-xs font-bold text-text-primary uppercase tracking-tight">
-                      {isSuperAdmin ? 'Super Admin' : isAdmin ? 'College Admin' : 'Active User'}
-                    </span>
-                  </div>
-                </div>
-              </div>
             </motion.aside>
           </>
         )}
@@ -279,11 +280,11 @@ const MainLayout = ({ children }) => {
       {/* Main Content Area */}
       <main className={`flex-1 transition-all duration-300 ${isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-[260px]'} pb-0`}>
         {/* Top Header (Mobile & Desktop) */}
-        <header className="sticky top-0 z-40 glass-effect bg-white/70 border-b border-border/40 px-4 lg:px-8 py-3 lg:py-4 flex items-center justify-between">
+        <header className="sticky top-0 z-40 glass-effect bg-white/70 dark:bg-card/70 border-b border-border/40 dark:border-slate-800/60 px-4 lg:px-8 py-3 lg:py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setMobileSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-xl bg-gray-100 text-text-secondary hover:bg-gray-200 transition-colors"
+              className="lg:hidden p-2 rounded-xl bg-gray-100 dark:bg-slate-800 text-text-secondary dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
             >
               <Menu size={22} />
             </button>
@@ -296,39 +297,41 @@ const MainLayout = ({ children }) => {
                  UniTrace
                </motion.div>
             </div>
-          </div>
-          <div className="hidden lg:block">
-              <h1 className="text-xl font-black text-text-primary uppercase tracking-tighter">
+            <div className="hidden lg:block">
+              <h1 className="text-xl font-black text-text-primary dark:text-slate-100 uppercase tracking-tighter">
                 {mainNavigation.find(n => n.href === location.pathname)?.name || 
                  adminNavigation.find(n => n.href === location.pathname)?.name || 
                  'Command Center'}
               </h1>
+            </div>
           </div>
 
           <div className="flex items-center gap-4">
+            <ThemeToggle />
+            
             <motion.button 
               whileHover={{ scale: 1.1, rotate: 10 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => navigate('/notifications')}
-              className="p-2.5 rounded-2xl bg-white shadow-sm border border-slate-100 relative group transition-all hover:border-primary/20"
+              className="p-2.5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 relative group transition-all hover:border-primary/20 dark:hover:border-primary/40"
             >
-              <Bell size={20} className="text-text-secondary group-hover:text-primary" />
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-danger rounded-full ring-2 ring-white animate-pulse" />
+              <Bell size={20} className="text-text-secondary dark:text-slate-400 group-hover:text-primary dark:group-hover:text-primary-light" />
+              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-danger rounded-full ring-2 ring-white dark:ring-slate-800 animate-pulse" />
             </motion.button>
             <motion.div 
               whileHover={{ scale: 1.05 }}
               onClick={() => navigate('/profile')}
               id="tour-profile"
-              className="flex items-center gap-3 p-1.5 pr-4 bg-white border border-slate-100 rounded-[20px] cursor-pointer hover:border-primary/20 transition-all shadow-sm"
+              className="flex items-center gap-3 p-1.5 pr-4 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-[20px] cursor-pointer hover:border-primary/20 dark:hover:border-primary/40 transition-all shadow-sm"
             >
-              <div className="w-9 h-9 rounded-full bg-primary-gradient p-0.5 shadow-lg shadow-primary/20">
-                 <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-primary font-black text-xs uppercase tracking-tighter">
+              <div className="w-9 h-9 rounded-full bg-primary-gradient p-0.5 shadow-lg shadow-primary/20 dark:shadow-primary/40">
+                 <div className="w-full h-full rounded-full bg-white dark:bg-slate-900 flex items-center justify-center text-primary dark:text-primary-light font-black text-xs uppercase tracking-tighter">
                    {user?.name ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2) : 'CT'}
                  </div>
               </div>
               <div className="hidden sm:block">
-                 <p className="text-[10px] font-black uppercase tracking-widest text-text-primary leading-tight">{user?.name?.split(' ')[0] || 'Operator'}</p>
-                 <p className="text-[8px] font-bold text-text-secondary uppercase tracking-[2px] leading-tight opacity-60">{user?.role || 'Guest'}</p>
+                 <p className="text-[10px] font-black uppercase tracking-widest text-text-primary dark:text-slate-100 leading-tight">{user?.name?.split(' ')[0] || 'Operator'}</p>
+                 <p className="text-[8px] font-bold text-text-secondary dark:text-slate-500 uppercase tracking-[2px] leading-tight opacity-70">{user?.role || 'Guest'}</p>
               </div>
             </motion.div>
           </div>
@@ -351,7 +354,7 @@ const MainLayout = ({ children }) => {
       </main>
 
       {/* Mobile Bottom Navigation (visible < 1024px) */}
-      <nav className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] h-16 glass-effect bg-white/80 border border-white/40 rounded-3xl shadow-2xl z-50 flex items-center justify-around px-2">
+      <nav className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] h-16 glass-effect bg-white/80 dark:bg-card/80 border border-white/40 dark:border-slate-800 rounded-3xl shadow-2xl z-50 flex items-center justify-around px-2 transition-colors duration-300">
         {mainNavigation.map((item) => {
           const isActive = location.pathname === item.href;
           return (
@@ -367,7 +370,7 @@ const MainLayout = ({ children }) => {
                   transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                 />
               )}
-              <item.icon size={22} className={`relative z-10 transition-colors duration-300 ${isActive ? 'text-white' : 'text-text-secondary'}`} />
+              <item.icon size={22} className={`relative z-10 transition-colors duration-300 ${isActive ? 'text-white' : 'text-text-secondary dark:text-slate-400'}`} />
             </NavLink>
           );
         })}
@@ -377,5 +380,3 @@ const MainLayout = ({ children }) => {
 };
 
 export default MainLayout;
-
- 

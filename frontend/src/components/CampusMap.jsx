@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMapEvents, useMap }
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Navigation, MapPin, Search, X, RotateCcw } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 const ACCENT = '#2563eb';
 const GLOBAL_CENTER = [17.3850, 78.4867];
@@ -35,11 +36,19 @@ const CampusMap = ({
     const [searchLoading, setSearchLoading] = useState(false);
     const [suggestions, setSuggestions] = useState([]);
 
-    const dm = darkMode;
-    const text = dm ? '#e2e8f0' : '#1e293b';
-    const muted = dm ? '#94a3b8' : '#64748b';
-    const border = dm ? '#334155' : '#e2e8f0';
-    const cardBg = dm ? '#1e293b' : '#fff';
+    const { theme: currentTheme } = useTheme();
+    const isDarkMode = currentTheme === 'dark';
+
+    const text = isDarkMode ? '#e2e8f0' : '#1e293b';
+    const muted = isDarkMode ? '#94a3b8' : '#64748b';
+    const border = isDarkMode ? '#334155' : '#e2e8f0';
+    const cardBg = isDarkMode ? '#1e293b' : '#fff';
+    const tileUrl = isDarkMode 
+        ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+    const attribution = isDarkMode
+        ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
     // Update map when external coordinates change
     useEffect(() => {
@@ -335,7 +344,7 @@ const CampusMap = ({
                                 }}
                                 onMouseEnter={(e) => {
                                     const target = e.currentTarget;
-                                    target.style.background = dm ? '#1e293b' : '#f8fafc';
+                                    target.style.background = isDarkMode ? '#1e293b' : '#f8fafc';
                                 }}
                                 onMouseLeave={(e) => {
                                     const target = e.currentTarget;
@@ -360,8 +369,8 @@ const CampusMap = ({
                     style={{ height: '100%', width: '100%' }}
                 >
                     <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution={attribution}
+                        url={tileUrl}
                     />
                     <MapEvents />
                     <FlyTo center={position} />
@@ -385,10 +394,10 @@ const CampusMap = ({
                                 {loc.name}
                             </Tooltip>
                             <Popup>
-                                <div style={{ padding: '8px', minWidth: 150 }}>
+                                <div style={{ padding: '8px', minWidth: 150, color: isDarkMode ? '#fff' : '#000' }}>
                                     <p style={{ margin: '0 0 4px', fontWeight: 700, color: ACCENT }}>✅ Verified Location</p>
                                     <p style={{ margin: '0 0 8px', fontWeight: 600 }}>{loc.name}</p>
-                                    <p style={{ margin: 0, fontSize: '11px', color: '#666' }}>{loc.description}</p>
+                                    <p style={{ margin: 0, fontSize: '11px', color: isDarkMode ? '#ccc' : '#666' }}>{loc.description}</p>
                                 </div>
                             </Popup>
                         </Marker>
@@ -398,7 +407,7 @@ const CampusMap = ({
                     {markerPos && !restrictedLocations?.some(l => l.latitude === markerPos[0] && l.longitude === markerPos[1]) && (
                         <Marker position={markerPos} icon={customIcon}>
                             <Popup>
-                                <div style={{ padding: '8px', minWidth: 150 }}>
+                                <div style={{ padding: '8px', minWidth: 150, color: isDarkMode ? '#fff' : '#000' }}>
                                     <p style={{ margin: '0 0 8px', fontWeight: 600 }}>📍 Selected Location</p>
                                     <p style={{ margin: '0 0 8px', fontWeight: 600 }}>{selectedAddress}</p>
                                 </div>
@@ -416,7 +425,7 @@ const CampusMap = ({
                 <div style={{
                     marginTop: 12,
                     padding: '12px 14px',
-                    background: dm ? '#1e293b' : '#f8fafc',
+                    background: isDarkMode ? '#1e293b' : '#f8fafc',
                     borderRadius: 12,
                     border: `1.5px solid ${border}`,
                     display: 'flex',
@@ -433,7 +442,11 @@ const CampusMap = ({
                 .animate-spin { animation: spin 1s linear infinite; }
                 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
                 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-                .leaflet-container { font-family: inherit; }
+                .leaflet-container { font-family: inherit; background: ${isDarkMode ? '#1a1d23' : '#f8fafc'} !important; }
+                .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: ${isDarkMode ? '#1e293b' : '#fff'} !important; color: ${isDarkMode ? '#fff' : '#333'} !important; border: 1px solid ${isDarkMode ? '#334155' : 'transparent'}; }
+                .custom-tooltip { background: ${isDarkMode ? '#1e293b' : '#fff'} !important; color: ${isDarkMode ? '#fff' : '#333'} !important; border: 1px solid ${isDarkMode ? '#334155' : '#ccc'} !important; font-weight: 700; border-radius: 8px; padding: 4px 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+                .leaflet-bar a { background-color: ${isDarkMode ? '#1e293b' : '#fff'} !important; color: ${isDarkMode ? '#fff' : '#000'} !important; border-bottom: 1px solid ${isDarkMode ? '#334155' : '#ccc'} !important; }
+                .leaflet-control-attribution { background: ${isDarkMode ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.7)'} !important; color: ${isDarkMode ? '#ccc' : '#333'} !important; }
             `}</style>
         </div>
     );

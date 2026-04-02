@@ -63,18 +63,18 @@ const Chat = () => {
   return (
     <div className="space-y-8 min-h-screen pb-32">
       {/* Header Section */}
-      <section className="glass-effect rounded-3xl p-8 border border-white/40 shadow-xl overflow-hidden relative bg-primary-gradient text-white">
-        <div className="absolute top-0 right-0 p-8 text-white/10 -mr-8 -mt-8 rotate-12">
+      <section className="glass-effect dark:bg-card/40 rounded-3xl p-8 border border-white/40 dark:border-slate-800 shadow-xl overflow-hidden relative bg-primary-gradient text-white transition-all duration-300">
+        <div className="absolute top-0 right-0 p-8 text-white/10 -mr-8 -mt-8 rotate-12 pointer-events-none">
             <MessageSquare size={120} />
         </div>
         
         <div className="relative z-10 space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center text-white">
                 <div>
-                    <h2 className="text-3xl font-black tracking-tight">Messages</h2>
+                    <h2 className="text-3xl font-black tracking-tight uppercase">Messages</h2>
                     <p className="text-white/70 text-sm font-medium">Continue your conversations about items.</p>
                 </div>
-                <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-md">
+                <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-md border border-white/20">
                     <MessageSquare size={24} />
                 </div>
             </div>
@@ -86,7 +86,7 @@ const Chat = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search contacts or items..."
-                  className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl pl-12 pr-4 py-3.5 outline-none focus:ring-4 focus:ring-white/20 transition-all font-medium placeholder:text-white/40 shadow-inner"
+                  className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl pl-12 pr-4 py-3.5 outline-none focus:ring-4 focus:ring-white/20 transition-all font-medium placeholder:text-white/40 shadow-inner text-white"
                 />
             </div>
         </div>
@@ -101,7 +101,7 @@ const Chat = () => {
 
       {/* Chat List */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between px-2 text-sm text-text-secondary">
+        <div className="flex items-center justify-between px-2 text-sm text-text-secondary dark:text-slate-400 transition-colors">
             <div className="flex items-center gap-2 font-bold uppercase tracking-widest text-[10px]">
                 <Filter size={12} className="text-primary" />
                 Recent Conversations
@@ -110,23 +110,23 @@ const Chat = () => {
         </div>
 
         {loading ? (
-          <div className="bg-white rounded-3xl p-6 border border-border shadow-sm">
+          <div className="bg-white dark:bg-card rounded-3xl p-6 border border-border dark:border-slate-800 shadow-sm transition-colors">
             <ChatSkeleton />
           </div>
         ) : filteredRooms.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-32 bg-gray-50/50 rounded-3xl border border-dashed border-gray-300 text-center">
-            <div className="w-20 h-20 bg-gray-100 rounded-[30px] flex items-center justify-center mb-6 text-3xl">
+          <div className="flex flex-col items-center justify-center py-32 bg-gray-50/50 dark:bg-slate-900/50 rounded-3xl border border-dashed border-gray-300 dark:border-slate-800 text-center transition-colors">
+            <div className="w-20 h-20 bg-gray-100 dark:bg-slate-800 rounded-[30px] flex items-center justify-center mb-6 text-3xl">
                 💬
             </div>
-            <h3 className="text-xl font-bold text-text-primary mb-2">
+            <h3 className="text-xl font-bold text-text-primary dark:text-slate-100 mb-2 transition-colors">
                 {searchQuery ? 'No results found' : 'No messages yet'}
             </h3>
-            <p className="text-text-secondary text-sm max-w-xs">
+            <p className="text-text-secondary dark:text-slate-400 text-sm max-w-xs transition-colors">
                 {searchQuery ? 'Try a different search term or clear the filter.' : "Start a conversation from any item's detail page to begin."}
             </p>
           </div>
         ) : (
-          <div className="bg-white rounded-3xl border border-border overflow-hidden shadow-sm divide-y divide-gray-50">
+          <div className="bg-white dark:bg-card rounded-3xl border border-border dark:border-slate-800 overflow-hidden shadow-sm divide-y divide-gray-50 dark:divide-slate-800 transition-colors">
             {filteredRooms.map((room, idx) => {
               const name = getOtherUser(room);
               const hasUnread = room.unread_count > 0;
@@ -137,7 +137,7 @@ const Chat = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.05 }}
                   onClick={() => navigate(`/chat/${room.id}`)}
-                  className={`group flex items-center gap-4 p-5 cursor-pointer transition-all hover:bg-slate-50 relative ${hasUnread ? 'bg-primary/5' : ''}`}
+                  className={`group flex items-center gap-4 p-5 cursor-pointer transition-all hover:bg-slate-50 dark:hover:bg-slate-800/50 relative ${hasUnread ? 'bg-primary/5 dark:bg-primary/20' : ''}`}
                 >
                   {hasUnread && <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />}
                   
@@ -147,7 +147,7 @@ const Chat = () => {
                       {getInitial(room)}
                     </div>
                     {hasUnread && (
-                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-danger text-white border-2 border-white rounded-full flex items-center justify-center text-[10px] font-black shadow-lg">
+                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-danger text-white border-2 border-white dark:border-slate-900 rounded-full flex items-center justify-center text-[10px] font-black shadow-lg">
                             {room.unread_count}
                         </div>
                     )}
@@ -156,7 +156,7 @@ const Chat = () => {
                   {/* Content */}
                   <div className="flex-1 min-w-0 py-1">
                     <div className="flex justify-between items-center mb-1">
-                      <h4 className={`text-base font-black truncate ${hasUnread ? 'text-text-primary' : 'text-text-primary/80'} group-hover:text-primary transition-colors`}>
+                      <h4 className={`text-base font-black truncate ${hasUnread ? 'text-text-primary dark:text-slate-100' : 'text-text-primary/80 dark:text-slate-300'} group-hover:text-primary transition-colors`}>
                         {name}
                       </h4>
                       <span className={`text-[10px] font-bold ${hasUnread ? 'text-primary' : 'text-text-secondary'}`}>
@@ -165,7 +165,7 @@ const Chat = () => {
                     </div>
                     
                     <div className="flex items-center justify-between gap-4">
-                      <p className={`text-sm truncate ${hasUnread ? 'font-bold text-text-primary' : 'text-text-secondary'}`}>
+                      <p className={`text-sm truncate ${hasUnread ? 'font-bold text-text-primary dark:text-slate-100' : 'text-text-secondary dark:text-slate-400'}`}>
                         {room.last_message || `RE: ${room.item?.title || room.item_title || 'Item'}`}
                       </p>
                       <ChevronRight size={16} className="text-slate-300 group-hover:translate-x-1 transition-transform" />

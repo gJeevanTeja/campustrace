@@ -31,7 +31,7 @@ const ItemCard = memo(({ item, onDelete }) => {
       whileHover={{ y: -5, scale: 1.01 }}
       whileTap={{ scale: 0.98 }}
       onClick={() => navigate(`/item/${item.id}`)}
-      className="group bg-white rounded-3xl p-4 border border-border shadow-sm hover:shadow-premium-hover hover:border-primary/20 transition-all duration-300 cursor-pointer flex gap-4 overflow-hidden relative"
+      className="group bg-white dark:bg-card rounded-3xl p-4 border border-border dark:border-slate-800 shadow-sm hover:shadow-premium-hover hover:border-primary/20 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all duration-300 cursor-pointer flex gap-4 overflow-hidden relative"
     >
       {/* Type Indicator Bar */}
       <div className={`absolute top-0 left-0 w-1.5 h-full ${item.type === 'lost' ? 'bg-danger' : 'bg-success'}`} />
@@ -51,12 +51,11 @@ const ItemCard = memo(({ item, onDelete }) => {
           />
         ) : null}
         <div 
-          className="w-full h-full flex items-center justify-center rounded-2xl text-2xl font-bold uppercase shadow-inner"
-          style={{
-            display: item.image_url ? 'none' : 'flex',
-            background: item.type === 'lost' ? '#fee2e2' : '#dcfce7',
-            color: item.type === 'lost' ? '#ef4444' : '#16a34a',
-          }}
+          className={`w-full h-full flex items-center justify-center rounded-2xl text-2xl font-bold uppercase shadow-inner transition-all duration-300
+            ${item.type === 'lost' 
+              ? 'bg-danger/10 text-danger dark:bg-danger/20 dark:text-danger-light' 
+              : 'bg-success/10 text-success dark:bg-success/20 dark:text-success-light'}`}
+          style={{ display: item.image_url ? 'none' : 'flex' }}
         >
           {item.title?.[0] || '?'}
         </div>
@@ -69,33 +68,33 @@ const ItemCard = memo(({ item, onDelete }) => {
       {/* Content Section */}
       <div className="flex-1 min-width-0 py-1">
         <div className="flex justify-between items-start mb-1">
-          <h3 className="font-extrabold text-text-primary text-base truncate group-hover:text-primary transition-colors">
+          <h3 className="font-extrabold text-slate-900 dark:text-slate-100 text-base truncate group-hover:text-primary transition-colors">
             {item.title}
           </h3>
           {onDelete && (
             <button 
               onClick={handleDelete}
-              className="p-1.5 bg-danger/10 text-danger rounded-lg hover:bg-danger hover:text-white transition-all active:scale-90"
+              className="p-1.5 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all active:scale-90"
             >
               <Trash2 size={14} />
             </button>
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 text-text-secondary text-xs mb-2">
+        <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs mb-2 transition-colors">
           <MapPin size={12} className="text-primary" />
           <span className="truncate">
             {item.location_name || item.location_detail || 'Campus Area'}
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5 text-text-secondary text-[11px] mb-3">
-          <Clock size={12} className="text-secondary" />
+        <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-[11px] mb-3 transition-colors">
+          <Clock size={12} className="text-slate-400 dark:text-slate-500" />
           <span>{formatDate(item.incident_datetime)}</span>
         </div>
 
-        <div className="flex items-center justify-between mt-auto">
-          <span className="text-[10px] font-bold text-slate-400">
+        <div className="flex items-center justify-between mt-auto transition-colors">
+          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-600">
             {item.time_ago}
           </span>
           <div className="flex items-center gap-1 text-[11px] font-black text-primary group-hover:translate-x-1 transition-transform">

@@ -131,14 +131,14 @@ const Home = () => {
              className="flex flex-col sm:flex-row gap-3"
            >
              <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" size={20} />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary dark:text-slate-500" size={20} />
                 <input 
                   type="text"
                   id="tour-search-bar"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search for lost items..."
-                  className="w-full bg-white text-text-primary pl-12 pr-4 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-white/20 transition-all shadow-lg"
+                  className="w-full bg-white dark:bg-slate-900 text-text-primary dark:text-slate-100 pl-12 pr-4 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-white/20 transition-all shadow-lg placeholder:text-slate-500"
                 />
              </div>
              <button type="submit" className="bg-text-primary text-white font-bold py-4 px-8 rounded-2xl hover:bg-slate-800 transition-all shadow-lg whitespace-nowrap active:scale-95">
@@ -197,7 +197,7 @@ const Home = () => {
       {/* Categories */}
       <section>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-text-primary">Browse Categories</h2>
+          <h2 className="text-2xl font-bold text-text-primary dark:text-slate-100 transition-colors">Browse Categories</h2>
         </div>
         <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
           {CATEGORIES.map((cat, idx) => (
@@ -214,7 +214,7 @@ const Home = () => {
               <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br ${cat.gradient} mb-3 flex items-center justify-center shadow-md group-hover:shadow-lg transition-all`}>
                   <cat.icon size={32} color="#ffffff" className="group-hover:scale-110 transition-transform" strokeWidth={2} />
               </div>
-              <span className="text-[11px] sm:text-xs font-bold text-text-secondary group-hover:text-primary transition-colors uppercase tracking-tight">
+              <span className="text-[11px] sm:text-xs font-bold text-text-secondary dark:text-slate-500 group-hover:text-primary transition-colors uppercase tracking-tight">
                 {cat.label}
               </span>
             </motion.button>
@@ -226,17 +226,17 @@ const Home = () => {
       <section id="tour-recent-activity">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-text-primary mb-1">Recent Activity</h2>
-            <p className="text-text-secondary text-sm">Stay updated with the latest reports</p>
+            <h2 className="text-2xl font-bold text-text-primary dark:text-slate-100 transition-colors mb-1">Recent Activity</h2>
+            <p className="text-text-secondary dark:text-slate-400 text-sm transition-colors">Stay updated with the latest reports</p>
           </div>
           
-          <div className="flex bg-slate-100 p-1.5 rounded-2xl w-fit">
+          <div className="flex bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl w-fit transition-colors">
             <button
               onClick={() => setActiveTab('lost')}
               className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${
                 activeTab === 'lost' 
-                ? 'bg-white text-primary shadow-sm active:scale-95' 
-                : 'text-text-secondary hover:text-text-primary'
+                ? 'bg-white dark:bg-slate-700 text-primary dark:text-slate-100 shadow-sm active:scale-95' 
+                : 'text-text-secondary dark:text-slate-500 hover:text-text-primary dark:hover:text-slate-300'
               }`}
             >
               Lost
@@ -245,8 +245,8 @@ const Home = () => {
               onClick={() => setActiveTab('found')}
               className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${
                 activeTab === 'found' 
-                ? 'bg-white text-primary shadow-sm active:scale-95' 
-                : 'text-text-secondary hover:text-text-primary'
+                ? 'bg-white dark:bg-slate-700 text-primary dark:text-slate-100 shadow-sm active:scale-95' 
+                : 'text-text-secondary dark:text-slate-500 hover:text-text-primary dark:hover:text-slate-300'
               }`}
             >
               Found
@@ -270,10 +270,10 @@ const Home = () => {
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center py-20 bg-gray-50/50 rounded-[40px] border border-dashed border-gray-200"
+            className="text-center py-20 bg-gray-50/50 dark:bg-slate-900/50 rounded-[40px] border border-dashed border-gray-200 dark:border-slate-800 transition-colors"
           >
              <div className="text-4xl mb-4 opacity-50">✨</div>
-             <p className="text-text-secondary font-medium">No recent {activeTab} items reported yet.</p>
+             <p className="text-text-secondary dark:text-slate-400 font-medium">No recent {activeTab} items reported yet.</p>
           </motion.div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -293,9 +293,9 @@ const Home = () => {
       </section>
 
       {recent.length === 0 && !loading && (
-        <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-300">
+        <div className="text-center py-20 bg-gray-50 dark:bg-slate-900/50 rounded-3xl border border-dashed border-gray-300 dark:border-slate-800 transition-colors">
            <div className="text-5xl mb-4">✨</div>
-           <p className="text-text-secondary font-medium">Clear campus! Start by reporting an item if you find something.</p>
+           <p className="text-text-secondary dark:text-slate-400 font-medium">Clear campus! Start by reporting an item if you find something.</p>
         </div>
       )}
     </div>

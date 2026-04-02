@@ -54,10 +54,10 @@ const MyItems = () => {
                        <button onClick={() => navigate(-1)} className="p-3 bg-white border border-slate-100 rounded-2xl hover:bg-slate-50 transition-all shadow-sm">
                            <ChevronLeft size={20} className="text-text-primary" />
                        </button>
-                       <h1 className="text-4xl font-black text-text-primary uppercase tracking-tighter">My Activity</h1>
+                    <h1 className="text-4xl font-black text-text-primary dark:text-slate-100 uppercase tracking-tighter transition-colors">My Activity</h1>
                    </div>
-                   <p className="text-text-secondary font-medium ml-16 flex items-center gap-2">
-                       <Clock size={16} className="text-primary" />
+                   <p className="text-text-secondary dark:text-slate-400 font-medium ml-16 flex items-center gap-2 transition-colors">
+                       <Clock size={16} className="text-primary transition-colors" />
                        Manifest of items you've introduced to the system.
                    </p>
                 </div>
@@ -77,15 +77,15 @@ const MyItems = () => {
 
             {items.length === 0 ? (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="py-24 text-center space-y-8">
-                    <div className="w-32 h-32 bg-slate-100 rounded-[48px] flex items-center justify-center mx-auto text-slate-300 relative">
+                    <div className="w-32 h-32 bg-slate-100 dark:bg-slate-800 rounded-[48px] flex items-center justify-center mx-auto text-slate-300 dark:text-slate-600 relative transition-colors duration-300">
                         <Inbox size={64} />
-                        <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 3 }} className="absolute -top-2 -right-2 bg-white p-3 rounded-2xl shadow-xl text-primary"><Plus size={24} /></motion.div>
+                        <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 3 }} className="absolute -top-2 -right-2 bg-white dark:bg-card p-3 rounded-2xl shadow-xl text-primary transition-colors"><Plus size={24} /></motion.div>
                     </div>
                     <div className="space-y-2">
-                       <h3 className="text-2xl font-black text-text-primary uppercase tracking-tighter">Deserted Vault</h3>
-                       <p className="max-w-xs mx-auto text-sm font-medium text-text-secondary leading-relaxed">No items detected in your personal archive. Start by reporting something you've found or lost.</p>
+                       <h3 className="text-2xl font-black text-text-primary dark:text-slate-100 uppercase tracking-tighter transition-colors">Deserted Vault</h3>
+                       <p className="max-w-xs mx-auto text-sm font-medium text-text-secondary dark:text-slate-400 leading-relaxed transition-colors">No items detected in your personal archive. Start by reporting something you've found or lost.</p>
                     </div>
-                    <button onClick={() => navigate('/report')} className="px-10 py-5 bg-white border-2 border-primary/20 text-primary font-black uppercase tracking-widest text-xs rounded-3xl hover:bg-primary hover:text-white transition-all shadow-xl shadow-primary/5">
+                    <button onClick={() => navigate('/report')} className="px-10 py-5 bg-white dark:bg-card border-2 border-primary/20 dark:border-slate-800 text-primary dark:text-primary-light font-black uppercase tracking-widest text-xs rounded-3xl hover:bg-primary hover:text-white transition-all shadow-xl shadow-primary/5">
                         Initiate First Report
                     </button>
                 </motion.div>
