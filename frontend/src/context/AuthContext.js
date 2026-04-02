@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }) => {
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
       
-      if (import.meta.env.DEV) {
+      if (process.env.NODE_ENV !== 'production') {
         console.log("👤 Auth session established:", userData.role, userData.email);
       }
     }

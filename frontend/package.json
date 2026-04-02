@@ -21,10 +21,8 @@
     "tailwindcss": "^3.4.17"
   },
   "scripts": {
-    "dev": "vite",
-    "start": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -46,9 +44,7 @@
     ]
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^6.0.1",
     "ajv": "^8.18.0",
-    "ajv-keywords": "^5.1.0",
-    "vite": "^8.0.3"
+    "ajv-keywords": "^5.1.0"
   }
 }

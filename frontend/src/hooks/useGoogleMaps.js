@@ -1,7 +1,7 @@
 // src/hooks/useGoogleMaps.js
 // Loads the Google Maps JS SDK exactly once, shared across all components.
 
-const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY || 'AIzaSyCjh2TyJjFbrnT3ExXMb3FbE7XPoF8Vfvg';
+const GOOGLE_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_KEY || 'AIzaSyCjh2TyJjFbrnT3ExXMb3FbE7XPoF8Vfvg';
 
 let _promise = null;
 
