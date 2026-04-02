@@ -12,7 +12,8 @@ import {
   ArrowRight,
   Smartphone,
   Zap,
-  Fingerprint
+  Fingerprint,
+  ChevronLeft
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PremiumCard from '../components/ui/PremiumCard';
@@ -140,6 +141,17 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans relative overflow-hidden">
+      {/* Back Button */}
+      <Link 
+        to="/welcome" 
+        className="absolute top-8 left-8 flex items-center gap-2 text-text-secondary hover:text-primary transition-colors font-black uppercase tracking-widest text-xs z-50 group"
+      >
+        <div className="p-2 rounded-xl bg-white shadow-sm border border-slate-100 group-hover:border-primary/20 transition-all">
+          <ChevronLeft size={18} />
+        </div>
+        <span>Back</span>
+      </Link>
+
       {/* Background Decor */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
@@ -156,7 +168,7 @@ const Login = () => {
                 <div className="w-12 h-12 bg-primary-gradient rounded-2xl flex items-center justify-center text-white shadow-2xl">
                    <ShieldCheck size={24} />
                 </div>
-                <span className="font-black text-2xl tracking-tighter text-primary italic">UniTrace</span>
+                <span className="font-black text-2xl tracking-tighter text-primary">UniTrace</span>
              </div>
              <p className="text-text-secondary font-black text-[10px] uppercase tracking-[4px]">Log in to your account</p>
           </div>

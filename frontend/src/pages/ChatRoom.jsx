@@ -325,7 +325,7 @@ const ChatRoom = () => {
           if (m.type === 'sep') {
             return (
               <div key={m.key} className="flex justify-center my-6">
-                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 bg-white px-3 py-1 rounded-full border border-slate-100 italic">
+                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 bg-white px-3 py-1 rounded-full border border-slate-100">
                     {new Date(m.date).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}
                  </span>
               </div>

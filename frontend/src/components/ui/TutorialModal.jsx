@@ -152,10 +152,14 @@ const TutorialModal = ({ isOpen, onClose, userId }) => {
 
     return { 
       position: 'fixed',
-      top: `${Math.max(20, Math.min(top, window.innerHeight - 300))}px`, 
-      left: `${left}px`,
-      transform: 'translateX(-50%)',
+      top: isMobile ? '50%' : `${Math.max(20, Math.min(top, window.innerHeight - 300))}px`, 
+      left: isMobile ? '50%' : `${left}px`,
+      transform: isMobile ? 'translate(-50%, -50%)' : 'translateX(-50%)',
       width: isMobile ? 'calc(100vw - 40px)' : '400px',
+      maxWidth: isMobile ? '380px' : '400px',
+      maxHeight: '90vh',
+      display: 'flex',
+      flexDirection: 'column',
       zIndex: 1001
     };
   };
@@ -205,7 +209,7 @@ const TutorialModal = ({ isOpen, onClose, userId }) => {
             ))}
           </div>
 
-          <div className="p-6 pt-10">
+          <div className="p-6 pt-10 flex-1 overflow-y-auto custom-scrollbar">
             <div className="flex items-start justify-between mb-4">
               <div className={`p-3 rounded-2xl bg-gradient-to-br ${step.color} text-white shadow-lg`}>
                 <step.icon size={24} />
@@ -219,7 +223,7 @@ const TutorialModal = ({ isOpen, onClose, userId }) => {
               </button>
             </div>
 
-            <h3 className="text-xl font-black text-text-primary mb-2 italic">
+            <h3 className="text-xl font-black text-text-primary mb-2">
               {step.title}
             </h3>
             <p className="text-text-secondary text-sm leading-relaxed mb-6">

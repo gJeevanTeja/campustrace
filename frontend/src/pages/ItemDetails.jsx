@@ -522,7 +522,7 @@ const ItemDetails = () => {
                                         <span className="text-text-primary font-black">₹{selectedReward || 0}</span>
                                      </div>
                                      <div className="flex justify-between text-[10px]">
-                                        <span className="text-text-secondary italic">Commission will be deducted from reward.</span>
+                                        <span className="text-text-secondary">Commission will be deducted from reward.</span>
                                      </div>
                                      <div className="pt-2 border-t border-border flex justify-between text-sm">
                                         <span className="font-black text-text-primary uppercase tracking-tighter">Total to Pay (Escrow):</span>

@@ -201,7 +201,7 @@ const Help = () => {
                         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
                         <div className="relative p-12 md:p-20 text-center space-y-8">
                             <div className="space-y-2">
-                                <h3 className="text-4xl font-black text-white uppercase tracking-tighter italic">Human Intervention?</h3>
+                                <h3 className="text-4xl font-black text-white uppercase tracking-tighter">Human Intervention?</h3>
                                 <p className="text-white/70 font-bold uppercase tracking-widest text-xs">Our strike team is standing by 24/7/365.</p>
                             </div>
                             <div className="flex flex-wrap justify-center gap-4">

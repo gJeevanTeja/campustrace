@@ -32,7 +32,6 @@ const mainNavigation = [
   { name: 'Report Item', href: '/report', icon: PlusSquare },
   { name: 'Chat', href: '/chat', icon: MessageSquare },
   { name: 'Stats', href: '/leaderboard', icon: BarChart3 },
-  { name: 'Profile', href: '/profile', icon: User },
 ];
 
 const adminNavigation = [
@@ -292,7 +291,7 @@ const MainLayout = ({ children }) => {
             <div className="lg:hidden">
                <motion.div 
                  whileHover={{ scale: 1.05 }}
-                 className="font-extrabold text-lg sm:text-xl bg-primary-gradient bg-clip-text text-transparent italic cursor-pointer truncate"
+                 className="font-extrabold text-lg sm:text-xl bg-primary-gradient bg-clip-text text-transparent cursor-pointer truncate"
                  onClick={() => navigate('/')}
                >
                  UniTrace
@@ -300,7 +299,7 @@ const MainLayout = ({ children }) => {
             </div>
           </div>
           <div className="hidden lg:block">
-              <h1 className="text-xl font-black text-text-primary uppercase tracking-tighter italic">
+              <h1 className="text-xl font-black text-text-primary uppercase tracking-tighter">
                 {mainNavigation.find(n => n.href === location.pathname)?.name || 
                  adminNavigation.find(n => n.href === location.pathname)?.name || 
                  'Command Center'}

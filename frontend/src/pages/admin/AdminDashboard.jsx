@@ -554,7 +554,7 @@ const AdminDashboard = () => {
                                             <Package size={40} />
                                         </div>
                                         <div>
-                                            <p className="font-bold text-text-primary italic">No reports found matching your criteria.</p>
+                                            <p className="font-bold text-text-primary">No reports found matching your criteria.</p>
                                             <button 
                                                 onClick={() => setParams({ ...params, search: '', category: '', type: '', status: '', startDate: '', endDate: '' })}
                                                 className="text-primary text-sm font-bold mt-2 hover:underline"

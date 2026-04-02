@@ -68,7 +68,7 @@ const TermsPage = () => {
                        <div className="w-12 h-12 bg-primary-gradient rounded-xl flex items-center justify-center text-white shadow-xl rotate-6">
                            <Shield size={24} />
                        </div>
-                       <h1 className="text-4xl font-black text-text-primary uppercase tracking-tighter italic">Protocol & Ethics</h1>
+                       <h1 className="text-4xl font-black text-text-primary uppercase tracking-tighter">Protocol & Ethics</h1>
                    </div>
                    <p className="text-text-secondary font-medium uppercase text-[10px] tracking-[4px]">Institutional Compliance Framework</p>
                 </div>
@@ -101,7 +101,7 @@ const TermsPage = () => {
                            <div className="w-2 h-2 rounded-full bg-primary" />
                            <p className="text-[10px] font-black uppercase tracking-widest text-text-secondary">Release Version: 1.0.4 - FEB 2026</p>
                         </div>
-                        <span className="text-[10px] font-bold text-primary italic">Fully Audited</span>
+                        <span className="text-[10px] font-bold text-primary">Fully Audited</span>
                     </div>
 
                     <AnimatePresence mode="wait">
@@ -120,7 +120,7 @@ const TermsPage = () => {
                                     <div className="space-y-2 flex-1">
                                         <div className="flex items-center gap-3">
                                            <span className="text-[10px] font-black text-primary opacity-30">{String(i+1).padStart(2, '0')}</span>
-                                           <h3 className="text-lg font-black text-text-primary uppercase tracking-tight italic">{item.title}</h3>
+                                           <h3 className="text-lg font-black text-text-primary uppercase tracking-tight">{item.title}</h3>
                                         </div>
                                         <p className="text-sm font-medium text-text-secondary leading-relaxed max-w-2xl">{item.text}</p>
                                     </div>
@@ -135,7 +135,7 @@ const TermsPage = () => {
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-16 -mt-16" />
                     <Sparkles size={32} className="mx-auto text-primary opacity-40" />
                     <div className="space-y-2">
-                       <h4 className="text-xl font-black text-text-primary uppercase tracking-tighter italic">Agreement Disclosure</h4>
+                       <h4 className="text-xl font-black text-text-primary uppercase tracking-tighter">Agreement Disclosure</h4>
                        <p className="text-sm font-medium text-text-secondary max-w-lg mx-auto leading-relaxed">By maintaining an active session on UniTrace, you acknowledge and agree to the operational protocols outlined above. For institutional disputes, contact <span className="text-primary font-bold">compliance@UniTrace.university</span></p>
                     </div>
                 </div>

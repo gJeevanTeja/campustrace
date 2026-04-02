@@ -116,7 +116,7 @@ const Dashboard = () => {
                        <div className="p-3 bg-primary/10 text-primary rounded-2xl">
                            <LayoutDashboard size={24} />
                        </div>
-                       <h1 className="text-4xl font-black text-text-primary uppercase tracking-tighter italic">Command Center</h1>
+                       <h1 className="text-4xl font-black text-text-primary uppercase tracking-tighter">Command Center</h1>
                    </div>
                    <div className="flex items-center gap-4 pl-14">
                        <p className="text-text-secondary font-bold uppercase text-[10px] tracking-widest flex items-center gap-2">

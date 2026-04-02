@@ -40,6 +40,8 @@ const AIVerification = lazy(() => import('./pages/AIVerification'));
 const MyClaims = lazy(() => import('./pages/MyClaims'));
 const ResolutionManager = lazy(() => import('./pages/admin/ResolutionManager'));
 const CollegeInfo = lazy(() => import('./pages/admin/CollegeInfo'));
+const SuperAdminDashboard = lazy(() => import('./pages/admin/SuperAdminDashboard'));
+
 function AppRoutes() {
   const { darkMode, setDarkMode } = useTheme();
 
@@ -75,6 +77,7 @@ function AppRoutes() {
                   <Route path="/admin-dashboard" element={<AdminDashboard darkMode={darkMode} />} />
                   <Route path="/super-admin-dashboard" element={<AdminDashboard darkMode={darkMode} />} />
                   <Route path="/admin/super" element={<AdminDashboard darkMode={darkMode} />} />
+                  <Route path="/admin/analytics" element={<SuperAdminDashboard darkMode={darkMode} />} />
                   <Route path="/admin/colleges" element={<CollegeManager darkMode={darkMode} />} />
                   <Route path="/admin/users" element={<UserManager darkMode={darkMode} />} />
                   <Route path="/admin/blocks" element={<BlockManager darkMode={darkMode} />} />

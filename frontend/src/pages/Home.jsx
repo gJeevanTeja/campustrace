@@ -100,7 +100,7 @@ const Home = () => {
                 className="mb-2 p-1"
               >
                 <span className="text-base lg:text-lg font-bold text-white/90">
-                  Hello! <span className="text-white drop-shadow-sm italic">{user.name}</span>
+                  Hello! <span className="text-white drop-shadow-sm">{user.name}</span>
                 </span>
               </motion.div>
             )}

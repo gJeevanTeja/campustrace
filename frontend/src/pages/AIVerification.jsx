@@ -221,7 +221,7 @@ const AIVerification = () => {
                             
                             <div className="flex items-center justify-center gap-3 text-text-secondary">
                                <ShieldCheck size={16} className="text-success" />
-                               <span className="text-[10px] font-black uppercase tracking-widest opacity-60 italic">End-to-End Encrypted Verification</span>
+                               <span className="text-[10px] font-black uppercase tracking-widest opacity-60">End-to-End Encrypted Verification</span>
                             </div>
                         </motion.div>
                     )}
