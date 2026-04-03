@@ -76,13 +76,13 @@ const Login = () => {
         throw new Error('Email and password are required');
       }
 
-      // login returns normalized data { success, user, tokens }
-      const { data } = await login({
+      // login returns normalized data directly: { success, user, tokens }
+      const data = await login({
         email: identityToUse.toLowerCase(),
         password: secretKeyToUse,
       });
 
-      if (data.success) {
+      if (data?.success) {
         if (data.tokens?.access) {
           localStorage.setItem('access_token', data.tokens.access);
         }
@@ -102,7 +102,7 @@ const Login = () => {
           redirectAfterLogin(data.user);
         }, 500);
       } else {
-        throw new Error(data.message || 'Authentication failed');
+        throw new Error(data?.message || 'Authentication failed');
       }
     } catch (err) {
       // 1. Categorize Error Type
