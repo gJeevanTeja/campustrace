@@ -35,9 +35,10 @@ const Login = () => {
 
   // Error is cleared manually in handleLogin/handleSendOTP/handleVerifyOTP
 
-  // Clear old tokens strictly on login page mount to prevent "No Refresh Token" interceptor bugs
+  // Clear UI state on mount
   React.useEffect(() => {
-    localStorage.clear();
+    setError('');
+    setSuccess('');
   }, []);
 
   const redirectAfterLogin = (user) => {
@@ -82,15 +83,33 @@ const Login = () => {
       });
 
       if (data.success) {
+        if (data.tokens?.access) {
+          localStorage.setItem('access_token', data.tokens.access);
+        }
+
+        if (data.tokens?.refresh) {
+          localStorage.setItem('refresh_token', data.tokens.refresh);
+        }
+
+        if (data.user) {
+          localStorage.setItem('user', JSON.stringify(data.user));
+        }
+
         setError('');
         setSuccess('Login successful! Redirecting...');
-        redirectAfterLogin(data.user);
+
+        setTimeout(() => {
+          redirectAfterLogin(data.user);
+        }, 500);
       } else {
         throw new Error(data.message || 'Authentication failed');
       }
     } catch (err) {
       // 1. Categorize Error Type
-      const isNetworkError = err.isNetworkError || !err.response;
+      const isNetworkError =
+        err.code === 'ERR_NETWORK' ||
+        err.message?.includes('Network Error') ||
+        err.isNetworkError;
       const errorData = err.response?.data;
       
       let displayMessage = 'Invalid email or password';
