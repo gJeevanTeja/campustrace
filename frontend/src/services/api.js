@@ -76,6 +76,9 @@ api.interceptors.response.use(
       }
       // Attach a custom flag to the error for components to recognize
       error.isNetworkError = true;
+      error.isTimeout = error.code === 'ECONNABORTED' || error.message?.includes('timeout');
+      error.isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
+      
       return Promise.reject(error);
     }
 

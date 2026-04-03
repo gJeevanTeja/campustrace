@@ -64,6 +64,7 @@ const Login = () => {
     if (submittingRef.current) return;
     submittingRef.current = true;
     setError('');
+    setSuccess('');
     setLoading(true);
 
     try {
@@ -81,6 +82,8 @@ const Login = () => {
       });
 
       if (data.success) {
+        setError('');
+        setSuccess('Login successful! Redirecting...');
         redirectAfterLogin(data.user);
       } else {
         throw new Error(data.message || 'Authentication failed');
@@ -93,7 +96,13 @@ const Login = () => {
       let displayMessage = 'Invalid email or password';
       
       if (isNetworkError) {
-        displayMessage = 'Network Error: Cannot connect to server. Please check your connection.';
+        if (err.isOffline) {
+          displayMessage = 'Offline: Please check your internet connection.';
+        } else if (err.isTimeout) {
+          displayMessage = 'Connection Timeout: The server is taking too long to respond.';
+        } else {
+          displayMessage = 'Network Error: Cannot connect to server. Please check your connection or try again.';
+        }
       } else if (errorData) {
         displayMessage = errorData.message || errorData.detail || errorData.error || displayMessage;
       } else if (err.message) {
@@ -116,7 +125,9 @@ const Login = () => {
     e.preventDefault();
     if (submittingRef.current) return;
     submittingRef.current = true;
-    setError(''); setSuccess(''); setLoading(true);
+    setError('');
+    setSuccess('');
+    setLoading(true);
     try {
       await authAPI.sendOTP({ identifier: otpId.trim(), otp_type: otpType });
       setOtpSent(true);
@@ -133,7 +144,9 @@ const Login = () => {
     e.preventDefault();
     if (submittingRef.current) return;
     submittingRef.current = true;
-    setError(''); setLoading(true);
+    setError('');
+    setSuccess('');
+    setLoading(true);
     try {
       const { data } = await authAPI.verifyOTP({
         identifier: otpId.trim(),
@@ -142,6 +155,8 @@ const Login = () => {
       localStorage.setItem('access_token', data.tokens.access);
       localStorage.setItem('refresh_token', data.tokens.refresh);
       localStorage.setItem('user', JSON.stringify(data.user));
+      setError('');
+      setSuccess('Access granted! Redirecting...');
       redirectAfterLogin(data.user);
     } catch (err) {
       setError(err.response?.data?.error || 'Invalid OTP');
@@ -190,7 +205,7 @@ const Login = () => {
              {[['password', 'Secure Key'], ['otp', 'Passcode']].map(([t, lbl]) => (
                <button 
                  key={t}
-                 onClick={() => { setTab(t); setOtpSent(false); }}
+                 onClick={() => { setTab(t); setOtpSent(false); setError(''); setSuccess(''); }}
                  className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${tab === t ? 'bg-white dark:bg-slate-800 text-primary shadow-sm' : 'text-text-secondary hover:bg-white/50 dark:hover:bg-slate-800/50'}`}
                >
                   {lbl}
