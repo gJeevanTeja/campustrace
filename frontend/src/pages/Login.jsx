@@ -62,7 +62,7 @@ const Login = () => {
     } 
     // 3. Student / Default
     else {
-       window.location.href = '/dashboard';
+       window.location.href = '/';
        setTimeout(() => { window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); }, 100);
     }
   };
