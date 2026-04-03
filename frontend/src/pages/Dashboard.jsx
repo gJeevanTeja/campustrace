@@ -96,7 +96,14 @@ const Dashboard = () => {
         }
     }, [user]);
 
-    useEffect(() => { fetchData(); }, [fetchData]);
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    // Force scroll to top on mount
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
 
     const userPieData = userStats ? [
         { name: 'Lost', value: userStats.lost },

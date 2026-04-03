@@ -42,21 +42,28 @@ const Login = () => {
   }, []);
 
   const redirectAfterLogin = (user) => {
-    if (!user) { window.location.href = '/dashboard'; return; }
+    if (!user) { 
+      window.location.href = '/dashboard'; 
+      setTimeout(() => { window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); }, 100);
+      return; 
+    }
     
     const role = user.role?.toLowerCase();
     
     // 1. Super Admin
     if (role === 'super_admin') {
        window.location.href = '/super-admin-dashboard';
+       setTimeout(() => { window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); }, 100);
     } 
     // 2. College Admin / Moderator
     else if (role === 'college_admin' || role === 'moderator' || role === 'admin') {
        window.location.href = '/admin';
+       setTimeout(() => { window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); }, 100);
     } 
     // 3. Student / Default
     else {
        window.location.href = '/dashboard';
+       setTimeout(() => { window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); }, 100);
     }
   };
 
