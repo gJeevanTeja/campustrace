@@ -59,12 +59,12 @@ const MainLayout = ({ children }) => {
   const closeMobileSidebar = () => setMobileSidebarOpen(false);
 
   return (
-    <div className="flex min-h-screen bg-background dark:bg-[#0b0f1a] font-sans transition-colors duration-300">
+    <div className="flex min-h-screen bg-background dark:bg-[#020617] font-sans transition-colors duration-300">
       {/* Desktop Sidebar (visible for >= 1024px) */}
       <motion.aside 
         initial={false}
         animate={{ width: isSidebarCollapsed ? '80px' : '260px' }}
-        className="hidden lg:flex flex-col fixed inset-y-0 left-0 glass-effect dark:bg-card/80 border-r border-border/50 dark:border-slate-800 z-50 overflow-hidden"
+        className="hidden lg:flex flex-col fixed inset-y-0 left-0 glass-effect dark:bg-[#0b1120] border-r border-border/50 dark:border-slate-800 z-50 overflow-hidden"
       >
         <div className="p-6 flex items-center justify-between">
           <AnimatePresence mode="wait">
@@ -205,7 +205,7 @@ const MainLayout = ({ children }) => {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="lg:hidden fixed inset-y-0 left-0 w-[280px] bg-white dark:bg-card z-[1001] shadow-2xl flex flex-col border-r border-border/50 dark:border-slate-800"
+              className="lg:hidden fixed inset-y-0 left-0 w-[280px] bg-white dark:bg-[#0b1120] z-[1001] shadow-2xl flex flex-col border-r border-border/50 dark:border-slate-800"
             >
               <div className="p-6 flex items-center justify-between border-b border-border/50 dark:border-slate-800">
                 <div className="font-extrabold text-2xl bg-primary-gradient bg-clip-text text-transparent">
@@ -280,7 +280,7 @@ const MainLayout = ({ children }) => {
       {/* Main Content Area */}
       <main className={`flex-1 transition-all duration-300 ${isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-[260px]'} pb-0`}>
         {/* Top Header (Mobile & Desktop) */}
-        <header className="sticky top-0 z-40 glass-effect bg-white/70 dark:bg-card/70 border-b border-border/40 dark:border-slate-800/60 px-4 lg:px-8 py-3 lg:py-4 flex items-center justify-between">
+        <header className="sticky top-0 z-40 glass-effect bg-white/70 dark:bg-slate-950/70 border-b border-border/40 dark:border-slate-800/60 px-4 lg:px-8 py-3 lg:py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setMobileSidebarOpen(true)}
@@ -354,7 +354,7 @@ const MainLayout = ({ children }) => {
       </main>
 
       {/* Mobile Bottom Navigation (visible < 1024px) */}
-      <nav className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] h-16 glass-effect bg-white/80 dark:bg-card/80 border border-white/40 dark:border-slate-800 rounded-3xl shadow-2xl z-50 flex items-center justify-around px-2 transition-colors duration-300">
+      <nav className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] h-16 glass-effect bg-white/80 dark:bg-slate-950/80 border border-white/40 dark:border-slate-800 rounded-3xl shadow-2xl z-50 flex items-center justify-around px-2 transition-colors duration-300">
         {mainNavigation.map((item) => {
           const isActive = location.pathname === item.href;
           return (

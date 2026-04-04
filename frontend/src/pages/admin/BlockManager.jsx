@@ -80,8 +80,8 @@ const BlockManager = ({ darkMode }) => {
         }
     };
 
-    const bg = dm ? '#1e293b' : '#fff';
-    const border = dm ? '#334155' : '#e2e8f0';
+    const bg = dm ? '#0f172a' : '#fff';
+    const border = dm ? '#1e293b' : '#e2e8f0';
     const text = dm ? '#f1f5f9' : '#1e293b';
 
     return (
@@ -104,7 +104,7 @@ const BlockManager = ({ darkMode }) => {
             }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead>
-                        <tr style={{ borderBottom: `1px solid ${border}`, background: dm ? '#33415544' : '#f8fafc' }}>
+                        <tr style={{ borderBottom: `1px solid ${border}`, background: dm ? '#1e293b88' : '#f8fafc' }}>
                             <th style={{ padding: '16px', fontSize: 13, color: dm ? '#94a3b8' : '#64748b' }}>Location Block</th>
                             <th style={{ padding: '16px', fontSize: 13, color: dm ? '#94a3b8' : '#64748b' }}>Coordinates</th>
                             <th style={{ padding: '16px', fontSize: 13, color: dm ? '#94a3b8' : '#64748b' }}>Status</th>
@@ -121,8 +121,9 @@ const BlockManager = ({ darkMode }) => {
                                 <td style={{ padding: '16px' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                         <div style={{
-                                            width: 48, height: 48, borderRadius: 10, background: '#f1f5f9',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'
+                                            width: 48, height: 48, borderRadius: 10, background: dm ? '#020617' : '#f1f5f9',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+                                            border: dm ? `1px solid ${border}` : 'none'
                                         }}>
                                             {b.image ? <img src={b.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <MapPin size={24} color="#64748b" />}
                                         </div>
@@ -206,7 +207,7 @@ const BlockManager = ({ darkMode }) => {
                                         type="number" step="any" required
                                         value={formData.latitude}
                                         onChange={e => setFormData({ ...formData, latitude: e.target.value })}
-                                        style={{ width: '100%', padding: '12px', borderRadius: 10, border: `1px solid ${border}`, background: dm ? '#0f172a' : '#f8fafc', color: text }}
+                                        style={{ width: '100%', padding: '12px', borderRadius: 10, border: `1px solid ${border}`, background: dm ? '#020617' : '#f8fafc', color: text, outline: 'none' }}
                                     />
                                 </div>
                                 <div>
@@ -215,7 +216,7 @@ const BlockManager = ({ darkMode }) => {
                                         type="number" step="any" required
                                         value={formData.longitude}
                                         onChange={e => setFormData({ ...formData, longitude: e.target.value })}
-                                        style={{ width: '100%', padding: '12px', borderRadius: 10, border: `1px solid ${border}`, background: dm ? '#0f172a' : '#f8fafc', color: text }}
+                                        style={{ width: '100%', padding: '12px', borderRadius: 10, border: `1px solid ${border}`, background: dm ? '#020617' : '#f8fafc', color: text, outline: 'none' }}
                                     />
                                 </div>
                             </div>

@@ -130,13 +130,13 @@ const Dashboard = () => {
                            Welcome back, <span className="text-primary">{user?.name?.split(' ')[0]}</span>
                        </p>
                        <div className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
-                       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-success">
-                           <div className="w-2 h-2 rounded-full bg-success animate-pulse" /> System Online
+                       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#10B981] dark:text-emerald-400">
+                           <div className="w-2 h-2 rounded-full bg-[#10B981] dark:bg-emerald-400 animate-pulse" /> System Online
                        </div>
                    </div>
                 </div>
                 <div className="flex items-center gap-3 pl-14 md:pl-0">
-                    <button onClick={fetchData} className="p-4 bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-2xl text-text-secondary dark:text-slate-400 hover:text-primary transition-all shadow-sm">
+                    <button onClick={fetchData} className="p-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl text-text-secondary dark:text-slate-400 hover:text-primary transition-all shadow-sm">
                         <RefreshCcw size={20} className={loading ? 'animate-spin' : ''} />
                     </button>
                     {isAdmin && (
@@ -210,7 +210,7 @@ const Dashboard = () => {
                                                             {userPieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                                                         </Pie>
                                                         <Tooltip 
-                                                          contentStyle={{ background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', fontSize: '12px', fontWeight: 'bold' }}
+                                                          contentStyle={{ background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.3)', fontSize: '12px', fontWeight: 'bold' }}
                                                           itemStyle={{ color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#1e293b' }}
                                                         />
                                                     </PieChart>
@@ -240,7 +240,7 @@ const Dashboard = () => {
                                                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: document.documentElement.classList.contains('dark') ? '#64748b' : '#94a3b8' }} />
                                                 <Tooltip 
                                                   cursor={{ fill: document.documentElement.classList.contains('dark') ? '#1e293b' : '#f8fafc' }} 
-                                                  contentStyle={{ background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', fontSize: '12px', fontWeight: 'bold' }}
+                                                  contentStyle={{ background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.3)', fontSize: '12px', fontWeight: 'bold' }}
                                                   itemStyle={{ color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#1e293b' }}
                                                 />
                                                 <Bar dataKey="lost" fill={BAR_COLORS.lost} radius={[4, 4, 0, 0]} />
@@ -310,8 +310,8 @@ const Dashboard = () => {
 };
 
 const StatCard = ({ icon, label, value, color, bg }) => (
-    <PremiumCard className={`p-6 space-y-4 border-none shadow-xl shadow-black/5`}>
-        <div className={`w-12 h-12 ${bg} ${color} rounded-2xl flex items-center justify-center shadow-sm dark:bg-opacity-20 transition-colors`}>
+    <PremiumCard className={`p-6 space-y-4 border border-slate-100 dark:border-slate-800 shadow-xl shadow-black/5 dark:bg-slate-900/60 transition-all`}>
+        <div className={`w-12 h-12 ${bg} ${color} rounded-2xl flex items-center justify-center shadow-sm dark:bg-opacity-10 transition-colors`}>
             {React.cloneElement(icon, { size: 24 })}
         </div>
         <div className="space-y-1">

@@ -138,7 +138,7 @@ const Home = () => {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search for lost items..."
-                  className="w-full bg-white dark:bg-slate-900 text-text-primary dark:text-slate-100 pl-12 pr-4 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-white/20 transition-all shadow-lg placeholder:text-slate-500"
+                  className="w-full bg-white dark:bg-slate-950 text-text-primary dark:text-slate-100 pl-12 pr-4 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-white/20 transition-all shadow-lg placeholder:text-slate-400 dark:placeholder:text-slate-600 border border-transparent dark:border-slate-800"
                 />
              </div>
              <button type="submit" className="bg-text-primary text-white font-bold py-4 px-8 rounded-2xl hover:bg-slate-800 transition-all shadow-lg whitespace-nowrap active:scale-95">
@@ -214,7 +214,7 @@ const Home = () => {
               <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br ${cat.gradient} mb-3 flex items-center justify-center shadow-md group-hover:shadow-lg transition-all`}>
                   <cat.icon size={32} color="#ffffff" className="group-hover:scale-110 transition-transform" strokeWidth={2} />
               </div>
-              <span className="text-[11px] sm:text-xs font-bold text-text-secondary dark:text-slate-500 group-hover:text-primary transition-colors uppercase tracking-tight">
+              <span className="text-[11px] sm:text-xs font-bold text-text-secondary dark:text-slate-400 group-hover:text-primary dark:group-hover:text-primary-light transition-colors uppercase tracking-tight">
                 {cat.label}
               </span>
             </motion.button>
@@ -236,7 +236,7 @@ const Home = () => {
               className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${
                 activeTab === 'lost' 
                 ? 'bg-white dark:bg-slate-700 text-primary dark:text-slate-100 shadow-sm active:scale-95' 
-                : 'text-text-secondary dark:text-slate-500 hover:text-text-primary dark:hover:text-slate-300'
+                : 'text-text-secondary dark:text-slate-400 hover:text-text-primary dark:hover:text-slate-200'
               }`}
             >
               Lost
@@ -246,7 +246,7 @@ const Home = () => {
               className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${
                 activeTab === 'found' 
                 ? 'bg-white dark:bg-slate-700 text-primary dark:text-slate-100 shadow-sm active:scale-95' 
-                : 'text-text-secondary dark:text-slate-500 hover:text-text-primary dark:hover:text-slate-300'
+                : 'text-text-secondary dark:text-slate-400 hover:text-text-primary dark:hover:text-slate-200'
               }`}
             >
               Found
@@ -273,7 +273,7 @@ const Home = () => {
             className="text-center py-20 bg-gray-50/50 dark:bg-slate-900/50 rounded-[40px] border border-dashed border-gray-200 dark:border-slate-800 transition-colors"
           >
              <div className="text-4xl mb-4 opacity-50">✨</div>
-             <p className="text-text-secondary dark:text-slate-400 font-medium">No recent {activeTab} items reported yet.</p>
+             <p className="text-text-secondary dark:text-slate-400 font-bold uppercase tracking-widest text-xs">No recent {activeTab} reports yet.</p>
           </motion.div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

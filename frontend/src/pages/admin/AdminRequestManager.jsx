@@ -67,12 +67,12 @@ const AdminRequestManager = ({ darkMode: dm }) => {
     return (
         <AdminLayout darkMode={dm}>
             <div style={{ marginBottom: 32 }}>
-                <h1 style={{ fontSize: 32, fontWeight: 900, color: '#1e293b', margin: 0 }}>Admin Requests</h1>
-                <p style={{ color: '#64748b', fontSize: 16, marginTop: 4 }}>Manage and verify college administrators.</p>
+                <h1 style={{ fontSize: 32, fontWeight: 900, color: dm ? '#f1f5f9' : '#1e293b', margin: 0, transition: 'color 0.2s' }}>Admin Requests</h1>
+                <p style={{ color: dm ? '#94a3b8' : '#64748b', fontSize: 16, marginTop: 4, transition: 'color 0.2s' }}>Manage and verify college administrators.</p>
             </div>
 
             {/* TABS */}
-            <div style={{ display: 'flex', gap: 12, marginBottom: 24, borderBottom: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', gap: 12, marginBottom: 24, borderBottom: `1px solid ${dm ? '#1e293b' : '#e2e8f0'}` }}>
                 {['pending', 'approved', 'rejected'].map(tab => (
                     <button
                         key={tab}
@@ -82,7 +82,7 @@ const AdminRequestManager = ({ darkMode: dm }) => {
                             background: 'none',
                             border: 'none',
                             borderBottom: activeTab === tab ? '3px solid #2563eb' : '3px solid transparent',
-                            color: activeTab === tab ? '#2563eb' : '#64748b',
+                            color: activeTab === tab ? '#2563eb' : (dm ? '#94a3b8' : '#64748b'),
                             fontWeight: activeTab === tab ? 800 : 600,
                             fontSize: 15,
                             textTransform: 'capitalize',
@@ -95,13 +95,13 @@ const AdminRequestManager = ({ darkMode: dm }) => {
                 ))}
             </div>
 
-            <div style={{ background: '#fff', borderRadius: 24, border: '1px solid #f1f5f9', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-                <div style={{ padding: '24px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ background: dm ? '#0f172a' : '#fff', borderRadius: 24, border: `1px solid ${dm ? '#1e293b' : '#f1f5f9'}`, overflow: 'hidden', boxShadow: dm ? 'none' : '0 4px 20px rgba(0,0,0,0.02)', transition: 'all 0.2s' }}>
+                <div style={{ padding: '24px', borderBottom: `1px solid ${dm ? '#1e293b' : '#f1f5f9'}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ position: 'relative', width: '300px' }}>
                         <Search size={18} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                         <input
                             type="text" placeholder="Search applicants..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                            style={{ width: '100%', padding: '10px 16px 10px 42px', borderRadius: 12, border: '1px solid #e2e8f0', outline: 'none', fontSize: 14, background: '#f8fafc' }}
+                            style={{ width: '100%', padding: '10px 16px 10px 42px', borderRadius: 12, border: `1px solid ${dm ? '#1e293b' : '#e2e8f0'}`, outline: 'none', fontSize: 14, background: dm ? '#020617' : '#f8fafc', color: dm ? '#f1f5f9' : '#1e293b' }}
                         />
                     </div>
                 </div>
@@ -123,21 +123,21 @@ const AdminRequestManager = ({ darkMode: dm }) => {
                             <tbody>
                                 {filtered.map((req) => (
                                     <tr key={req.id}
-                                        style={{ borderBottom: '1px solid #f1f5f9', transition: 'background 0.2s' }}
+                                        style={{ borderBottom: `1px solid ${dm ? '#1e293b' : '#f1f5f9'}`, transition: 'background 0.2s' }}
                                     >
                                         <td style={{ padding: '16px 24px' }}>
-                                            <div style={{ fontWeight: 700, color: '#1e293b' }}>{req.full_name}</div>
-                                            <div style={{ fontSize: 12, color: '#64748b' }}>{req.email}</div>
+                                            <div style={{ fontWeight: 700, color: dm ? '#f1f5f9' : '#1e293b' }}>{req.full_name}</div>
+                                            <div style={{ fontSize: 12, color: dm ? '#94a3b8' : '#64748b' }}>{req.email}</div>
                                         </td>
                                         <td style={{ padding: '16px 24px' }}>
-                                            <div style={{ fontWeight: 600, color: '#475569', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                            <div style={{ fontWeight: 600, color: dm ? '#cbd5e1' : '#475569', display: 'flex', alignItems: 'center', gap: 6 }}>
                                                 <Building2 size={14} /> {req.college_name}
                                             </div>
                                         </td>
                                         <td style={{ padding: '16px 24px', textAlign: 'right' }}>
                                             <button
                                                 onClick={() => setSelectedRequest(req)}
-                                                style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: '#f1f5f9', color: '#2563eb', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                                                style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: dm ? '#1e293b' : '#f1f5f9', color: '#2563eb', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                                                 <Eye size={16} /> View Details
                                             </button>
                                         </td>
@@ -156,32 +156,32 @@ const AdminRequestManager = ({ darkMode: dm }) => {
                     background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)',
                     zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
                 }}>
-                    <div style={{
-                        background: '#fff', borderRadius: 24, width: '100%', maxWidth: 700,
-                        maxHeight: '90vh', display: 'flex', flexDirection: 'column',
+                        <div style={{
+                        background: dm ? '#0f172a' : '#fff', borderRadius: 24, width: '100%', maxWidth: 700,
+                        maxHeight: '90vh', display: 'flex', flexDirection: 'column', border: dm ? '1px solid #1e293b' : 'none',
                         boxShadow: '0 20px 40px rgba(0,0,0,0.2)', overflow: 'hidden'
                     }}>
                         {/* Modal Header */}
-                        <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc' }}>
-                            <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: '#1e293b' }}>Verification Details</h2>
-                            <button onClick={() => setSelectedRequest(null)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#64748b', padding: 4 }}><X size={24} /></button>
+                        <div style={{ padding: '20px 24px', borderBottom: `1px solid ${dm ? '#1e293b' : '#f1f5f9'}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: dm ? '#1e293b88' : '#f8fafc' }}>
+                            <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: dm ? '#f1f5f9' : '#1e293b' }}>Verification Details</h2>
+                            <button onClick={() => setSelectedRequest(null)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: dm ? '#94a3b8' : '#64748b', padding: 4 }}><X size={24} /></button>
                         </div>
 
                         {/* Modal Body */}
                         <div style={{ padding: '24px', overflowY: 'auto', flex: 1 }}>
                             {/* Section 1 */}
-                            <div style={{ background: '#f8fafc', padding: 20, borderRadius: 16, marginBottom: 24, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                                <div><p style={{ margin: '0 0 4px', fontSize: 12, color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Full Name</p><p style={{ margin: 0, fontWeight: 700, color: '#1e293b' }}>{selectedRequest.full_name}</p></div>
-                                <div><p style={{ margin: '0 0 4px', fontSize: 12, color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Phone</p><p style={{ margin: 0, fontWeight: 700, color: '#1e293b' }}>{selectedRequest.phone_number}</p></div>
-                                <div><p style={{ margin: '0 0 4px', fontSize: 12, color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Email</p><p style={{ margin: 0, fontWeight: 700, color: '#1e293b' }}>{selectedRequest.email}</p></div>
-                                <div><p style={{ margin: '0 0 4px', fontSize: 12, color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Designation</p><p style={{ margin: 0, fontWeight: 700, color: '#1e293b' }}>{selectedRequest.designation || 'N/A'}</p></div>
-                                <div style={{ gridColumn: 'span 2' }}><p style={{ margin: '0 0 4px', fontSize: 12, color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>College</p><p style={{ margin: 0, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 6 }}><Building2 size={16} /> {selectedRequest.college_name}</p></div>
+                            <div style={{ background: dm ? '#020617' : '#f8fafc', padding: 20, borderRadius: 16, marginBottom: 24, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, border: dm ? '1px solid #1e293b' : 'none' }}>
+                                <div><p style={{ margin: '0 0 4px', fontSize: 12, color: dm ? '#94a3b8' : '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Full Name</p><p style={{ margin: 0, fontWeight: 700, color: dm ? '#f1f5f9' : '#1e293b' }}>{selectedRequest.full_name}</p></div>
+                                <div><p style={{ margin: '0 0 4px', fontSize: 12, color: dm ? '#94a3b8' : '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Phone</p><p style={{ margin: 0, fontWeight: 700, color: dm ? '#f1f5f9' : '#1e293b' }}>{selectedRequest.phone_number}</p></div>
+                                <div><p style={{ margin: '0 0 4px', fontSize: 12, color: dm ? '#94a3b8' : '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Email</p><p style={{ margin: 0, fontWeight: 700, color: dm ? '#f1f5f9' : '#1e293b' }}>{selectedRequest.email}</p></div>
+                                <div><p style={{ margin: '0 0 4px', fontSize: 12, color: dm ? '#94a3b8' : '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Designation</p><p style={{ margin: 0, fontWeight: 700, color: dm ? '#f1f5f9' : '#1e293b' }}>{selectedRequest.designation || 'N/A'}</p></div>
+                                <div style={{ gridColumn: 'span 2' }}><p style={{ margin: '0 0 4px', fontSize: 12, color: dm ? '#94a3b8' : '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>College</p><p style={{ margin: 0, fontWeight: 700, color: dm ? '#f1f5f9' : '#1e293b', display: 'flex', alignItems: 'center', gap: 6 }}><Building2 size={16} /> {selectedRequest.college_name}</p></div>
                             </div>
 
                             {/* Section 2 */}
                             <div style={{ marginBottom: 24 }}>
-                                <h3 style={{ fontSize: 14, fontWeight: 800, color: '#1e293b', borderBottom: '1px solid #e2e8f0', paddingBottom: 8, marginBottom: 16 }}>Reason for Request</h3>
-                                <p style={{ margin: 0, color: '#475569', lineHeight: 1.6, background: '#f8fafc', padding: 16, borderRadius: 12 }}>{selectedRequest.reason}</p>
+                                <h3 style={{ fontSize: 14, fontWeight: 800, color: dm ? '#f1f5f9' : '#1e293b', borderBottom: `1px solid ${dm ? '#1e293b' : '#e2e8f0'}`, paddingBottom: 8, marginBottom: 16 }}>Reason for Request</h3>
+                                <p style={{ margin: 0, color: dm ? '#cbd5e1' : '#475569', lineHeight: 1.6, background: dm ? '#020617' : '#f8fafc', padding: 16, borderRadius: 12, border: dm ? '1px solid #1e293b' : 'none' }}>{selectedRequest.reason}</p>
                             </div>
 
                             {/* Section 3 Documents */}
@@ -198,7 +198,7 @@ const AdminRequestManager = ({ darkMode: dm }) => {
 
                         {/* Modal Footer Actions */}
                         {selectedRequest.status === 'pending' && (
-                            <div style={{ padding: '20px 24px', borderTop: '1px solid #f1f5f9', display: 'flex', gap: 16, background: '#f8fafc' }}>
+                            <div style={{ padding: '20px 24px', borderTop: `1px solid ${dm ? '#1e293b' : '#f1f5f9'}`, display: 'flex', gap: 16, background: dm ? '#1e293b88' : '#f8fafc' }}>
                                 <button
                                     disabled={actionLoading === selectedRequest.id}
                                     onClick={() => handleApprove(selectedRequest.id)}

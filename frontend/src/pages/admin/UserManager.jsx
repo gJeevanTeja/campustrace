@@ -50,8 +50,8 @@ const UserManager = ({ darkMode }) => {
         }
     };
 
-    const tableBg = dm ? '#1e293b' : '#fff';
-    const borderColor = dm ? '#334155' : '#e2e8f0';
+    const tableBg = dm ? '#0f172a' : '#fff';
+    const borderColor = dm ? '#1e293b' : '#e2e8f0';
     const textColor = dm ? '#f1f5f9' : '#1e293b';
     const mutedText = dm ? '#94a3b8' : '#64748b';
 
@@ -71,7 +71,7 @@ const UserManager = ({ darkMode }) => {
                         onChange={(e) => setSearch(e.target.value)}
                         style={{
                             width: '100%', padding: '10px 10px 10px 40px', borderRadius: 10,
-                            border: `1px solid ${borderColor}`, background: dm ? '#0f172a' : '#f8fafc',
+                            border: `1px solid ${borderColor}`, background: dm ? '#020617' : '#f8fafc',
                             color: textColor, outline: 'none'
                         }}
                     />
@@ -81,7 +81,7 @@ const UserManager = ({ darkMode }) => {
                     onChange={(e) => setRoleFilter(e.target.value)}
                     style={{
                         padding: '10px 16px', borderRadius: 10, border: `1px solid ${borderColor}`,
-                        background: dm ? '#0f172a' : '#f8fafc', color: textColor, outline: 'none'
+                        background: dm ? '#020617' : '#f8fafc', color: textColor, outline: 'none'
                     }}
                 >
                     <option value="">All Roles</option>
@@ -104,7 +104,7 @@ const UserManager = ({ darkMode }) => {
                 }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                         <thead>
-                            <tr style={{ borderBottom: `1px solid ${borderColor}`, background: dm ? '#33415544' : '#f8fafc' }}>
+                            <tr style={{ borderBottom: `1px solid ${borderColor}`, background: dm ? '#1e293b88' : '#f8fafc' }}>
                                 <th style={{ padding: '16px', fontSize: 13, color: mutedText }}>User</th>
                                 <th style={{ padding: '16px', fontSize: 13, color: mutedText }}>Role</th>
                                 <th style={{ padding: '16px', fontSize: 13, color: mutedText }}>Status</th>
@@ -140,8 +140,8 @@ const UserManager = ({ darkMode }) => {
                                         <span style={{
                                             fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
                                             padding: '2px 8px', borderRadius: 6,
-                                            background: u.role === 'moderator' ? '#7c3aed22' : '#e2e8f0',
-                                            color: u.role === 'moderator' ? '#7c3aed' : '#64748b'
+                                            background: u.role === 'moderator' ? '#7c3aed22' : (dm ? '#1e293b' : '#e2e8f0'),
+                                            color: u.role === 'moderator' ? '#7c3aed' : (dm ? '#94a3b8' : '#64748b')
                                         }}>
                                             {u.role}
                                         </span>
@@ -230,7 +230,7 @@ const UserManager = ({ darkMode }) => {
                         </div>
 
                         {activity && (
-                            <div style={{ background: dm ? '#0f172a' : '#f8fafc', padding: 16, borderRadius: 12, marginBottom: 24 }}>
+                            <div style={{ background: dm ? '#020617' : '#f8fafc', padding: 16, borderRadius: 12, marginBottom: 24, border: dm ? '1px solid #1e293b' : 'none' }}>
                                 <p style={{ margin: '0 0 12px', fontSize: 12, fontWeight: 700, color: mutedText, textTransform: 'uppercase' }}>User Activity</p>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                                     <div style={{ textAlign: 'center' }}>

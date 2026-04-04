@@ -293,7 +293,7 @@ const ItemDetails = () => {
   if (loading) return (
      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
         <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-        <p className="text-text-secondary font-bold">Synchronizing details...</p>
+        <p className="text-text-secondary dark:text-slate-400 font-bold">Synchronizing details...</p>
      </div>
   );
 
@@ -310,7 +310,7 @@ const ItemDetails = () => {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-32">
-      <div className="flex items-center justify-between bg-white/70 dark:bg-card/80 backdrop-blur-md sticky top-0 z-40 py-4 border-b border-border dark:border-slate-800 -mx-4 px-4 sm:mx-0 sm:rounded-2xl sm:border sm:px-6 transition-colors">
+      <div className="flex items-center justify-between bg-white/70 dark:bg-slate-950/80 backdrop-blur-md sticky top-0 z-40 py-4 border-b border-border dark:border-slate-800 -mx-4 px-4 sm:mx-0 sm:rounded-2xl sm:border sm:px-6 transition-colors shadow-sm">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
             <ChevronLeft size={20} className="dark:text-slate-100" />
@@ -347,7 +347,7 @@ const ItemDetails = () => {
         <div className="lg:col-span-12 xl:col-span-12 space-y-8">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
              <div className="space-y-4">
-                <div className="aspect-video relative rounded-3xl overflow-hidden border border-border dark:border-slate-800 shadow-xl bg-gray-100 dark:bg-slate-900 group transition-colors">
+                <div className="aspect-video relative rounded-3xl overflow-hidden border border-border dark:border-slate-800 shadow-xl bg-gray-100 dark:bg-slate-950 group transition-colors">
                    <AnimatePresence mode="wait">
                       <motion.img 
                         key={activePhoto}
@@ -363,7 +363,7 @@ const ItemDetails = () => {
                         }}
                       />
                       <div 
-                        className="w-full h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-900 text-slate-300 dark:text-slate-700 gap-2"
+                        className="w-full h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-950 text-slate-300 dark:text-slate-700 gap-2"
                         style={{ display: 'none' }}
                       >
                          <div className="text-4xl font-black uppercase tracking-tighter opacity-20">
@@ -403,7 +403,7 @@ const ItemDetails = () => {
              </div>
 
              <div className="space-y-6">
-                <div className="bg-white dark:bg-card rounded-3xl p-8 border border-border dark:border-slate-800 shadow-sm transition-colors">
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-border dark:border-slate-800 shadow-sm transition-colors">
                    <div className="flex flex-wrap gap-2 mb-6">
                       <span className="bg-primary/5 dark:bg-primary/10 text-primary text-xs font-black px-3 py-1 rounded-lg uppercase tracking-wider border border-primary/10 dark:border-primary/20">
                         {item.category}

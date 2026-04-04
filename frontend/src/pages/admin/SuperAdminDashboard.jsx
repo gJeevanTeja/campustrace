@@ -15,7 +15,7 @@ const StatCard = ({ title, value, icon: Icon, color, trend, delay }) => (
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay }}
-        className="bg-white dark:bg-card p-6 rounded-[24px] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group"
+        className="bg-white dark:bg-slate-900/60 p-6 rounded-[24px] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group"
     >
         <div className="flex justify-between items-start mb-4">
             <div className={`p-3 rounded-2xl bg-gradient-to-br ${color} text-white shadow-lg shadow-current/10 group-hover:scale-110 transition-transform`}>
@@ -29,8 +29,8 @@ const StatCard = ({ title, value, icon: Icon, color, trend, delay }) => (
             )}
         </div>
         <div className="space-y-1">
-            <p className="text-[10px] font-black text-text-secondary uppercase tracking-[2px]">{title}</p>
-            <h3 className="text-3xl font-black text-text-primary tracking-tighter">{value || '0'}</h3>
+            <p className="text-[10px] font-black text-text-secondary dark:text-slate-400 uppercase tracking-[2px] transition-colors">{title}</p>
+            <h3 className="text-3xl font-black text-text-primary dark:text-slate-100 tracking-tighter transition-colors">{value || '0'}</h3>
         </div>
     </motion.div>
 );
@@ -98,12 +98,12 @@ const SuperAdminDashboard = () => {
             {/* Header section */}
             <div className="space-y-2">
                 <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-primary/10 text-primary rounded-xl">
+                    <div className="p-2.5 bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary-light rounded-xl transition-colors">
                         <TrendingUp size={24} />
                     </div>
-                    <h2 className="text-4xl font-black text-text-primary tracking-tighter uppercase">Global Overview</h2>
+                    <h2 className="text-4xl font-black text-text-primary dark:text-slate-100 tracking-tighter uppercase transition-colors">Global Overview</h2>
                 </div>
-                <p className="text-text-secondary font-bold text-sm opacity-70 tracking-tight pl-14">
+                <p className="text-text-secondary dark:text-slate-400 font-bold text-sm opacity-70 tracking-tight pl-14 transition-colors">
                     Monitor and manage the entire UniTrace institutional network.
                 </p>
             </div>
@@ -161,20 +161,20 @@ const SuperAdminDashboard = () => {
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Main Activity Chart */}
-                <div className="lg:col-span-2 bg-white dark:bg-card p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm relative overflow-hidden group">
+                <div className="lg:col-span-2 bg-white dark:bg-slate-900/60 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm relative overflow-hidden group transition-all">
                     <div className="flex items-center justify-between mb-8 relative z-10">
                         <div className="space-y-1">
-                            <h4 className="text-xl font-black text-text-primary tracking-tighter uppercase">Network Activity</h4>
-                            <p className="text-[10px] font-bold text-text-secondary uppercase tracking-widest opacity-60">Visualizing global incident volume (7D)</p>
+                            <h4 className="text-xl font-black text-text-primary dark:text-slate-100 tracking-tighter uppercase transition-colors">Network Activity</h4>
+                            <p className="text-[10px] font-bold text-text-secondary dark:text-slate-500 uppercase tracking-widest opacity-60 transition-colors">Visualizing global incident volume (7D)</p>
                         </div>
-                        <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/50 p-1.5 rounded-xl border border-slate-100 dark:border-slate-700">
-                             <div className="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 rounded-lg">
+                        <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/80 p-1.5 rounded-xl border border-slate-100 dark:border-slate-700 transition-colors">
+                             <div className="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 rounded-lg transition-colors">
                                 <div className="w-2 h-2 rounded-full bg-primary" />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-text-primary">Reports</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-text-primary dark:text-slate-100 transition-colors">Reports</span>
                              </div>
                              <div className="flex items-center gap-1.5 px-3 py-1">
                                 <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-text-secondary">Resolved</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-text-secondary dark:text-slate-400 transition-colors">Resolved</span>
                              </div>
                         </div>
                     </div>
@@ -197,23 +197,23 @@ const SuperAdminDashboard = () => {
                                     dataKey="name" 
                                     axisLine={false} 
                                     tickLine={false} 
-                                    tick={{fontSize: 10, fontWeight: 700, fill: 'var(--text-secondary)'}}
+                                    tick={{fontSize: 10, fontWeight: 700, fill: document.documentElement.classList.contains('dark') ? '#64748b' : '#94a3b8'}}
                                     dy={10}
                                 />
                                 <YAxis 
                                     axisLine={false} 
                                     tickLine={false} 
-                                    tick={{fontSize: 10, fontWeight: 700, fill: 'var(--text-secondary)'}}
+                                    tick={{fontSize: 10, fontWeight: 700, fill: document.documentElement.classList.contains('dark') ? '#64748b' : '#94a3b8'}}
                                 />
                                 <Tooltip 
                                     contentStyle={{ 
-                                        backgroundColor: 'var(--card)', 
+                                        backgroundColor: document.documentElement.classList.contains('dark') ? '#0f172a' : '#fff', 
                                         borderRadius: '20px', 
                                         border: '1px solid var(--border)',
-                                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3)',
                                         padding: '12px'
                                     }}
-                                    labelStyle={{ color: 'var(--text-secondary)', fontWeight: 900, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '10px' }}
+                                    labelStyle={{ color: document.documentElement.classList.contains('dark') ? '#94a3b8' : '#6B7280', fontWeight: 900, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '10px' }}
                                 />
                                 <Area type="monotone" dataKey="reports" stroke="#7c3aed" strokeWidth={3} fillOpacity={1} fill="url(#colorReports)" />
                                 <Area type="monotone" dataKey="resolved" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorResolved)" />
@@ -257,13 +257,13 @@ const SuperAdminDashboard = () => {
                          </div>
                     </div>
 
-                    <div className="bg-slate-900 p-8 rounded-[32px] text-white shadow-xl shadow-slate-900/20 relative overflow-hidden">
+                    <div className="bg-slate-950 p-8 rounded-[32px] text-white shadow-xl shadow-slate-900/20 border border-slate-800/50 relative overflow-hidden transition-all hover:bg-slate-900">
                          <div className="relative z-10 space-y-4">
                             <h5 className="text-xl font-black tracking-tighter uppercase leading-tight">Instant Deployment</h5>
                             <p className="text-xs font-medium text-slate-400 leading-relaxed mb-4">Add or remove institutions instantly from the global management panel.</p>
                             <button 
                                 onClick={() => window.location.href = '/admin/colleges'}
-                                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary hover:text-white transition-colors"
+                                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary-light hover:text-white transition-colors"
                             >
                                 Open Registry Control <ArrowUpRight size={14} />
                             </button>

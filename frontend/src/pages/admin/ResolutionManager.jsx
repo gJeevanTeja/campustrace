@@ -29,8 +29,8 @@ const ResolutionManager = ({ darkMode }) => {
         }
     };
 
-    const bg = dm ? '#1e293b' : '#fff';
-    const border = dm ? '#334155' : '#e2e8f0';
+    const bg = dm ? '#0f172a' : '#fff';
+    const border = dm ? '#1e293b' : '#e2e8f0';
     const text = dm ? '#f1f5f9' : '#1e293b';
 
     const filteredResolutions = resolutions.filter(r => 
@@ -60,7 +60,7 @@ const ResolutionManager = ({ darkMode }) => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                         style={{
                             width: '100%', padding: '12px 12px 12px 40px', borderRadius: 12,
-                            border: `1px solid ${border}`, background: dm ? '#0f172a' : '#f8fafc',
+                            border: `1px solid ${border}`, background: dm ? '#020617' : '#f8fafc',
                             color: text, outline: 'none'
                         }}
                     />
@@ -73,7 +73,7 @@ const ResolutionManager = ({ darkMode }) => {
             }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead>
-                        <tr style={{ background: dm ? '#33415544' : '#f8fafc', borderBottom: `1px solid ${border}` }}>
+                        <tr style={{ background: dm ? '#1e293b88' : '#f8fafc', borderBottom: `1px solid ${border}` }}>
                             <th style={{ padding: '20px 24px', fontSize: 13, fontWeight: 800, color: dm ? '#94a3b8' : '#64748b', textTransform: 'uppercase' }}>Item</th>
                             <th style={{ padding: '20px 24px', fontSize: 13, fontWeight: 800, color: dm ? '#94a3b8' : '#64748b', textTransform: 'uppercase' }}>Location</th>
                             <th style={{ padding: '20px 24px', fontSize: 13, fontWeight: 800, color: dm ? '#94a3b8' : '#64748b', textTransform: 'uppercase' }}>Date Resolved</th>
@@ -92,7 +92,7 @@ const ResolutionManager = ({ darkMode }) => {
                                         {item.photos && item.photos[0] ? (
                                             <img src={item.photos[0].photo} alt="" style={{ width: 44, height: 44, borderRadius: 10, objectFit: 'cover' }} />
                                         ) : (
-                                            <div style={{ width: 44, height: 44, borderRadius: 10, background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <div style={{ width: 44, height: 44, borderRadius: 10, background: dm ? '#020617' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', border: dm ? `1px solid ${border}` : 'none' }}>
                                                 <Package size={20} color="#94a3b8" />
                                             </div>
                                         )}

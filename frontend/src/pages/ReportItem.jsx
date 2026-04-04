@@ -256,20 +256,20 @@ const ReportItem = () => {
         <div className="flex items-center gap-4">
           <button 
             onClick={() => step > 1 ? prevStep() : navigate(-1)}
-            className="p-2 bg-white dark:bg-card rounded-xl border border-border dark:border-slate-800 shadow-sm hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+            className="p-2 bg-white dark:bg-slate-900 rounded-xl border border-border dark:border-slate-800 shadow-sm hover:bg-gray-50 dark:hover:bg-slate-800 transition-all group"
           >
-            <ChevronLeft size={20} className="dark:text-slate-100" />
+            <ChevronLeft size={20} className="text-text-primary dark:text-slate-100 group-hover:text-primary transition-colors" />
           </button>
           <div>
-            <h2 className="text-2xl font-extrabold text-text-primary">
+            <h2 className="text-2xl font-extrabold text-text-primary dark:text-slate-100 transition-colors">
               {isLost ? 'Report Lost Item' : 'Report Found Item'}
             </h2>
-            <p className="text-text-secondary text-sm">Step {step} of 3 • {step === 1 ? 'Basic Info' : step === 2 ? 'Location & Time' : 'Verification'}</p>
+            <p className="text-text-secondary dark:text-slate-400 text-sm transition-colors">Step {step} of 3 • {step === 1 ? 'Basic Info' : step === 2 ? 'Location & Time' : 'Verification'}</p>
           </div>
         </div>
         
         {/* Toggle */}
-        <div className="hidden sm:flex bg-white dark:bg-card p-1 rounded-2xl border border-border dark:border-slate-800 shadow-sm transition-colors">
+        <div className="hidden sm:flex bg-white dark:bg-slate-900 p-1 rounded-2xl border border-border dark:border-slate-800 shadow-sm transition-all duration-300">
            <button 
              onClick={() => setForm(prev => ({ ...prev, type: 'lost' }))}
              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${isLost ? 'bg-danger text-white shadow-md' : 'text-text-secondary dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
@@ -318,8 +318,8 @@ const ReportItem = () => {
             <div className="space-y-6">
               <PremiumCard className="p-8 space-y-6" hover={false}>
                 <div className="space-y-4">
-                  <label className="text-sm font-bold text-text-primary uppercase tracking-wider flex items-center gap-2">
-                    <Tag size={16} className="text-primary" />
+                  <label className="text-sm font-bold text-text-primary dark:text-slate-100 uppercase tracking-wider flex items-center gap-2 transition-colors">
+                    <Tag size={16} className="text-primary dark:text-primary-light" />
                     Item Title & Category
                   </label>
                   <input 
@@ -334,7 +334,7 @@ const ReportItem = () => {
                       name="category_new" 
                       value={form.category_new} 
                       onChange={handleChange}
-                      className="w-full bg-gray-50 border border-border rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium appearance-none"
+                      className="w-full bg-gray-50 dark:bg-slate-950 border border-border dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium appearance-none dark:text-slate-100 placeholder:text-slate-500"
                     >
                       <option value="">Select Category</option>
                       {categories.map(c => (
@@ -354,14 +354,14 @@ const ReportItem = () => {
                        <label className="text-sm font-black text-primary uppercase tracking-wider flex items-center gap-2">
                          <Sparkles size={16} /> Product Market Price (₹)
                        </label>
-                       <input 
-                         name="product_price" 
-                         type="number"
-                         value={form.product_price} 
-                         onChange={handleChange}
-                         placeholder=""
-                         className="w-full bg-white dark:bg-slate-900 border border-primary/20 rounded-xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-black text-lg text-primary"
-                       />
+                        <input 
+                          name="product_price" 
+                          type="number"
+                          value={form.product_price} 
+                          onChange={handleChange}
+                          placeholder=""
+                          className="w-full bg-white dark:bg-slate-950 border border-primary/20 dark:border-slate-700 rounded-xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-black text-lg text-primary dark:text-primary-light"
+                        />
                        <p className="text-[10px] text-primary/60 dark:text-primary/40 font-bold uppercase">This helps us calculate the fair reward and platform commission.</p>
                     </div>
                   )}
@@ -369,7 +369,7 @@ const ReportItem = () => {
                 </div>
 
                 <div className="space-y-4">
-                   <label className="text-sm font-bold text-text-primary uppercase tracking-wider">Detailed Description</label>
+                   <label className="text-sm font-bold text-text-primary dark:text-slate-100 uppercase tracking-wider transition-colors">Detailed Description</label>
                    <textarea 
                      name="description" 
                      value={form.description} 
@@ -396,10 +396,10 @@ const ReportItem = () => {
               <PremiumCard className="p-8 space-y-6" hover={false}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                    <div className="space-y-4">
-                      <label className="text-sm font-bold text-text-primary uppercase tracking-wider flex items-center gap-2">
-                        <Calendar size={16} className="text-primary" />
-                        Date
-                      </label>
+                       <label className="text-sm font-bold text-text-primary dark:text-slate-100 uppercase tracking-wider flex items-center gap-2 transition-colors">
+                         <Calendar size={16} className="text-primary dark:text-primary-light" />
+                         Date
+                       </label>
                       <input 
                         type="date" 
                         name="incident_date" 
@@ -410,10 +410,10 @@ const ReportItem = () => {
                       />
                    </div>
                    <div className="space-y-4">
-                      <label className="text-sm font-bold text-text-primary uppercase tracking-wider flex items-center gap-2">
-                        <ClockIcon size={16} className="text-primary" />
-                        Time
-                      </label>
+                       <label className="text-sm font-bold text-text-primary dark:text-slate-100 uppercase tracking-wider flex items-center gap-2 transition-colors">
+                         <ClockIcon size={16} className="text-primary dark:text-primary-light" />
+                         Time
+                       </label>
                       <input 
                         type="time" 
                         name="incident_time" 
@@ -424,12 +424,12 @@ const ReportItem = () => {
                    </div>
                 </div>
                  <div className="space-y-4">
-                   <label className="text-sm font-bold text-text-primary uppercase tracking-wider">Select Verified Campus Location</label>
+                   <label className="text-sm font-bold text-text-primary dark:text-slate-100 uppercase tracking-wider transition-colors">Select Verified Campus Location</label>
                    <select 
                      name="block" 
                      value={form.block} 
                      onChange={handleChange}
-                     className="w-full bg-gray-50 dark:bg-slate-900/50 border border-border dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium appearance-none dark:text-slate-100"
+                     className="w-full bg-gray-50 dark:bg-slate-950 border border-border dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium appearance-none dark:text-slate-100 placeholder:text-slate-500"
                    >
                      <option value="">Choose a verified place...</option>
                      {Object.entries(GROUPED_LOCATIONS).map(([group, locations]) => (
@@ -496,8 +496,8 @@ const ReportItem = () => {
               <PremiumCard className="p-8 space-y-8" hover={false}>
                 <div className="space-y-6">
                    <div className="flex justify-between items-center">
-                      <label className="text-sm font-bold text-text-primary uppercase tracking-wider flex items-center gap-2">
-                        <ImageIcon size={16} className="text-primary" />
+                      <label className="text-sm font-bold text-text-primary dark:text-slate-100 uppercase tracking-wider flex items-center gap-2 transition-colors">
+                        <ImageIcon size={16} className="text-primary dark:text-primary-light" />
                         Photos (Wait for upload)
                       </label>
                       <span className="text-xs font-bold text-text-secondary">{photoPreviews.length}/5 photos</span>
@@ -586,7 +586,7 @@ const ReportItem = () => {
               <div className="flex gap-4">
                 <button 
                   onClick={prevStep}
-                  className="w-1/3 py-5 rounded-3xl font-bold bg-white border border-border text-text-secondary hover:bg-gray-50 active:scale-95 transition-all"
+                  className="w-1/3 py-5 rounded-3xl font-bold bg-white dark:bg-slate-900 border border-border dark:border-slate-800 text-text-secondary dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 active:scale-95 transition-all"
                 >
                   BACK
                 </button>

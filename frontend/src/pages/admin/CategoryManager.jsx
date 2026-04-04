@@ -75,8 +75,8 @@ const CategoryManager = ({ darkMode }) => {
         }
     };
 
-    const bg = dm ? '#1e293b' : '#fff';
-    const border = dm ? '#334155' : '#e2e8f0';
+    const bg = dm ? '#0f172a' : '#fff';
+    const border = dm ? '#1e293b' : '#e2e8f0';
     const text = dm ? '#f1f5f9' : '#1e293b';
 
     return (
@@ -99,7 +99,7 @@ const CategoryManager = ({ darkMode }) => {
             }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead>
-                        <tr style={{ borderBottom: `1px solid ${border}`, background: dm ? '#33415544' : '#f8fafc' }}>
+                        <tr style={{ borderBottom: `1px solid ${border}`, background: dm ? '#1e293b88' : '#f8fafc' }}>
                             <th style={{ padding: '16px', fontSize: 13, color: dm ? '#94a3b8' : '#64748b' }}>Category Name</th>
                             <th style={{ padding: '16px', fontSize: 13, color: dm ? '#94a3b8' : '#64748b' }}>Icon</th>
                             <th style={{ padding: '16px', fontSize: 13, color: dm ? '#94a3b8' : '#64748b' }}>Priority</th>
@@ -117,8 +117,9 @@ const CategoryManager = ({ darkMode }) => {
                                 <td style={{ padding: '16px' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                         <div style={{
-                                            width: 36, height: 36, borderRadius: 10, background: '#2563eb11',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18
+                                            width: 36, height: 36, borderRadius: 10, background: dm ? '#2563eb33' : '#2563eb11',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
+                                            border: dm ? '1px solid #2563eb44' : 'none'
                                         }}>
                                             {c.emoji || '📦'}
                                         </div>
@@ -194,7 +195,7 @@ const CategoryManager = ({ darkMode }) => {
                                         type="text" required
                                         value={formData.name}
                                         onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                        style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: 10, border: `1px solid ${border}`, background: dm ? '#0f172a' : '#f8fafc', color: text }}
+                                        style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: 10, border: `1px solid ${border}`, background: dm ? '#020617' : '#f8fafc', color: text, outline: 'none' }}
                                         placeholder="e.g. Electronics"
                                     />
                                 </div>
@@ -208,7 +209,7 @@ const CategoryManager = ({ darkMode }) => {
                                         type="text" required
                                         value={formData.emoji}
                                         onChange={e => setFormData({ ...formData, emoji: e.target.value })}
-                                        style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: 10, border: `1px solid ${border}`, background: dm ? '#0f172a' : '#f8fafc', color: text }}
+                                        style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: 10, border: `1px solid ${border}`, background: dm ? '#020617' : '#f8fafc', color: text, outline: 'none' }}
                                         placeholder="e.g. 📱"
                                     />
                                 </div>
@@ -222,7 +223,7 @@ const CategoryManager = ({ darkMode }) => {
                                         type="number" required
                                         value={formData.priority}
                                         onChange={e => setFormData({ ...formData, priority: parseInt(e.target.value) || 0 })}
-                                        style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: 10, border: `1px solid ${border}`, background: dm ? '#0f172a' : '#f8fafc', color: text }}
+                                        style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: 10, border: `1px solid ${border}`, background: dm ? '#020617' : '#f8fafc', color: text, outline: 'none' }}
                                         placeholder="Lower = Faster"
                                     />
                                 </div>

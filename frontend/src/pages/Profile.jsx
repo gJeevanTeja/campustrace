@@ -212,7 +212,7 @@ const Profile = () => {
               ))}
            </div>
 
-           <div className="bg-white dark:bg-card rounded-[32px] border border-border dark:border-slate-800 overflow-hidden shadow-sm transition-colors">
+           <div className="bg-white dark:bg-slate-900/40 rounded-[32px] border border-border dark:border-slate-800 overflow-hidden shadow-sm transition-colors">
               <div className="flex border-b border-border dark:border-slate-800">
                   {[
                     { id: 'posted', lbl: `My Submissions (${myItems.length})` },
@@ -221,7 +221,7 @@ const Profile = () => {
                     <button 
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`flex-1 py-5 text-xs font-black uppercase tracking-widest transition-all ${activeTab === tab.id ? 'bg-slate-50 dark:bg-slate-800/50 text-primary border-b-4 border-primary' : 'text-text-secondary dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
+                      className={`flex-1 py-5 text-xs font-black uppercase tracking-widest transition-all ${activeTab === tab.id ? 'bg-slate-50 dark:bg-slate-800/80 text-primary dark:text-primary-light border-b-4 border-primary' : 'text-text-secondary dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
                     >
                       {tab.lbl}
                     </button>
@@ -244,7 +244,7 @@ const Profile = () => {
                         className="p-5 flex items-center justify-between group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                       >
                          <div className="flex items-center gap-4 cursor-pointer" onClick={() => navigate(`/item/${item.id}`)}>
-                            <div className="w-14 h-14 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0 border border-slate-200 dark:border-slate-700 transition-colors">
+                            <div className="w-14 h-14 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-950 flex-shrink-0 border border-slate-200 dark:border-slate-800 transition-colors">
                                {item.image_url ? (
                                  <img src={item.image_url} className="w-full h-full object-cover" alt="" />
                                ) : (
@@ -252,8 +252,8 @@ const Profile = () => {
                                )}
                             </div>
                             <div className="min-w-0">
-                               <h4 className="font-black text-text-primary dark:text-slate-100 text-base truncate group-hover:text-primary transition-colors">{item.title}</h4>
-                               <div className="flex items-center gap-3 text-[10px] font-bold text-text-secondary dark:text-slate-400 uppercase">
+                               <h4 className="font-black text-text-primary dark:text-slate-100 text-base truncate group-hover:text-primary dark:group-hover:text-primary-light transition-colors">{item.title}</h4>
+                               <div className="flex items-center gap-3 text-[10px] font-bold text-text-secondary dark:text-slate-500 uppercase transition-colors">
                                   <span className="flex items-center gap-1"><MapPin size={10} /> {item.location_name || 'Campus'}</span>
                                   <span className="flex items-center gap-1"><Clock size={10} /> {item.time_ago}</span>
                                </div>
@@ -280,7 +280,7 @@ const Profile = () => {
         <div className="space-y-8">
            <PremiumCard className="p-8 space-y-6" hover={false}>
               <h3 className="text-sm font-bold text-text-primary dark:text-slate-100 uppercase tracking-widest flex items-center gap-2 transition-colors">
-                 <Settings size={18} className="text-primary" /> Account Details
+                 <Settings size={18} className="text-primary dark:text-primary-light" /> Account Details
               </h3>
               <div className="space-y-4">
                  {[
@@ -290,7 +290,7 @@ const Profile = () => {
                    { id: 'phone', lbl: 'Mobile', val: p.phone, icon: Smartphone, edit: true },
                    { id: 'department', lbl: 'Dept', val: p.department, icon: GraduationCap, edit: false },
                  ].map(f => (
-                   <div key={f.id} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl group transition-all">
+                   <div key={f.id} className="p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl group transition-all border border-transparent dark:hover:border-slate-800">
                       <div className="flex items-center justify-between mb-1">
                          <div className="flex items-center gap-2 text-[10px] font-black text-text-secondary dark:text-slate-400 uppercase tracking-widest">
                             <f.icon size={12} /> {f.lbl}
@@ -317,10 +317,10 @@ const Profile = () => {
                 className="w-full flex items-center justify-between group"
               >
                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 rounded-xl">
+                    <div className="p-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 rounded-xl transition-colors">
                        <Lock size={18} />
                     </div>
-                    <span className="font-black text-sm uppercase tracking-tighter dark:text-slate-100">Security Settings</span>
+                    <span className="font-black text-sm uppercase tracking-tighter text-text-primary dark:text-slate-100 transition-colors">Security Settings</span>
                  </div>
                  <ChevronRight size={18} className={`transition-transform duration-300 ${showPwdForm ? 'rotate-90' : ''}`} />
               </button>
@@ -343,21 +343,21 @@ const Profile = () => {
                         type="password" 
                         placeholder="Current Password" 
                         required
-                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-border dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 transition-all text-sm font-medium dark:text-slate-100"
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-border dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 transition-all text-sm font-medium dark:text-slate-100 placeholder:text-slate-500"
                         onChange={(e) => setPwdForm({...pwdForm, old_password: e.target.value})}
                       />
                       <input 
                         type="password" 
                         placeholder="New Password" 
                         required
-                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-border dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 transition-all text-sm font-medium dark:text-slate-100"
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-border dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 transition-all text-sm font-medium dark:text-slate-100 placeholder:text-slate-500"
                         onChange={(e) => setPwdForm({...pwdForm, new_password: e.target.value})}
                       />
                       <input 
                         type="password" 
                         placeholder="Confirm Password" 
                         required
-                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-border dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 transition-all text-sm font-medium dark:text-slate-100"
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-border dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 transition-all text-sm font-medium dark:text-slate-100 placeholder:text-slate-500"
                         onChange={(e) => setPwdForm({...pwdForm, confirm_new_password: e.target.value})}
                       />
                       <button 

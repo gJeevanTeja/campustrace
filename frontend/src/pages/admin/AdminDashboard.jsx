@@ -22,16 +22,16 @@ const StatCard = ({ title, value, icon, trend, idx }) => (
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: idx * 0.1 }}
     >
-        <PremiumCard className="p-6 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform text-primary">
+        <PremiumCard className="p-6 relative overflow-hidden group border border-slate-100 dark:border-slate-800 shadow-xl shadow-black/5 dark:bg-slate-900/60 transition-all">
+            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform text-primary dark:text-primary-light">
                 {icon}
             </div>
             <div className="flex flex-col gap-1">
-                <span className="text-sm font-bold text-text-secondary uppercase tracking-wider">{title}</span>
+                <span className="text-sm font-bold text-text-secondary dark:text-slate-400 uppercase tracking-wider">{title}</span>
                 <div className="flex items-end gap-2">
-                    <span className="text-3xl font-black text-text-primary tracking-tight">{value}</span>
+                    <span className="text-3xl font-black text-text-primary dark:text-slate-100 tracking-tight">{value}</span>
                     {trend && (
-                        <span className="text-[10px] font-bold text-success bg-success/10 px-1.5 py-0.5 rounded-md mb-1.5 whitespace-nowrap">
+                        <span className="text-[10px] font-bold text-success dark:text-emerald-400 bg-success/10 dark:bg-emerald-400/10 px-1.5 py-0.5 rounded-md mb-1.5 whitespace-nowrap">
                             {trend}
                         </span>
                     )}
@@ -201,40 +201,40 @@ const AdminDashboard = () => {
         <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-5 border-b border-border last:border-0 hover:bg-primary/[0.02]"
+            className="p-5 border-b border-border dark:border-slate-800 last:border-0 hover:bg-primary/[0.02] dark:hover:bg-slate-800/40"
         >
             <div className="flex justify-between items-start mb-3">
                 <div className="flex-1">
-                    <h5 className="text-sm font-bold text-text-primary mb-1">{item.title}</h5>
+                    <h5 className="text-sm font-bold text-text-primary dark:text-slate-100 mb-1">{item.title}</h5>
                     <div className="flex flex-wrap gap-2">
                         {getTypeBadge(item.type)}
                         {getStatusBadge(item.status)}
                     </div>
                 </div>
-                <span className="text-[10px] font-bold text-text-secondary whitespace-nowrap bg-gray-100 px-2 py-1 rounded-lg">
+                <span className="text-[10px] font-bold text-text-secondary dark:text-slate-400 whitespace-nowrap bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded-lg transition-colors">
                     {item.date_reported}
                 </span>
             </div>
             <div className="grid grid-cols-2 gap-y-3 gap-x-4 mt-4">
                 <div>
-                    <span className="text-[9px] font-bold text-text-secondary uppercase tracking-widest block mb-0.5">Category</span>
-                    <span className="text-xs font-semibold text-text-primary bg-gray-50 px-2 py-0.5 rounded-md inline-block">{item.category}</span>
+                    <span className="text-[9px] font-bold text-text-secondary dark:text-slate-500 uppercase tracking-widest block mb-0.5 transition-colors">Category</span>
+                    <span className="text-xs font-semibold text-text-primary dark:text-slate-200 bg-gray-50 dark:bg-slate-800/50 px-2 py-0.5 rounded-md inline-block transition-colors">{item.category}</span>
                 </div>
                 <div>
-                    <span className="text-[9px] font-bold text-text-secondary uppercase tracking-widest block mb-0.5">Location</span>
-                    <span className="text-xs font-semibold text-text-primary truncate block">{item.location}</span>
+                    <span className="text-[9px] font-bold text-text-secondary dark:text-slate-500 uppercase tracking-widest block mb-0.5 transition-colors">Location</span>
+                    <span className="text-xs font-semibold text-text-primary dark:text-slate-200 truncate block transition-colors">{item.location}</span>
                 </div>
                 {isAdmin && (
                     <div className="col-span-2">
-                        <span className="text-[9px] font-bold text-text-secondary uppercase tracking-widest block mb-0.5">College</span>
-                        <span className="text-xs font-bold text-primary">{item.college_name}</span>
+                        <span className="text-[9px] font-bold text-text-secondary dark:text-slate-500 uppercase tracking-widest block mb-0.5 transition-colors">College</span>
+                        <span className="text-xs font-bold text-primary dark:text-primary-light transition-colors">{item.college_name}</span>
                     </div>
                 )}
-                <div className="col-span-2 flex items-center gap-2 pt-1 border-t border-border/50">
-                    <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-[9px] font-bold text-primary">
+                <div className="col-span-2 flex items-center gap-2 pt-1 border-t border-border/50 dark:border-slate-800/50">
+                    <div className="w-5 h-5 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-[9px] font-bold text-primary dark:text-primary-light">
                         {(item.reported_by || 'U')[0].toUpperCase()}
                     </div>
-                    <span className="text-[10px] font-medium text-text-secondary">Reported by <span className="text-text-primary font-bold">{item.reported_by}</span></span>
+                    <span className="text-[10px] font-medium text-text-secondary dark:text-slate-400">Reported by <span className="text-text-primary dark:text-slate-100 font-bold">{item.reported_by}</span></span>
                 </div>
             </div>
         </motion.div>
@@ -253,14 +253,14 @@ const AdminDashboard = () => {
             {/* Header section remains similar but updated */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h2 className="text-2xl sm:text-3xl font-extrabold text-text-primary">
+                    <h2 className="text-2xl sm:text-3xl font-extrabold text-text-primary dark:text-slate-100">
                         {isAdmin ? 'Global System Analytics' : 'College Analytics'}
                     </h2>
-                    <p className="text-sm sm:text-base text-text-secondary">Overview of reporting activity and system performance.</p>
+                    <p className="text-sm sm:text-base text-text-secondary dark:text-slate-400">Overview of reporting activity and system performance.</p>
                 </div>
                 <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-                    <button onClick={() => exportData('csv')} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2 hover:py-2.5 border border-border rounded-xl font-bold text-xs sm:text-sm bg-white hover:bg-gray-50 transition-all shadow-sm text-text-secondary group">
-                        <FileText size={16} className="text-primary group-hover:scale-110 transition-transform" />
+                    <button onClick={() => exportData('csv')} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2 hover:py-2.5 border border-border dark:border-slate-700 rounded-xl font-bold text-xs sm:text-sm bg-white dark:bg-slate-900 transition-all shadow-sm text-text-secondary dark:text-slate-400 group">
+                        <FileText size={16} className="text-primary dark:text-primary-light group-hover:scale-110 transition-transform" />
                         CSV
                     </button>
                     <button onClick={() => exportData('excel')} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2 hover:py-2.5 bg-primary text-white rounded-xl font-bold text-xs sm:text-sm hover:shadow-lg hover:shadow-primary/20 transition-all active:scale-95">
@@ -298,8 +298,8 @@ const AdminDashboard = () => {
                 <PremiumCard className="lg:col-span-2 p-8" hover={false}>
                     <div className="flex justify-between items-center mb-8">
                         <div>
-                            <h4 className="text-lg font-bold text-text-primary">Reporting Activity</h4>
-                            <p className="text-sm text-text-secondary">Daily reports trend over the last 30 days.</p>
+                            <h4 className="text-lg font-bold text-text-primary dark:text-slate-100">Reporting Activity</h4>
+                            <p className="text-sm text-text-secondary dark:text-slate-400">Daily reports trend over the last 30 days.</p>
                         </div>
                         <div className="flex items-center gap-2">
                             <span className="w-3 h-3 rounded-full bg-primary" />
@@ -315,19 +315,19 @@ const AdminDashboard = () => {
                                         <stop offset="95%" stopColor="#4F46E5" stopOpacity={0}/>
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280', fontWeight: 500 }} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280', fontWeight: 500 }} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={document.documentElement.classList.contains('dark') ? '#1e293b' : '#E5E7EB'} />
+                                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: document.documentElement.classList.contains('dark') ? '#64748b' : '#6B7280', fontWeight: 500 }} dy={10} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: document.documentElement.classList.contains('dark') ? '#64748b' : '#6B7280', fontWeight: 500 }} />
                                 <Tooltip
                                     contentStyle={{ 
-                                        backgroundColor: 'var(--card)', 
+                                        backgroundColor: document.documentElement.classList.contains('dark') ? '#0f172a' : '#fff', 
                                         borderRadius: '16px', 
                                         border: '1px solid var(--border)', 
-                                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', 
+                                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3)', 
                                         padding: '12px' 
                                     }}
                                     itemStyle={{ fontSize: 12, fontWeight: 700, color: '#4F46E5' }}
-                                    labelStyle={{ color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '4px' }}
+                                    labelStyle={{ color: document.documentElement.classList.contains('dark') ? '#94a3b8' : '#6B7280', fontWeight: 600, marginBottom: '4px' }}
                                 />
                                 <Line type="monotone" dataKey="count" stroke="#4F46E5" strokeWidth={4} dot={false} activeDot={{ r: 6, strokeWidth: 0, fill: '#4F46E5' }} animationDuration={1500} />
                             </LineChart>
@@ -361,15 +361,15 @@ const AdminDashboard = () => {
             <div className="mt-12">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
                     <div>
-                        <h4 className="text-xl sm:text-2xl font-extrabold text-text-primary">
+                        <h4 className="text-xl sm:text-2xl font-extrabold text-text-primary dark:text-slate-100">
                             {isAdmin ? 'Global Item Reports' : 'College Item Reports'}
                         </h4>
-                        <p className="text-sm sm:text-base text-text-secondary">Detailed log of all reported items with advanced filtering.</p>
+                        <p className="text-sm sm:text-base text-text-secondary dark:text-slate-400">Detailed log of all reported items with advanced filtering.</p>
                     </div>
                     
                     {/* Search & Global Actions */}
                     <div className="relative w-full md:w-80">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" size={18} />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary dark:text-slate-500" size={18} />
                         <input
                             type="text"
                             name="search"
@@ -384,12 +384,12 @@ const AdminDashboard = () => {
                 {/* Filter Toolbar */}
                 <PremiumCard className="p-4 mb-6" hover={false}>
                     <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-4">
-                        <div className="flex items-center justify-center sm:justify-start gap-2 px-3 py-2 bg-primary/5 text-primary rounded-xl">
+                        <div className="flex items-center justify-center sm:justify-start gap-2 px-3 py-2 bg-primary/5 dark:bg-primary/10 text-primary dark:text-primary-light rounded-xl transition-colors">
                             <Filter size={18} />
                             <span className="text-sm font-bold uppercase tracking-wider">Filters</span>
                         </div>
                         
-                        <div className="h-8 w-px bg-border hidden md:block" />
+                        <div className="h-8 w-px bg-border dark:bg-slate-700 hidden md:block" />
 
                         <div className="grid grid-cols-2 md:grid-cols-4 lg:flex gap-3 items-center">
                             {/* College Filter (Super Admin only) */}
@@ -497,10 +497,10 @@ const AdminDashboard = () => {
                                                 animate={{ opacity: 1 }}
                                                 exit={{ opacity: 0 }}
                                                 transition={{ delay: idx * 0.05 }}
-                                                className="group hover:bg-primary/[0.02] transition-colors cursor-pointer"
+                                                className="group hover:bg-primary/[0.02] dark:hover:bg-slate-800/40 transition-colors cursor-pointer border-b border-border dark:border-slate-800 last:border-0"
                                             >
                                                 <td className="px-6 py-5">
-                                                    <span className="text-sm font-bold text-text-primary group-hover:text-primary transition-colors">{item.title}</span>
+                                                    <span className="text-sm font-bold text-text-primary dark:text-slate-100 group-hover:text-primary dark:group-hover:text-primary-light transition-colors">{item.title}</span>
                                                 </td>
                                                 <td className="px-6 py-5">
                                                     <span className="text-xs font-medium text-text-secondary bg-gray-100 px-2 py-1 rounded-lg">{item.category}</span>
@@ -576,9 +576,9 @@ const AdminDashboard = () => {
                     </div>
 
                      {/* Pagination */}
-                    <div className="px-4 sm:px-6 py-4 bg-gray-50/50 dark:bg-slate-800/50 border-t border-border dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <p className="text-xs font-bold text-text-secondary order-2 sm:order-1">
-                            Showing <span className="text-text-primary">{reports.length}</span> of <span className="text-text-primary">{totalCount}</span>
+                    <div className="px-4 sm:px-6 py-4 bg-gray-50/50 dark:bg-slate-900/60 border-t border-border dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 transition-colors">
+                        <p className="text-xs font-bold text-text-secondary dark:text-slate-400 order-2 sm:order-1">
+                            Showing <span className="text-text-primary dark:text-slate-100">{reports.length}</span> of <span className="text-text-primary dark:text-slate-100">{totalCount}</span>
                         </p>
                         <div className="flex items-center gap-1 sm:gap-2 order-1 sm:order-2">
                             <button
