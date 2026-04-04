@@ -33,7 +33,7 @@ const CollegeInfo = ({ darkMode }) => {
     return (
         <AdminLayout darkMode={dm}>
             <div style={{ marginBottom: 32 }}>
-                <h2 style={{ margin: '0 0 8px', fontSize: 28, fontWeight: 900 }}>College Info</h2>
+                <h2 style={{ margin: '0 0 8px', fontSize: 28, fontWeight: 900, color: text, transition: 'color 0.2s' }}>College Info</h2>
                 <p style={{ margin: 0, color: dm ? '#94a3b8' : '#64748b', fontWeight: 600 }}>
                     Details about your institution and domain settings.
                 </p>
@@ -62,7 +62,7 @@ const CollegeInfo = ({ darkMode }) => {
                     </div>
 
                     <div style={{ padding: '70px 32px 32px' }}>
-                        <h3 style={{ margin: '0 0 4px', fontSize: 24, fontWeight: 800, color: dm ? '#f1f5f9' : '#1e293b' }}>{college?.name || 'N/A'}</h3>
+                        <h3 style={{ margin: '0 0 4px', fontSize: 24, fontWeight: 800, color: text, transition: 'color 0.2s' }}>{college?.name || 'N/A'}</h3>
                         <p style={{ margin: '0 0 32px', color: '#64748b', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
                             <MapPin size={16} /> Campus Headquarters
                         </p>
