@@ -112,7 +112,7 @@ const Settings = ({ darkMode, setDarkMode }) => {
                 {/* Visuals */}
                 <section className="space-y-4">
                     <h3 className="text-[10px] font-black uppercase tracking-[3px] text-text-secondary dark:text-slate-500 pl-2">Atmospheric Control</h3>
-                    <PremiumCard className="p-2 space-y-1 divide-y divide-slate-50 dark:divide-slate-800">
+                    <PremiumCard className="p-2 space-y-1 divide-y divide-slate-100 dark:divide-slate-800 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
                         <SettingRow 
                             icon={<Moon />} 
                             title="Luminance Mode" 
@@ -127,7 +127,7 @@ const Settings = ({ darkMode, setDarkMode }) => {
                 {/* Telemetry */}
                 <section className="space-y-4">
                     <h3 className="text-[10px] font-black uppercase tracking-[3px] text-text-secondary dark:text-slate-500 pl-2">Neural Link (Notifications)</h3>
-                    <PremiumCard className="p-2 space-y-1 divide-y divide-slate-50 dark:divide-slate-800">
+                    <PremiumCard className="p-2 space-y-1 divide-y divide-slate-100 dark:divide-slate-800 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
                         <SettingRow 
                             icon={<Bell />} 
                             title="Signal Alerts" 
@@ -159,7 +159,7 @@ const Settings = ({ darkMode, setDarkMode }) => {
                 {/* System Info */}
                 <section className="space-y-4">
                     <h3 className="text-[10px] font-black uppercase tracking-[3px] text-text-secondary dark:text-slate-500 pl-2">Hardware Info</h3>
-                    <PremiumCard className="p-2 space-y-1 divide-y divide-slate-50 dark:divide-slate-800">
+                    <PremiumCard className="p-2 space-y-1 divide-y divide-slate-100 dark:divide-slate-800 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
                         <div className="flex items-center justify-between p-6">
                             <div className="flex items-center gap-4">
                                <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 rounded-2xl flex items-center justify-center">

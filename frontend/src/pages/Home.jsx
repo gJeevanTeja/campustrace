@@ -18,7 +18,7 @@ const CATEGORIES = [
   { id: 'other', label: 'Other', icon: Package, gradient: 'from-gray-400 to-slate-600' },
 ];
 
-const Home = () => {
+const Home = ({ darkMode: dm }) => {
   const [recent, setRecent] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -63,7 +63,7 @@ const Home = () => {
   const currentItems = activeTab === 'lost' ? lostItems : foundItems;
 
   return (
-    <div className="space-y-12 pb-10">
+    <div className={`space-y-12 pb-10 ${dm ? 'dark' : ''}`}>
       <AnimatePresence>
         {showTutorial && (
           <TutorialModal 
@@ -138,7 +138,7 @@ const Home = () => {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search for lost items..."
-                  className="w-full bg-white dark:bg-slate-950 text-text-primary dark:text-slate-100 pl-12 pr-4 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-white/20 transition-all shadow-lg placeholder:text-slate-400 dark:placeholder:text-slate-600 border border-transparent dark:border-slate-800"
+                  className="w-full bg-white dark:bg-slate-900 text-text-primary dark:text-slate-100 pl-12 pr-4 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-white/20 transition-all shadow-lg placeholder:text-slate-400 dark:placeholder:text-slate-600 border border-transparent dark:border-slate-800"
                 />
              </div>
              <button type="submit" className="bg-text-primary text-white font-bold py-4 px-8 rounded-2xl hover:bg-slate-800 transition-all shadow-lg whitespace-nowrap active:scale-95">
@@ -230,12 +230,12 @@ const Home = () => {
             <p className="text-text-secondary dark:text-slate-400 text-sm transition-colors">Stay updated with the latest reports</p>
           </div>
           
-          <div className="flex bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl w-fit transition-colors">
+          <div className="flex bg-slate-100 dark:bg-slate-900 p-1.5 rounded-2xl w-fit transition-colors border border-slate-200 dark:border-slate-800 shadow-sm">
             <button
               onClick={() => setActiveTab('lost')}
               className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${
                 activeTab === 'lost' 
-                ? 'bg-white dark:bg-slate-700 text-primary dark:text-slate-100 shadow-sm active:scale-95' 
+                ? 'bg-white dark:bg-slate-800 text-primary dark:text-slate-100 shadow-sm active:scale-95' 
                 : 'text-text-secondary dark:text-slate-400 hover:text-text-primary dark:hover:text-slate-200'
               }`}
             >
@@ -245,7 +245,7 @@ const Home = () => {
               onClick={() => setActiveTab('found')}
               className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${
                 activeTab === 'found' 
-                ? 'bg-white dark:bg-slate-700 text-primary dark:text-slate-100 shadow-sm active:scale-95' 
+                ? 'bg-white dark:bg-slate-800 text-primary dark:text-slate-100 shadow-sm active:scale-95' 
                 : 'text-text-secondary dark:text-slate-400 hover:text-text-primary dark:hover:text-slate-200'
               }`}
             >

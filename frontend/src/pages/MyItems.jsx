@@ -15,7 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import PremiumCard from '../components/ui/PremiumCard';
 import ItemCard from '../components/ItemCard';
 
-const MyItems = () => {
+const MyItems = ({ darkMode: dm }) => {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
@@ -46,13 +46,13 @@ const MyItems = () => {
     );
 
     return (
-        <div className="max-w-6xl mx-auto space-y-12 pb-32 px-4">
+    <div className={`max-w-6xl mx-auto space-y-12 pb-32 px-4 ${dm ? 'dark' : ''}`}>
             {/* Header */}
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-12">
                 <div className="space-y-2">
                    <div className="flex items-center gap-4">
-                       <button onClick={() => navigate(-1)} className="p-3 bg-white border border-slate-100 rounded-2xl hover:bg-slate-50 transition-all shadow-sm">
-                           <ChevronLeft size={20} className="text-text-primary" />
+                       <button onClick={() => navigate(-1)} className="p-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm">
+                           <ChevronLeft size={20} className="text-text-primary dark:text-slate-100" />
                        </button>
                     <h1 className="text-4xl font-black text-text-primary dark:text-slate-100 uppercase tracking-tighter transition-colors">My Activity</h1>
                    </div>
@@ -79,13 +79,13 @@ const MyItems = () => {
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="py-24 text-center space-y-8">
                     <div className="w-32 h-32 bg-slate-100 dark:bg-slate-800 rounded-[48px] flex items-center justify-center mx-auto text-slate-300 dark:text-slate-600 relative transition-colors duration-300">
                         <Inbox size={64} />
-                        <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 3 }} className="absolute -top-2 -right-2 bg-white dark:bg-card p-3 rounded-2xl shadow-xl text-primary transition-colors"><Plus size={24} /></motion.div>
+                        <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 3 }} className="absolute -top-2 -right-2 bg-white dark:bg-slate-900 p-3 rounded-2xl shadow-xl text-primary transition-colors border border-slate-100 dark:border-slate-800"><Plus size={24} /></motion.div>
                     </div>
                     <div className="space-y-2">
                        <h3 className="text-2xl font-black text-text-primary dark:text-slate-100 uppercase tracking-tighter transition-colors">Deserted Vault</h3>
                        <p className="max-w-xs mx-auto text-sm font-medium text-text-secondary dark:text-slate-400 leading-relaxed transition-colors">No items detected in your personal archive. Start by reporting something you've found or lost.</p>
                     </div>
-                    <button onClick={() => navigate('/report')} className="px-10 py-5 bg-white dark:bg-card border-2 border-primary/20 dark:border-slate-800 text-primary dark:text-primary-light font-black uppercase tracking-widest text-xs rounded-3xl hover:bg-primary hover:text-white transition-all shadow-xl shadow-primary/5">
+                    <button onClick={() => navigate('/report')} className="px-10 py-5 bg-white dark:bg-slate-900 border-2 border-primary/20 dark:border-slate-800 text-primary dark:text-primary-light font-black uppercase tracking-widest text-xs rounded-3xl hover:bg-primary-gradient hover:text-white transition-all shadow-xl shadow-primary/5">
                         Initiate First Report
                     </button>
                 </motion.div>

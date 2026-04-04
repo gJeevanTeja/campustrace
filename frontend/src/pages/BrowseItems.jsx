@@ -8,7 +8,7 @@ import { ItemSkeleton } from '../components/ui/SkeletonLoaders';
 
 const CATEGORIES = ['electronics', 'books', 'keys', 'wallet', 'id_card', 'clothing', 'accessories', 'other'];
 
-const BrowseItems = () => {
+const BrowseItems = ({ darkMode: dm }) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -44,9 +44,9 @@ const BrowseItems = () => {
   };
 
   return (
-    <div className="space-y-8 min-h-screen">
+    <div className={`space-y-8 min-h-screen ${dm ? 'dark' : ''}`}>
       {/* Header & Filters Section */}
-      <section className="glass-effect rounded-3xl p-4 sm:p-6 lg:p-8 border border-white/40 shadow-xl overflow-hidden relative">
+      <section className="glass-effect dark:bg-slate-900/40 rounded-3xl p-4 sm:p-6 lg:p-8 border border-white/40 dark:border-slate-800 shadow-xl overflow-hidden relative transition-colors duration-300">
         <div className="absolute top-0 right-0 p-8 text-primary/5 -mr-8 -mt-8 rotate-12 hidden sm:block">
             <LayoutGrid size={120} />
         </div>
@@ -87,7 +87,7 @@ const BrowseItems = () => {
                               key={t} 
                               onClick={() => setFilter('type', t)} 
                               className={`flex-1 sm:flex-none px-4 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-xs uppercase tracking-tighter transition-all ${
-                                type === t ? 'bg-primary text-white shadow-md' : 'text-text-secondary dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'
+                                type === t ? 'bg-primary text-white shadow-lg' : 'text-text-secondary dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'
                               }`}
                             >
                                 {t}
@@ -99,7 +99,7 @@ const BrowseItems = () => {
                         <button 
                             onClick={() => setFilter('category', 'all')}
                             className={`whitespace-nowrap px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-tighter border transition-all ${
-                                category === 'all' ? 'bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 border-slate-800 dark:border-slate-100 shadow-md' : 'bg-white dark:bg-card text-text-secondary dark:text-slate-400 border-border dark:border-slate-800 hover:border-primary/30'
+                                category === 'all' ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border-slate-900 dark:border-slate-100 shadow-lg' : 'bg-white dark:bg-slate-950 text-text-secondary dark:text-slate-400 border-border dark:border-slate-800 hover:border-primary/30'
                             }`}
                         >
                             All Categories
@@ -109,7 +109,7 @@ const BrowseItems = () => {
                                 key={c} 
                                 onClick={() => setFilter('category', c)}
                                 className={`whitespace-nowrap px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-tighter border transition-all ${
-                                    category === c ? 'bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 border-slate-800 dark:border-slate-100 shadow-md' : 'bg-white dark:bg-card text-text-secondary dark:text-slate-400 border-border dark:border-slate-800 hover:border-primary/30'
+                                    category === c ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border-slate-900 dark:border-slate-100 shadow-lg' : 'bg-white dark:bg-slate-950 text-text-secondary dark:text-slate-400 border-border dark:border-slate-800 hover:border-primary/30'
                                 }`}
                             >
                                 {c.replace('_', ' ')}

@@ -16,7 +16,7 @@ import {
 import { motion } from 'framer-motion';
 import PremiumCard from '../components/ui/PremiumCard';
 
-const Leaderboard = () => {
+const Leaderboard = ({ darkMode: dm }) => {
     const navigate = useNavigate();
     const [leaders, setLeaders] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -38,14 +38,14 @@ const Leaderboard = () => {
     const others = leaders.slice(3);
 
     if (loading) return (
-        <div className="flex flex-col items-center justify-center min-h-[70vh] space-y-4">
+        <div className={`flex flex-col items-center justify-center min-h-[70vh] space-y-4 ${dm ? 'dark bg-[#020617]' : 'bg-slate-50'}`}>
            <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-           <p className="font-black text-text-secondary uppercase tracking-widest text-xs">Ranking Campus Heroes...</p>
+           <p className="font-black text-text-secondary dark:text-slate-400 uppercase tracking-widest text-xs">Ranking Campus Heroes...</p>
         </div>
     );
 
     return (
-        <div className="max-w-5xl mx-auto space-y-12 pb-32 font-sans px-4">
+        <div className={`max-w-5xl mx-auto space-y-12 pb-32 font-sans px-4 ${dm ? 'dark' : ''}`}>
             {/* Header */}
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-8">
                 <div className="space-y-2">
@@ -100,7 +100,7 @@ const Leaderboard = () => {
                                <p className="font-black text-primary dark:text-primary-light text-sm tracking-widest transition-colors">{leaders[1].reward_points} PTS</p>
                             </div>
                         </div>
-                        <div className="w-full h-32 md:h-40 bg-white dark:bg-card border-t-2 border-slate-100 dark:border-slate-800 rounded-t-[40px] shadow-sm flex items-center justify-center transition-colors">
+                        <div className="w-full h-32 md:h-40 bg-white dark:bg-slate-900 border-t-2 border-slate-100 dark:border-slate-800 rounded-t-[40px] shadow-sm flex items-center justify-center transition-colors">
                             <Medal size={48} className="text-slate-300 dark:text-slate-600 opacity-30" />
                         </div>
                     </motion.div>
@@ -158,7 +158,7 @@ const Leaderboard = () => {
                                <p className="font-black text-primary dark:text-primary-light text-sm tracking-widest transition-colors">{leaders[2].reward_points} PTS</p>
                             </div>
                         </div>
-                        <div className="w-full h-24 md:h-32 bg-white dark:bg-card border-t-2 border-slate-100 dark:border-slate-800 rounded-t-[40px] shadow-sm flex items-center justify-center transition-colors">
+                        <div className="w-full h-24 md:h-32 bg-white dark:bg-slate-900 border-t-2 border-slate-100 dark:border-slate-800 rounded-t-[40px] shadow-sm flex items-center justify-center transition-colors">
                             <Award size={48} className="text-amber-700 opacity-20 dark:opacity-40" />
                         </div>
                     </motion.div>
@@ -166,7 +166,7 @@ const Leaderboard = () => {
             )}
 
             {/* List */}
-            <div className="bg-white dark:bg-card rounded-[40px] shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden transition-colors duration-300">
+            <div className="bg-white dark:bg-slate-900 rounded-[40px] shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden transition-colors duration-300">
                 <div className="px-8 py-6 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between">
                     <h2 className="text-sm font-black uppercase tracking-widest text-text-primary dark:text-slate-100 transition-colors">Global Rankings</h2>
                     <div className="flex items-center gap-2 text-xs font-bold text-text-secondary dark:text-slate-400 transition-colors">

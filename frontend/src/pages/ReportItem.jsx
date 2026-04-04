@@ -34,7 +34,7 @@ const DEFAULT_CATEGORIES = [
   { id: 'other', name: 'Other', icon: '📦' },
 ];
 
-const ReportItem = () => {
+const ReportItem = ({ darkMode: dm }) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [step, setStep] = useState(1);
@@ -250,7 +250,7 @@ const ReportItem = () => {
   const prevStep = () => setStep(s => s - 1);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 pb-32">
+    <div className={`max-w-4xl mx-auto space-y-8 pb-32 ${dm ? 'dark' : ''}`}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -269,16 +269,16 @@ const ReportItem = () => {
         </div>
         
         {/* Toggle */}
-        <div className="hidden sm:flex bg-white dark:bg-slate-900 p-1 rounded-2xl border border-border dark:border-slate-800 shadow-sm transition-all duration-300">
+        <div className="hidden sm:flex bg-slate-100 dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-300">
            <button 
              onClick={() => setForm(prev => ({ ...prev, type: 'lost' }))}
-             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${isLost ? 'bg-danger text-white shadow-md' : 'text-text-secondary dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
+             className={`px-6 py-2 rounded-xl text-[10px] font-black tracking-widest transition-all ${isLost ? 'bg-danger text-white shadow-lg' : 'text-text-secondary dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800'}`}
            >
              LOST
            </button>
            <button 
              onClick={() => setForm(prev => ({ ...prev, type: 'found' }))}
-             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${!isLost ? 'bg-success text-white shadow-md' : 'text-text-secondary dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
+             className={`px-6 py-2 rounded-xl text-[10px] font-black tracking-widest transition-all ${!isLost ? 'bg-success text-white shadow-lg' : 'text-text-secondary dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800'}`}
            >
              FOUND
            </button>
@@ -327,14 +327,14 @@ const ReportItem = () => {
                     value={form.title} 
                     onChange={handleChange}
                     placeholder="What did you lose/find? (e.g. Blue Samsung Galaxy)"
-                      className="w-full bg-gray-50 dark:bg-slate-900/50 border border-border dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium dark:text-slate-100 placeholder:text-slate-500"
+                      className="w-full bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium dark:text-slate-100 placeholder:text-slate-500 shadow-sm"
                   />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <select 
                       name="category_new" 
                       value={form.category_new} 
                       onChange={handleChange}
-                      className="w-full bg-gray-50 dark:bg-slate-950 border border-border dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium appearance-none dark:text-slate-100 placeholder:text-slate-500"
+                      className="w-full bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium appearance-none dark:text-slate-100 placeholder:text-slate-500 shadow-sm"
                     >
                       <option value="">Select Category</option>
                       {categories.map(c => (
@@ -346,7 +346,7 @@ const ReportItem = () => {
                       value={form.contact_phone} 
                       onChange={handleChange}
                       placeholder="Your Contact Phone (Optional)"
-                       className="w-full bg-gray-50 dark:bg-slate-900/50 border border-border dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium dark:text-slate-100 placeholder:text-slate-500"
+                       className="w-full bg-white dark:bg-slate-950 border border-border dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium dark:text-slate-100 placeholder:text-slate-500"
                       inputMode="numeric"
                     />
                          {isLost && (
@@ -376,7 +376,7 @@ const ReportItem = () => {
                      onChange={handleChange}
                      rows={4}
                      placeholder="Provide details about the item's condition, unique features, or surroundings..."
-                     className="w-full bg-gray-50 dark:bg-slate-900/50 border border-border dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium resize-none dark:text-slate-100 placeholder:text-slate-500"
+                     className="w-full bg-white dark:bg-slate-950 border border-border dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium resize-none dark:text-slate-100 placeholder:text-slate-500"
                    />
                 </div>
               </PremiumCard>
@@ -406,7 +406,7 @@ const ReportItem = () => {
                         value={form.incident_date} 
                         onChange={handleChange}
                         max={new Date().toISOString().split('T')[0]}
-                         className="w-full bg-gray-50 dark:bg-slate-900/50 border border-border dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium dark:text-slate-100 placeholder:text-slate-500"
+                         className="w-full bg-white dark:bg-slate-950 border border-border dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium dark:text-slate-100 placeholder:text-slate-500"
                       />
                    </div>
                    <div className="space-y-4">
@@ -419,7 +419,7 @@ const ReportItem = () => {
                         name="incident_time" 
                         value={form.incident_time} 
                         onChange={handleChange}
-                         className="w-full bg-gray-50 dark:bg-slate-900/50 border border-border dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium dark:text-slate-100 placeholder:text-slate-500"
+                         className="w-full bg-white dark:bg-slate-950 border border-border dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium dark:text-slate-100 placeholder:text-slate-500"
                       />
                    </div>
                 </div>
@@ -468,7 +468,7 @@ const ReportItem = () => {
                      value={form.location_detail} 
                      onChange={handleChange}
                      placeholder="e.g. Near the main entrance, 2nd floor, under the stairs..."
-                     className="w-full bg-gray-50 dark:bg-slate-900/50 border border-border dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium dark:text-slate-100 placeholder:text-slate-500"
+                     className="w-full bg-white dark:bg-slate-950 border border-border dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium dark:text-slate-100 placeholder:text-slate-500"
                    />
                 </div>
               </PremiumCard>

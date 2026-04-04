@@ -15,7 +15,7 @@ const StatCard = ({ title, value, icon: Icon, color, trend, delay }) => (
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay }}
-        className="bg-white dark:bg-slate-900/60 p-6 rounded-[24px] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group"
+        className="bg-white dark:bg-slate-900 p-6 rounded-[24px] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group"
     >
         <div className="flex justify-between items-start mb-4">
             <div className={`p-3 rounded-2xl bg-gradient-to-br ${color} text-white shadow-lg shadow-current/10 group-hover:scale-110 transition-transform`}>
@@ -35,7 +35,7 @@ const StatCard = ({ title, value, icon: Icon, color, trend, delay }) => (
     </motion.div>
 );
 
-const SuperAdminDashboard = () => {
+const SuperAdminDashboard = ({ darkMode: dm }) => {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -161,7 +161,7 @@ const SuperAdminDashboard = () => {
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Main Activity Chart */}
-                <div className="lg:col-span-2 bg-white dark:bg-slate-900/60 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm relative overflow-hidden group transition-all">
+                <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm relative overflow-hidden group transition-all">
                     <div className="flex items-center justify-between mb-8 relative z-10">
                         <div className="space-y-1">
                             <h4 className="text-xl font-black text-text-primary dark:text-slate-100 tracking-tighter uppercase transition-colors">Network Activity</h4>
@@ -197,23 +197,23 @@ const SuperAdminDashboard = () => {
                                     dataKey="name" 
                                     axisLine={false} 
                                     tickLine={false} 
-                                    tick={{fontSize: 10, fontWeight: 700, fill: document.documentElement.classList.contains('dark') ? '#64748b' : '#94a3b8'}}
+                                    tick={{fontSize: 10, fontWeight: 700, fill: dm ? '#64748b' : '#94a3b8'}}
                                     dy={10}
                                 />
                                 <YAxis 
                                     axisLine={false} 
                                     tickLine={false} 
-                                    tick={{fontSize: 10, fontWeight: 700, fill: document.documentElement.classList.contains('dark') ? '#64748b' : '#94a3b8'}}
+                                    tick={{fontSize: 10, fontWeight: 700, fill: dm ? '#64748b' : '#94a3b8'}}
                                 />
                                 <Tooltip 
                                     contentStyle={{ 
-                                        backgroundColor: document.documentElement.classList.contains('dark') ? '#0f172a' : '#fff', 
+                                        backgroundColor: dm ? '#0f172a' : '#fff', 
                                         borderRadius: '20px', 
-                                        border: '1px solid var(--border)',
+                                        border: dm ? '1px solid #1e293b' : '1px solid #e2e8f0',
                                         boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3)',
                                         padding: '12px'
                                     }}
-                                    labelStyle={{ color: document.documentElement.classList.contains('dark') ? '#94a3b8' : '#6B7280', fontWeight: 900, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '10px' }}
+                                    labelStyle={{ color: dm ? '#94a3b8' : '#6B7280', fontWeight: 900, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '10px' }}
                                 />
                                 <Area type="monotone" dataKey="reports" stroke="#7c3aed" strokeWidth={3} fillOpacity={1} fill="url(#colorReports)" />
                                 <Area type="monotone" dataKey="resolved" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorResolved)" />

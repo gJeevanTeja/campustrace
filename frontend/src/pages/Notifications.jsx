@@ -36,7 +36,7 @@ const FILTER_TABS = [
   { id: 'security',  label: 'Security' },
 ];
 
-const Notifications = () => {
+const Notifications = ({ darkMode: dm }) => {
   const navigate = useNavigate();
 
   const [notifications, setNotifications] = useState([]);
@@ -141,10 +141,10 @@ const Notifications = () => {
              </p>
           </div>
           <div className="flex items-center gap-3">
-             <button onClick={handleMarkAllRead} className="px-5 py-3 bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-2xl text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary hover:text-white transition-all shadow-sm">
+             <button onClick={handleMarkAllRead} className="px-5 py-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary hover:text-white transition-all shadow-sm">
                 Mark all read
              </button>
-             <button onClick={handleClearAll} className="p-3 bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-2xl text-danger hover:bg-danger/10 transition-all shadow-sm">
+             <button onClick={handleClearAll} className="p-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl text-danger hover:bg-danger/10 transition-all shadow-sm">
                 <Trash2 size={20} />
              </button>
           </div>
@@ -186,7 +186,7 @@ const Notifications = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.05 }}
                     onClick={() => handleTap(notif)}
-                    className={`relative p-6 rounded-[32px] border transition-all cursor-pointer group hover:shadow-2xl hover:scale-[1.01] active:scale-[0.99] ${notif.is_read ? 'bg-white dark:bg-card border-slate-100 dark:border-slate-800' : 'bg-white dark:bg-slate-900/50 border-primary/20 dark:border-primary/40 shadow-xl shadow-primary/5 dark:shadow-primary/20'}`}
+                    className={`relative p-6 rounded-[32px] border transition-all cursor-pointer group hover:shadow-2xl hover:scale-[1.01] active:scale-[0.99] ${notif.is_read ? 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800' : 'bg-white dark:bg-slate-950 border-primary/20 dark:border-primary/40 shadow-xl shadow-primary/5 dark:shadow-primary/20'}`}
                   >
                      <div className="flex gap-6 items-start">
                         <div className={`w-14 h-14 rounded-2xl flex-shrink-0 flex items-center justify-center text-2xl shadow-sm ${cfg.bg} ${cfg.color} dark:bg-opacity-20`}>

@@ -18,7 +18,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import PremiumCard from '../components/ui/PremiumCard';
 
-const Login = () => {
+const Login = ({ darkMode: dm }) => {
   const [tab, setTab] = useState('password'); // 'password' | 'otp'
   const [form, setForm] = useState({ identity: '', secret_key: '' });
   const [otpId, setOtpId] = useState('');
@@ -193,7 +193,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0b0f1a] flex items-center justify-center p-6 font-sans relative overflow-hidden transition-colors duration-300">
+    <div className={`min-h-screen ${dm ? 'dark bg-[#020617]' : 'bg-slate-50'} flex items-center justify-center p-6 font-sans relative overflow-hidden transition-colors duration-300`}>
       {/* Back Button */}
       <Link 
         to="/welcome" 
@@ -227,12 +227,12 @@ const Login = () => {
           </div>
 
           {/* Tab Switcher */}
-          <div className="bg-slate-50 dark:bg-slate-800/50 p-1 rounded-2xl flex border border-slate-100 dark:border-slate-700">
+          <div className="bg-slate-100 dark:bg-slate-900 p-1 rounded-2xl flex border border-slate-200 dark:border-slate-800 transition-colors">
              {[['password', 'Secure Key'], ['otp', 'Passcode']].map(([t, lbl]) => (
                <button 
                  key={t}
                  onClick={() => { setTab(t); setOtpSent(false); setError(''); setSuccess(''); }}
-                 className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${tab === t ? 'bg-white dark:bg-slate-800 text-primary shadow-sm' : 'text-text-secondary hover:bg-white/50 dark:hover:bg-slate-800/50'}`}
+                 className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${tab === t ? 'bg-white dark:bg-slate-800 text-primary shadow-sm' : 'text-text-secondary dark:text-slate-500 hover:bg-white/50 dark:hover:bg-slate-800/50'}`}
                >
                   {lbl}
                </button>

@@ -6,7 +6,7 @@ import { Search, MessageSquare, Package, ChevronRight, Filter, AlertCircle } fro
 import { motion } from 'framer-motion';
 import { ChatSkeleton } from '../components/ui/SkeletonLoaders';
 
-const Chat = () => {
+const Chat = ({ darkMode: dm }) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
@@ -61,9 +61,9 @@ const Chat = () => {
   );
 
   return (
-    <div className="space-y-8 min-h-screen pb-32">
+    <div className={`space-y-8 min-h-screen pb-32 ${dm ? 'dark' : ''}`}>
       {/* Header Section */}
-      <section className="glass-effect dark:bg-card/40 rounded-3xl p-8 border border-white/40 dark:border-slate-800 shadow-xl overflow-hidden relative bg-primary-gradient text-white transition-all duration-300">
+      <section className="glass-effect dark:bg-slate-900/60 rounded-3xl p-8 border border-white/40 dark:border-slate-800 shadow-xl overflow-hidden relative bg-primary-gradient text-white transition-all duration-300">
         <div className="absolute top-0 right-0 p-8 text-white/10 -mr-8 -mt-8 rotate-12 pointer-events-none">
             <MessageSquare size={120} />
         </div>
@@ -110,12 +110,12 @@ const Chat = () => {
         </div>
 
         {loading ? (
-          <div className="bg-white dark:bg-card rounded-3xl p-6 border border-border dark:border-slate-800 shadow-sm transition-colors">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-border dark:border-slate-800 shadow-sm transition-colors">
             <ChatSkeleton />
           </div>
         ) : filteredRooms.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-32 bg-gray-50/50 dark:bg-slate-900/50 rounded-3xl border border-dashed border-gray-300 dark:border-slate-800 text-center transition-colors">
-            <div className="w-20 h-20 bg-gray-100 dark:bg-slate-800 rounded-[30px] flex items-center justify-center mb-6 text-3xl">
+            <div className="w-20 h-20 bg-gray-100 dark:bg-slate-950 rounded-[30px] flex items-center justify-center mb-6 text-3xl transition-colors">
                 💬
             </div>
             <h3 className="text-xl font-bold text-text-primary dark:text-slate-100 mb-2 transition-colors">
@@ -126,7 +126,7 @@ const Chat = () => {
             </p>
           </div>
         ) : (
-          <div className="bg-white dark:bg-card rounded-3xl border border-border dark:border-slate-800 overflow-hidden shadow-sm divide-y divide-gray-50 dark:divide-slate-800 transition-colors">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-border dark:border-slate-800 overflow-hidden shadow-sm divide-y divide-gray-50 dark:divide-slate-800 transition-colors">
             {filteredRooms.map((room, idx) => {
               const name = getOtherUser(room);
               const hasUnread = room.unread_count > 0;

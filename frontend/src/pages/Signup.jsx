@@ -16,7 +16,7 @@ const YEARS = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
 const DEPARTMENTS = ['CSE General', 'Data Science', 'AIML', 'IT', 'Electronics', 'Electrical', 'Mechanical', 'Civil', 'Other'];
 const GENDERS = ['Male', 'Female', 'Other', 'Prefer not to say'];
 
-const Signup = () => {
+const Signup = ({ darkMode: dm }) => {
   const navigate = useNavigate();
   const { register } = useAuth();
 
@@ -137,11 +137,11 @@ const Signup = () => {
   const errorClass = "text-red-500 text-xs font-bold mt-1.5";
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0b0f1a] flex items-center justify-center p-6 font-sans transition-colors duration-300">
+    <div className={`min-h-screen ${dm ? 'dark bg-[#020617]' : 'bg-slate-50'} flex items-center justify-center p-6 font-sans transition-colors duration-300`}>
       <motion.div 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-[650px] bg-white dark:bg-card rounded-[24px] p-8 sm:p-10 shadow-[0_10px_30px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-800 relative z-10"
+        className="w-full max-w-[650px] bg-white dark:bg-slate-900 rounded-[24px] p-8 sm:p-10 shadow-[0_10px_30px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-800 relative z-10 transition-colors"
       >
         <div className="flex items-center gap-3 mb-8">
           <div className="w-11 h-11 bg-primary-gradient rounded-xl flex items-center justify-center shadow-sm">
@@ -154,7 +154,7 @@ const Signup = () => {
         </div>
 
         {globalError && (
-          <div className="p-3 bg-red-50 text-red-600 border border-red-100 rounded-xl text-sm font-bold mb-6">
+          <div className="p-4 bg-danger/5 text-danger border border-danger/10 rounded-xl text-sm font-bold mb-6">
              {globalError}
           </div>
         )}
@@ -312,8 +312,8 @@ const Signup = () => {
              </div>
           </div>
 
-          <div className="mt-6 mb-8 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl flex gap-3 items-start border border-slate-100 dark:border-slate-700">
-             <Info className="text-blue-600 dark:text-primary-light shrink-0 mt-0.5" size={20} />
+          <div className="mt-6 mb-8 bg-blue-50/50 dark:bg-primary/5 p-4 rounded-xl flex gap-3 items-start border border-blue-100 dark:border-primary/20">
+             <Info className="text-primary dark:text-primary-light shrink-0 mt-0.5" size={20} />
              <div>
                 <div className="flex items-start gap-2 mb-1">
                    <input 
@@ -321,23 +321,23 @@ const Signup = () => {
                      name="terms_accepted" 
                      checked={form.terms_accepted} 
                      onChange={handleChange}
-                     className="mt-1 w-4 h-4 cursor-pointer accent-blue-600"
+                     className="mt-1 w-4 h-4 cursor-pointer accent-primary"
                    />
                    <span className="font-bold text-slate-800 dark:text-slate-200 text-sm">
-                      I agree to the <Link to="/terms" className="text-blue-600 dark:text-primary-light hover:underline">Terms of Protocol</Link> *
+                      I agree to the <Link to="/terms" className="text-primary dark:text-primary-light hover:underline transition-colors">Terms of Protocol</Link> *
                    </span>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed ml-6">
                    By creating an account, your identity proofs and academic details will be securely stored to verify you belong to this campus community.
                 </p>
-                {errors.terms_accepted && <p className="text-red-500 text-xs font-bold mt-1.5 ml-6">{errors.terms_accepted}</p>}
+                {errors.terms_accepted && <p className="text-danger text-xs font-bold mt-1.5 ml-6">{errors.terms_accepted}</p>}
              </div>
           </div>
 
           <button 
             type="submit" 
             disabled={loading} 
-            className="w-full py-4 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 text-white font-extrabold text-base shadow-[0_4px_14px_rgba(37,99,235,0.3)] hover:opacity-90 transition-opacity flex justify-center items-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed"
+            className="w-full py-4 rounded-xl bg-primary text-white font-extrabold text-base shadow-2xl shadow-primary/20 hover:opacity-90 transition-opacity flex justify-center items-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed"
           >
              {loading ? (
                 <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
@@ -347,7 +347,7 @@ const Signup = () => {
           </button>
 
           <p className="text-center mt-6 text-sm font-bold text-slate-500">
-             Already have an account? <Link to="/login" className="text-blue-600 hover:underline">Login</Link>
+             Already have an account? <Link to="/login" className="text-primary hover:underline transition-colors">Login</Link>
           </p>
         </form>
       </motion.div>

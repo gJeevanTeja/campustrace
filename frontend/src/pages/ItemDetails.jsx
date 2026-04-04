@@ -24,7 +24,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import PremiumCard from '../components/ui/PremiumCard';
 
-const ItemDetails = () => {
+const ItemDetails = ({ darkMode: dm }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -543,21 +543,21 @@ const ItemDetails = () => {
                            <div className="grid grid-cols-3 gap-3">
                               <button 
                                 onClick={handleStartChat}
-                                className="bg-white dark:bg-card border border-border dark:border-slate-800 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-bold group"
+                                className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-bold group"
                               >
                                  <MessageSquare className="text-primary group-hover:scale-110 transition-transform" />
                                  <span className="text-[10px] uppercase dark:text-slate-400">Chat</span>
                               </button>
                               <button 
                                 onClick={handleCall}
-                                className="bg-white dark:bg-card border border-border dark:border-slate-800 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-bold group"
+                                className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-bold group"
                               >
                                  <Phone className="text-emerald-500 group-hover:scale-110 transition-transform" />
                                  <span className="text-[10px] uppercase dark:text-slate-400">Call</span>
                               </button>
                               <button 
                                 onClick={handleWhatsApp}
-                                className="bg-white dark:bg-card border border-border dark:border-slate-800 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-bold group"
+                                className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-bold group"
                               >
                                  <ExternalLink className="text-cyan-500 group-hover:scale-110 transition-transform" />
                                  <span className="text-[10px] uppercase dark:text-slate-400">WhatsApp</span>
@@ -673,7 +673,7 @@ const ItemDetails = () => {
                initial={{ scale: 0.8, y: 40 }}
                animate={{ scale: 1, y: 0 }}
                transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-               className="bg-white dark:bg-card rounded-[40px] p-10 max-w-sm w-full text-center shadow-3xl space-y-5 border border-slate-100 dark:border-slate-800 transition-colors"
+               className="bg-white dark:bg-slate-900 rounded-[40px] p-10 max-w-sm w-full text-center shadow-3xl space-y-5 border border-slate-100 dark:border-slate-800 transition-colors"
             >
               <div className="text-7xl">🎉</div>
               <h2 className="text-3xl font-black text-text-primary dark:text-slate-100 uppercase tracking-tighter">Congratulations!</h2>

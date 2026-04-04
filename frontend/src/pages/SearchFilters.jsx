@@ -31,7 +31,7 @@ const LOCATIONS = [
   { id: 'parking', label: 'Parking Area', sub: 'Visitor & Student Parking Zones', icon: '🅿️' },
 ];
 
-const SearchFilters = () => {
+const SearchFilters = ({ darkMode: dm }) => {
   const navigate = useNavigate();
   const [itemType, setItemType] = useState('lost');
   const [selectedCats, setSelectedCats] = useState([]);
@@ -61,9 +61,9 @@ const SearchFilters = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-background font-sans pb-32 transition-colors">
+    <div className={`min-h-screen ${dm ? 'dark bg-[#020617]' : 'bg-slate-50'} font-sans pb-32 transition-colors`}>
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/80 dark:bg-card/80 backdrop-blur-xl border-b border-slate-100 dark:border-slate-800 px-6 py-5 flex items-center justify-between transition-colors">
+      <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-100 dark:border-slate-800 px-6 py-5 flex items-center justify-between transition-colors">
         <button onClick={() => navigate(-1)} className="p-2 border border-slate-100 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
           <X size={20} className="text-text-primary dark:text-slate-100" />
         </button>
@@ -85,7 +85,7 @@ const SearchFilters = () => {
               <button 
                 key={t} 
                 onClick={() => setItemType(t)}
-                className={`flex flex-col items-center gap-4 p-8 rounded-[32px] border-2 transition-all ${itemType === t ? 'bg-primary border-primary text-white shadow-xl shadow-primary/20 scale-105' : 'bg-white dark:bg-card border-slate-50 dark:border-slate-800 text-text-secondary dark:text-slate-400 hover:border-slate-200 dark:hover:border-slate-700'}`}
+                className={`flex flex-col items-center gap-4 p-8 rounded-[32px] border-2 transition-all ${itemType === t ? 'bg-primary border-primary text-white shadow-xl shadow-primary/20 scale-105' : 'bg-white dark:bg-slate-900 border-slate-50 dark:border-slate-800 text-text-secondary dark:text-slate-400 hover:border-slate-200 dark:hover:border-slate-700'}`}
               >
                 <div className={`p-4 rounded-2xl ${itemType === t ? 'bg-white/10' : 'bg-slate-50 dark:bg-slate-800'}`}>
                    {t === 'lost' ? <Search size={28} /> : <Check size={28} />}
@@ -110,7 +110,7 @@ const SearchFilters = () => {
               <button 
                 key={cat.id} 
                 onClick={() => toggleCat(cat.id)}
-                className={`flex items-center gap-4 p-5 rounded-2xl border transition-all ${selectedCats.includes(cat.id) ? 'bg-indigo-500 border-indigo-500 text-white shadow-lg shadow-indigo-500/10' : 'bg-white dark:bg-card border-slate-100 dark:border-slate-800 text-text-primary dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                className={`flex items-center gap-4 p-5 rounded-2xl border transition-all ${selectedCats.includes(cat.id) ? 'bg-indigo-500 border-indigo-500 text-white shadow-lg shadow-indigo-500/10' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-text-primary dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
               >
                 <div className={`p-2 rounded-lg ${selectedCats.includes(cat.id) ? 'bg-white/10 text-white' : 'bg-slate-50 dark:bg-slate-800 text-text-secondary dark:text-slate-500'}`}>
                    {cat.icon}
@@ -135,7 +135,7 @@ const SearchFilters = () => {
               <button 
                 key={loc.id} 
                 onClick={() => toggleLoc(loc.id)}
-                className={`w-full flex items-center justify-between p-6 rounded-3xl border-2 transition-all ${selectedLocs.includes(loc.id) ? 'bg-white dark:bg-slate-900 border-success shadow-xl shadow-success/10' : 'bg-white dark:bg-card border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700'}`}
+                className={`w-full flex items-center justify-between p-6 rounded-3xl border-2 transition-all ${selectedLocs.includes(loc.id) ? 'bg-white dark:bg-slate-900 border-success shadow-xl shadow-success/10' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700'}`}
               >
                 <div className="flex items-center gap-5">
                    <div className="text-2xl grayscale group-hover:grayscale-0 transition-all">{loc.icon}</div>
@@ -168,7 +168,7 @@ const SearchFilters = () => {
               <button 
                 key={t.id} 
                 onClick={() => setTimeframe(t.id)}
-                className={`py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all ${timeframe === t.id ? 'bg-slate-900 dark:bg-slate-100 border-slate-900 dark:border-slate-100 text-white dark:text-slate-900 shadow-xl shadow-black/20' : 'bg-white dark:bg-card border-slate-100 dark:border-slate-800 text-text-primary dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                className={`py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all ${timeframe === t.id ? 'bg-slate-900 dark:bg-slate-100 border-slate-900 dark:border-slate-100 text-white dark:text-slate-900 shadow-xl shadow-black/20' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-text-primary dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
               >
                 {t.label}
               </button>
@@ -178,7 +178,7 @@ const SearchFilters = () => {
       </div>
 
       {/* Floating Action */}
-      <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-slate-50 dark:from-background via-slate-50 dark:via-background to-transparent z-40 transition-colors">
+      <div className={`fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t ${dm ? 'from-[#020617] via-[#020617] to-transparent' : 'from-slate-50 via-slate-50 to-transparent'} z-40 transition-colors`}>
         <button 
           onClick={applyFilters}
           className="w-full max-w-xl mx-auto flex items-center justify-center gap-4 bg-primary text-white py-6 rounded-[28px] font-black uppercase tracking-[3px] text-xs shadow-2xl shadow-primary/40 hover:scale-[1.02] transition-all"

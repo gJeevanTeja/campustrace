@@ -14,7 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import PremiumCard from '../components/ui/PremiumCard';
 import ItemCard from '../components/ItemCard';
 
-const MyClaims = () => {
+const MyClaims = ({ darkMode: dm }) => {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
@@ -46,12 +46,12 @@ const MyClaims = () => {
     );
 
     return (
-        <div className="max-w-6xl mx-auto space-y-12 pb-32 px-4">
+        <div className={`max-w-6xl mx-auto space-y-12 pb-32 px-4 ${dm ? 'dark' : ''}`}>
             {/* Header */}
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-12">
                 <div className="space-y-2">
                    <div className="flex items-center gap-4">
-                       <button onClick={() => navigate(-1)} className="p-3 bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm">
+                       <button onClick={() => navigate(-1)} className="p-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm">
                            <ChevronLeft size={20} className="text-text-primary dark:text-slate-100" />
                        </button>
                        <h1 className="text-4xl font-black text-text-primary dark:text-slate-100 uppercase tracking-tighter transition-colors">My Claims</h1>
@@ -81,7 +81,7 @@ const MyClaims = () => {
                        <h3 className="text-2xl font-black text-text-primary dark:text-slate-100 uppercase tracking-tighter transition-colors">Quiet Claims</h3>
                        <p className="max-w-xs mx-auto text-sm font-medium text-text-secondary dark:text-slate-400 leading-relaxed transition-colors">No claims detected. If you've lost something, try searching the browse page.</p>
                     </div>
-                    <button onClick={() => navigate('/browse')} className="px-10 py-5 bg-white dark:bg-card border-2 border-primary/20 dark:border-slate-800 text-primary dark:text-primary-light font-black uppercase tracking-widest text-xs rounded-3xl hover:bg-primary hover:text-white transition-all shadow-xl shadow-primary/5">
+                    <button onClick={() => navigate('/browse')} className="px-10 py-5 bg-white dark:bg-slate-900 border-2 border-primary/20 dark:border-slate-800 text-primary dark:text-primary-light font-black uppercase tracking-widest text-xs rounded-3xl hover:bg-primary-gradient hover:text-white transition-all shadow-xl shadow-primary/5">
                         Browse Items
                     </button>
                 </motion.div>

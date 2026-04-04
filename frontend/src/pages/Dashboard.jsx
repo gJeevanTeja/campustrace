@@ -24,7 +24,7 @@ import PremiumCard from '../components/ui/PremiumCard';
 const PIE_COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444'];
 const BAR_COLORS = { lost: '#EF4444', found: '#10B981', claimed: '#F59E0B', returned: '#4F46E5' };
 
-const Dashboard = () => {
+const Dashboard = ({ darkMode: dm }) => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('user');
@@ -210,8 +210,8 @@ const Dashboard = () => {
                                                             {userPieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                                                         </Pie>
                                                         <Tooltip 
-                                                          contentStyle={{ background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.3)', fontSize: '12px', fontWeight: 'bold' }}
-                                                          itemStyle={{ color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#1e293b' }}
+                                                          contentStyle={{ background: dm ? '#0f172a' : '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.3)', fontSize: '12px', fontWeight: 'bold' }}
+                                                          itemStyle={{ color: dm ? '#f1f5f9' : '#1e293b' }}
                                                         />
                                                     </PieChart>
                                                 </ResponsiveContainer>
@@ -235,13 +235,13 @@ const Dashboard = () => {
                                     <div className="h-full">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={adminStats.monthlyData}>
-                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={document.documentElement.classList.contains('dark') ? '#1e293b' : '#f1f5f9'} />
-                                                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: document.documentElement.classList.contains('dark') ? '#64748b' : '#94a3b8' }} />
-                                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: document.documentElement.classList.contains('dark') ? '#64748b' : '#94a3b8' }} />
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={dm ? '#1e293b' : '#f1f5f9'} />
+                                                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: dm ? '#64748b' : '#94a3b8' }} />
+                                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: dm ? '#64748b' : '#94a3b8' }} />
                                                 <Tooltip 
-                                                  cursor={{ fill: document.documentElement.classList.contains('dark') ? '#1e293b' : '#f8fafc' }} 
-                                                  contentStyle={{ background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.3)', fontSize: '12px', fontWeight: 'bold' }}
-                                                  itemStyle={{ color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#1e293b' }}
+                                                  cursor={{ fill: dm ? '#1e293b' : '#f8fafc' }} 
+                                                  contentStyle={{ background: dm ? '#0f172a' : '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.3)', fontSize: '12px', fontWeight: 'bold' }}
+                                                  itemStyle={{ color: dm ? '#f1f5f9' : '#1e293b' }}
                                                 />
                                                 <Bar dataKey="lost" fill={BAR_COLORS.lost} radius={[4, 4, 0, 0]} />
                                                 <Bar dataKey="found" fill={BAR_COLORS.found} radius={[4, 4, 0, 0]} />
@@ -256,7 +256,7 @@ const Dashboard = () => {
                         {/* LIST SECTION */}
                         <div className="space-y-6">
                             <h2 className="text-xs font-black uppercase tracking-[3px] text-text-secondary dark:text-slate-500 pl-2">Real-time Feed</h2>
-                            <PremiumCard className="p-0 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800 flex flex-col min-h-[400px]">
+                            <PremiumCard className="p-0 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800 flex flex-col min-h-[400px] dark:bg-slate-900 shadow-xl">
                                 {userStats.items.length > 0 ? (
                                     <>
                                         {userStats.items.slice(0, 6).map((item, i) => (
@@ -310,7 +310,7 @@ const Dashboard = () => {
 };
 
 const StatCard = ({ icon, label, value, color, bg }) => (
-    <PremiumCard className={`p-6 space-y-4 border border-slate-100 dark:border-slate-800 shadow-xl shadow-black/5 dark:bg-slate-900/60 transition-all`}>
+    <PremiumCard className={`p-6 space-y-4 border border-slate-100 dark:border-slate-800 shadow-xl shadow-black/5 dark:bg-slate-900 transition-all`}>
         <div className={`w-12 h-12 ${bg} ${color} rounded-2xl flex items-center justify-center shadow-sm dark:bg-opacity-10 transition-colors`}>
             {React.cloneElement(icon, { size: 24 })}
         </div>

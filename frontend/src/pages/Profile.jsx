@@ -25,7 +25,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import PremiumCard from '../components/ui/PremiumCard';
 
-const Profile = () => {
+const Profile = ({ darkMode: dm }) => {
   const navigate = useNavigate();
   const { user, logout, updateUser } = useAuth();
 
@@ -140,7 +140,7 @@ const Profile = () => {
   const currentItems = activeTab === 'posted' ? myItems : claimedItems;
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 pb-32">
+    <div className={`max-w-5xl mx-auto space-y-8 pb-32 ${dm ? 'dark' : ''}`}>
       {/* Hero Section */}
       <section className="relative glass-effect dark:bg-card/40 rounded-[40px] p-8 sm:p-12 overflow-hidden bg-primary-gradient text-white shadow-2xl transition-all duration-300">
          <div className="absolute top-0 right-0 p-12 text-white/10 -mr-12 -mt-12 rotate-45 pointer-events-none">
@@ -212,7 +212,7 @@ const Profile = () => {
               ))}
            </div>
 
-           <div className="bg-white dark:bg-slate-900/40 rounded-[32px] border border-border dark:border-slate-800 overflow-hidden shadow-sm transition-colors">
+           <div className="bg-white dark:bg-slate-900 rounded-[32px] border border-border dark:border-slate-800 overflow-hidden shadow-sm transition-colors">
               <div className="flex border-b border-border dark:border-slate-800">
                   {[
                     { id: 'posted', lbl: `My Submissions (${myItems.length})` },
@@ -227,7 +227,7 @@ const Profile = () => {
                     </button>
                   ))}
               </div>
-              <div className="divide-y divide-slate-50 dark:divide-slate-800 max-h-[500px] overflow-y-auto no-scrollbar">
+              <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-[500px] overflow-y-auto no-scrollbar">
                   {currentItems.length === 0 ? (
                     <div className="p-12 text-center space-y-4">
                         <div className="text-4xl">📦</div>
@@ -241,7 +241,7 @@ const Profile = () => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: idx * 0.05 }}
-                        className="p-5 flex items-center justify-between group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                        className="p-5 flex items-center justify-between group hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
                       >
                          <div className="flex items-center gap-4 cursor-pointer" onClick={() => navigate(`/item/${item.id}`)}>
                             <div className="w-14 h-14 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-950 flex-shrink-0 border border-slate-200 dark:border-slate-800 transition-colors">
@@ -290,7 +290,7 @@ const Profile = () => {
                    { id: 'phone', lbl: 'Mobile', val: p.phone, icon: Smartphone, edit: true },
                    { id: 'department', lbl: 'Dept', val: p.department, icon: GraduationCap, edit: false },
                  ].map(f => (
-                   <div key={f.id} className="p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl group transition-all border border-transparent dark:hover:border-slate-800">
+                   <div key={f.id} className="p-4 bg-white dark:bg-slate-900 rounded-2xl group transition-all border border-transparent dark:hover:border-slate-800">
                       <div className="flex items-center justify-between mb-1">
                          <div className="flex items-center gap-2 text-[10px] font-black text-text-secondary dark:text-slate-400 uppercase tracking-widest">
                             <f.icon size={12} /> {f.lbl}
@@ -343,21 +343,21 @@ const Profile = () => {
                         type="password" 
                         placeholder="Current Password" 
                         required
-                        className="w-full bg-slate-50 dark:bg-slate-950 border border-border dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 transition-all text-sm font-medium dark:text-slate-100 placeholder:text-slate-500"
+                        className="w-full bg-white dark:bg-slate-900 border border-border dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 transition-all text-sm font-medium dark:text-slate-100 placeholder:text-slate-500"
                         onChange={(e) => setPwdForm({...pwdForm, old_password: e.target.value})}
                       />
                       <input 
                         type="password" 
                         placeholder="New Password" 
                         required
-                        className="w-full bg-slate-50 dark:bg-slate-950 border border-border dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 transition-all text-sm font-medium dark:text-slate-100 placeholder:text-slate-500"
+                        className="w-full bg-white dark:bg-slate-900 border border-border dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 transition-all text-sm font-medium dark:text-slate-100 placeholder:text-slate-500"
                         onChange={(e) => setPwdForm({...pwdForm, new_password: e.target.value})}
                       />
                       <input 
                         type="password" 
                         placeholder="Confirm Password" 
                         required
-                        className="w-full bg-slate-50 dark:bg-slate-950 border border-border dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 transition-all text-sm font-medium dark:text-slate-100 placeholder:text-slate-500"
+                        className="w-full bg-white dark:bg-slate-900 border border-border dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 transition-all text-sm font-medium dark:text-slate-100 placeholder:text-slate-500"
                         onChange={(e) => setPwdForm({...pwdForm, confirm_new_password: e.target.value})}
                       />
                       <button 

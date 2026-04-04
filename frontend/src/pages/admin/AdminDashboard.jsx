@@ -22,7 +22,7 @@ const StatCard = ({ title, value, icon, trend, idx }) => (
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: idx * 0.1 }}
     >
-        <PremiumCard className="p-6 relative overflow-hidden group border border-slate-100 dark:border-slate-800 shadow-xl shadow-black/5 dark:bg-slate-900/60 transition-all">
+        <PremiumCard className="p-6 relative overflow-hidden group border border-slate-100 dark:border-slate-800 shadow-xl shadow-black/5 dark:bg-slate-900 transition-all">
             <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform text-primary dark:text-primary-light">
                 {icon}
             </div>

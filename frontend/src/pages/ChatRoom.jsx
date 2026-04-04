@@ -21,9 +21,9 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 const THEMES = {
-  modern: { name: 'Modern Indigo', sentBg: 'bg-primary', sentText: 'text-white', receivedBg: 'bg-white dark:bg-slate-800', receivedText: 'text-text-primary dark:text-slate-100', header: 'bg-primary' },
-  glass: { name: 'Glassmorphism', sentBg: 'bg-white/20 backdrop-blur-md border border-white/30', sentText: 'text-text-primary dark:text-slate-100', receivedBg: 'bg-white/60 dark:bg-slate-800/60 backdrop-blur-md border border-white/40 dark:border-slate-700', receivedText: 'text-text-primary dark:text-slate-100', header: 'bg-white/70 dark:bg-card/70 backdrop-blur-lg' },
-  dark: { name: 'Midnight', sentBg: 'bg-slate-700 dark:bg-primary', sentText: 'text-white', receivedBg: 'bg-slate-800 dark:bg-slate-800', receivedText: 'text-slate-200 dark:text-slate-100', header: 'bg-slate-900 dark:bg-slate-900' },
+  modern: { name: 'Modern Indigo', sentBg: 'bg-primary shadow-lg shadow-primary/20', sentText: 'text-white', receivedBg: 'bg-white dark:bg-slate-900', receivedText: 'text-text-primary dark:text-slate-100', header: 'bg-primary' },
+  glass: { name: 'Glassmorphism', sentBg: 'bg-white/20 backdrop-blur-md border border-white/30', sentText: 'text-text-primary dark:text-slate-100', receivedBg: 'bg-white/60 dark:bg-slate-800/60 backdrop-blur-md border border-white/40 dark:border-slate-700', receivedText: 'text-text-primary dark:text-slate-100', header: 'bg-white/70 dark:bg-slate-950/80 backdrop-blur-lg' },
+  dark: { name: 'Midnight', sentBg: 'bg-slate-700 dark:bg-primary', sentText: 'text-white', receivedBg: 'bg-slate-800 dark:bg-slate-950', receivedText: 'text-slate-200 dark:text-slate-100', header: 'bg-slate-900 dark:bg-[#020617]' },
 };
 
 function normalizeMessage(raw, myId) {
@@ -38,7 +38,7 @@ function normalizeMessage(raw, myId) {
   };
 }
 
-const ChatRoom = () => {
+const ChatRoom = ({ darkMode: dm }) => {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -239,16 +239,16 @@ const ChatRoom = () => {
   }, []);
 
   if (loading) return (
-     <div className="flex flex-col items-center justify-center h-screen space-y-4 bg-slate-50 dark:bg-[#0b0f1a] transition-colors">
+     <div className={`flex flex-col items-center justify-center h-screen space-y-4 ${dm ? 'dark bg-[#0b0f1a]' : 'bg-slate-50'} transition-colors`}>
         <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
         <p className="text-text-secondary dark:text-slate-400 font-bold transition-colors">Connecting to secure chat...</p>
      </div>
   );
 
   return (
-    <div className="flex flex-col h-screen bg-slate-50 dark:bg-[#0b0f1a] relative overflow-hidden font-sans transition-colors duration-300">
+    <div className={`flex flex-col h-screen ${dm ? 'dark bg-[#0b0f1a]' : 'bg-slate-50'} relative overflow-hidden font-sans transition-colors duration-300`}>
       {/* Header */}
-      <header className={`relative z-50 px-4 py-3 flex items-center justify-between shadow-lg backdrop-blur-md ${theme.header} border-b border-white/10 text-white`}>
+      <header className={`relative z-50 px-4 py-3 flex items-center justify-between shadow-lg backdrop-blur-md ${theme.header} border-b border-white/10 dark:border-slate-800 text-white`}>
         <div className="flex items-center gap-3">
             <button onClick={() => navigate('/chat')} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
                 <ChevronLeft size={24} />
@@ -281,7 +281,7 @@ const ChatRoom = () => {
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: 10 }}
-                          className="absolute right-0 mt-2 w-56 bg-white dark:bg-card rounded-2xl shadow-2xl border border-border dark:border-slate-800 overflow-hidden text-text-primary dark:text-slate-100 py-2"
+                          className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-border dark:border-slate-800 overflow-hidden text-text-primary dark:text-slate-100 py-2"
                         >
                            <button onClick={() => navigate(`/user/${roomInfo?.other_participant?.id}`)} className="w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold">
                                <UserX size={18} className="text-slate-400" /> View Profile
@@ -375,15 +375,15 @@ const ChatRoom = () => {
       </div>
 
       {/* Input Section */}
-      <div className="bg-white dark:bg-card border-t border-slate-100 dark:border-slate-800 p-4 pb-12 sm:pb-4 relative z-50 transition-colors duration-300">
+      <div className="bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800 p-4 pb-12 sm:pb-4 relative z-50 transition-colors duration-300">
          <div className="flex items-end gap-3 max-w-5xl mx-auto">
             <div className="relative">
-                <button onClick={() => setShowAttachMenu(!showAttachMenu)} className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                <button onClick={() => setShowAttachMenu(!showAttachMenu)} className="p-3 bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400 rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors border border-transparent dark:border-slate-800">
                     <Plus size={20} />
                 </button>
                 <AnimatePresence>
                     {showAttachMenu && (
-                        <motion.div initial={{ opacity: 0, scale: 0.9, y: -20 }} animate={{ opacity: 1, scale: 1, y: 0 }} className="absolute bottom-full left-0 mb-4 bg-white dark:bg-card rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 p-3 grid grid-cols-1 gap-1 w-48">
+                        <motion.div initial={{ opacity: 0, scale: 0.9, y: -20 }} animate={{ opacity: 1, scale: 1, y: 0 }} className="absolute bottom-full left-0 mb-4 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 p-3 grid grid-cols-1 gap-1 w-48">
                             <label className="flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl cursor-pointer">
                                 <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileUpload(e, 'image')} />
                                 <div className="p-2 bg-indigo-50 text-indigo-500 rounded-xl"><ImageIcon size={18} /></div>
@@ -433,7 +433,7 @@ const ChatRoom = () => {
       <AnimatePresence>
         {showSuccess && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="bg-white dark:bg-card rounded-[40px] p-10 max-w-sm w-full text-center shadow-3xl border border-slate-100 dark:border-slate-800 space-y-6">
+            <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="bg-white dark:bg-slate-900 rounded-[40px] p-10 max-w-sm w-full text-center shadow-3xl border border-slate-100 dark:border-slate-800 space-y-6">
               <div className="text-7xl">🎊</div>
               <h2 className="text-2xl font-black text-text-primary dark:text-slate-100 uppercase tracking-tighter">Verified!</h2>
               <p className="text-text-secondary dark:text-slate-400 text-sm font-medium">Claim approved successfully. Points have been updated!</p>
