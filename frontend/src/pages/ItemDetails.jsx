@@ -459,32 +459,45 @@ const ItemDetails = ({ darkMode: dm }) => {
                 </div>
 
                 <div className="flex flex-col gap-4">
-                   {item.type === 'found' && item.status === 'active' && user && (item.user !== user.id && item.user?.id !== user.id) && !item.my_claim && (
-                      <button 
-                        onClick={isElectronic ? startAIVerification : startNormalClaimFlow}
-                        disabled={claiming}
-                        className="w-full bg-primary text-white py-5 rounded-3xl font-black text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
-                      >
-                         {claiming ? (
-                             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                         ) : (
-                             <>
-                               {isElectronic ? <Brain size={24} /> : <CheckCircle2 size={24} />}
-                               {isElectronic ? 'Verify Claim with AI' : 'Claim This Item'}
-                             </>
-                         )}
-                      </button>
-                   )}
+                   {(() => {
+                      if (!item || !user) return null;
+                      const itemType = item.type || item.report_type || item.item_type || '';
+                      const ownerId = item.user?.id || item.owner?.id || item.user || item.owner_id;
+                      const hasActiveClaim = item.my_claim || item.claimed || item.has_active_claim || false;
+                      const isActive = item.status === 'active';
+                      const isOwner = String(ownerId) === String(user.id);
 
-                   {item.type === 'lost' && item.status === 'active' && user && (item.user !== user.id && item.user?.id !== user.id) && !item.my_claim && (
-                      <button 
-                        onClick={() => navigate(`/report?found=${item.id}`)}
-                        className="w-full bg-emerald-500 text-white py-5 rounded-3xl font-black text-lg shadow-xl shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
-                      >
-                         <CheckCircle2 size={24} />
-                         I Found This
-                      </button>
-                   )}
+                      return (
+                        <>
+                           {itemType.toLowerCase() === 'found' && isActive && !isOwner && !hasActiveClaim && (
+                              <button 
+                                onClick={isElectronic ? startAIVerification : startNormalClaimFlow}
+                                disabled={claiming}
+                                className="w-full bg-primary text-white py-5 rounded-3xl font-black text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
+                              >
+                                 {claiming ? (
+                                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                 ) : (
+                                     <>
+                                       {isElectronic ? <Brain size={24} /> : <CheckCircle2 size={24} />}
+                                       {isElectronic ? 'Verify Claim with AI' : 'Claim This Item'}
+                                     </>
+                                 )}
+                              </button>
+                           )}
+
+                           {itemType.toLowerCase() === 'lost' && isActive && !isOwner && !hasActiveClaim && (
+                              <button 
+                                onClick={() => navigate(`/report?found=${item.id}`)}
+                                className="w-full bg-emerald-500 text-white py-5 rounded-3xl font-black text-lg shadow-xl shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
+                              >
+                                 <CheckCircle2 size={24} />
+                                 I Found This
+                              </button>
+                           )}
+                        </>
+                      );
+                   })()}
 
                    {item.status === 'active' && item.my_claim?.status === 'verified' && (
                       <div className="space-y-4">
