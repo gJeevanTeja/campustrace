@@ -461,15 +461,35 @@ const ItemDetails = ({ darkMode: dm }) => {
                 <div className="flex flex-col gap-4">
                    {(() => {
                       if (!item || !user) return null;
-                      const itemType = item.type || item.report_type || item.item_type || '';
-                      const ownerId = item.user?.id || item.owner?.id || item.user || item.owner_id;
-                      const hasActiveClaim = item.my_claim || item.claimed || item.has_active_claim || false;
-                      const isActive = item.status === 'active';
-                      const isOwner = String(ownerId) === String(user.id);
+                      
+                      const itemType = String(item.type || item.report_type || item.item_type || '').toLowerCase();
+                      const ownerId = item.user?.id || item.owner?.id || item.user || item.owner_id || '';
+                      
+                      // Explicit null checks to circumvent truthy nested objects
+                      const hasActiveClaim = (item.my_claim !== null && item.my_claim !== undefined) || 
+                                             item.claimed || 
+                                             item.has_active_claim || 
+                                             false;
+                      
+                      const rawStatus = String(item.status || '').toLowerCase();
+                      const isActive = rawStatus === 'active';
+                      const currentUserId = user?.id || user?.user_id || '';
+                      const isOwner = String(ownerId) === String(currentUserId);
 
+                      console.log("--- DEBUG CTA RENDERING (DEEP PURGE) ---");
+                      console.log("FULL ITEM DATA:", item);
+                      console.log("CURRENT USER DATA:", user);
+                      console.log("COMPUTED FLAGS:", { itemType, ownerId, currentUserId, hasActiveClaim, rawStatus, isActive, isOwner });
+                      console.log("----------------------------------------");
+
+                      // Fail-safe override: If testing manually fails again, we are exposing the rendering flags explicitly
                       return (
                         <>
-                           {itemType.toLowerCase() === 'found' && isActive && !isOwner && !hasActiveClaim && (
+                           <div className="hidden text-xs bg-black text-lime-400 p-2 break-words">
+                              DEBUG FLAGS: Type={itemType} | Active={isActive.toString()} | Owner={isOwner.toString()} | Claimed={hasActiveClaim.toString()}
+                           </div>
+
+                           {itemType === 'found' && isActive && !isOwner && !hasActiveClaim && (
                               <button 
                                 onClick={isElectronic ? startAIVerification : startNormalClaimFlow}
                                 disabled={claiming}
@@ -486,7 +506,7 @@ const ItemDetails = ({ darkMode: dm }) => {
                               </button>
                            )}
 
-                           {itemType.toLowerCase() === 'lost' && isActive && !isOwner && !hasActiveClaim && (
+                           {itemType === 'lost' && isActive && !isOwner && !hasActiveClaim && (
                               <button 
                                 onClick={() => navigate(`/report?found=${item.id}`)}
                                 className="w-full bg-emerald-500 text-white py-5 rounded-3xl font-black text-lg shadow-xl shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
