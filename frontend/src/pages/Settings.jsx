@@ -238,7 +238,12 @@ const Settings = ({ darkMode, setDarkMode }) => {
                 <motion.button 
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => { localStorage.clear(); navigate('/login'); }}
+                  onClick={() => { 
+                    localStorage.removeItem('access_token');
+                    localStorage.removeItem('refresh_token');
+                    localStorage.removeItem('user');
+                    navigate('/login'); 
+                  }}
                   className="w-full p-8 rounded-[32px] bg-danger/5 border-2 border-danger/10 flex items-center justify-between group overflow-hidden relative"
                 >
                     <div className="relative z-10 flex items-center gap-6">

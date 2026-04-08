@@ -47,11 +47,25 @@ console.log("Axios initialized with timeout:", api.defaults.timeout);
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token');
-    if (token) config.headers.Authorization = `Bearer ${token}`;
+    
+    // Explicit debug log for multipart data specifically
+    if (config.data instanceof FormData) {
+       console.log("DEBUG [FormData Submit]: Raw Token in Storage:", token ? `${token.substring(0, 15)}...` : 'MISSING');
+    }
+
+    if (token) {
+       // Ensure strictly formatted 'Bearer '
+       config.headers.Authorization = `Bearer ${token}`;
+    }
 
     // Automatically let the browser set boundaries for FormData
     if (config.data instanceof FormData) {
-      delete config.headers['Content-Type'];
+      // In Axios > 1.x, config.headers is an AxiosHeaders MAP. Standard delete may fail on some versions.
+      if (typeof config.headers.delete === 'function') {
+         config.headers.delete('Content-Type');
+      } else {
+         delete config.headers['Content-Type'];
+      }
     }
 
     return config;
@@ -109,10 +123,20 @@ api.interceptors.response.use(
           originalRequest.headers['Authorization'] = `Bearer ${data.access}`;
           return api(originalRequest);
         } catch (refreshError) {
-          localStorage.clear();
-          window.location.href = '/welcome';
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          localStorage.removeItem('user');
+          alert("Session expired. Please log in again.");
+          window.location.href = '/login';
           return Promise.reject(refreshError);
         }
+      } else {
+         // No refresh token available to recover the 401
+         localStorage.removeItem('access_token');
+         localStorage.removeItem('user');
+         alert("Session expired or missing. Please log in again.");
+         window.location.href = '/login';
+         return Promise.reject(error);
       }
     }
 

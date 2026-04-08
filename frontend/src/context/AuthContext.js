@@ -16,7 +16,9 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem('user', JSON.stringify(data));
         })
         .catch(() => {
-          localStorage.clear();
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          localStorage.removeItem('user');
         })
         .finally(() => setLoading(false));
     } else {
@@ -75,7 +77,9 @@ export const AuthProvider = ({ children }) => {
       const refresh = localStorage.getItem('refresh_token');
       await authAPI.logout(refresh);
     } catch { }
-    localStorage.clear();
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
     setUser(null);
   };
 
