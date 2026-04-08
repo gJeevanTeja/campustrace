@@ -3,7 +3,8 @@ import { adminAPI } from '../../services/api';
 import {
     Building2, Users, ClipboardList, ShieldCheck, 
     TrendingUp, Layers, CheckCircle, AlertCircle,
-    ArrowUpRight, ArrowDownRight, Activity
+    ArrowUpRight, ArrowDownRight, Activity, Wallet,
+    CheckSquare, Coins, PieChart, Info
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
@@ -37,15 +38,20 @@ const StatCard = ({ title, value, icon: Icon, color, trend, delay }) => (
 
 const SuperAdminDashboard = ({ darkMode: dm }) => {
     const [stats, setStats] = useState(null);
+    const [escrowStats, setEscrowStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchGlobalStats = async () => {
             try {
-                // Fetch main analytics
-                const { data } = await adminAPI.getGlobalAnalytics();
-                setStats(data);
+                // Fetch main analytics and escrow analytics parallelly
+                const [globalRes, escrowRes] = await Promise.all([
+                    adminAPI.getGlobalAnalytics(),
+                    adminAPI.getEscrowAnalytics().catch(() => ({ data: {} })) // fallback gracefully
+                ]);
+                setStats(globalRes.data);
+                setEscrowStats(escrowRes.data);
             } catch (err) {
                 console.error('Failed to load global metrics:', err);
                 setError('Unable to synchronize with global intelligence node.');
@@ -158,8 +164,67 @@ const SuperAdminDashboard = ({ darkMode: dm }) => {
                 />
             </div>
 
+            {/* Escrow Analytics Section */}
+            {escrowStats && (
+                <div className="space-y-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                                <Wallet size={20} className="text-emerald-500" />
+                                <h3 className="text-2xl font-black text-text-primary dark:text-slate-100 uppercase tracking-tighter">Reward Escrow Analytics</h3>
+                            </div>
+                            <p className="text-[10px] uppercase font-bold tracking-widest text-text-secondary pl-7">Financial oversight operations</p>
+                        </div>
+                        <button onClick={() => window.location.href = '/admin/escrow-control'} className="text-[10px] font-black uppercase tracking-widest text-emerald-500 hover:text-emerald-600 transition-colors flex items-center gap-1">
+                            Go To Escrow Control <ArrowUpRight size={14} />
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        <StatCard 
+                            title="Total Rewards Released"
+                            value={`₹${escrowStats.total_rewards_released || 0}`}
+                            icon={Coins}
+                            color="from-teal-400 to-emerald-500"
+                            trend={+4.1}
+                        />
+                        <StatCard 
+                            title="Platform Earnings"
+                            value={`₹${escrowStats.platform_earnings || 0}`}
+                            icon={PieChart}
+                            color="from-blue-500 to-indigo-600"
+                            trend={+12.4}
+                        />
+                        <StatCard 
+                            title="Pending Escrow"
+                            value={escrowStats.pending_escrow || 0}
+                            icon={Info}
+                            color="from-amber-400 to-orange-500"
+                        />
+                        <StatCard 
+                            title="Fraud Prevented"
+                            value={escrowStats.fraud_prevented || 0}
+                            icon={ShieldCheck}
+                            color="from-rose-400 to-red-500"
+                        />
+                        <StatCard 
+                            title="UPI Payout Success"
+                            value={escrowStats.upi_payout_success || 0}
+                            icon={CheckCircle}
+                            color="from-blue-500 to-indigo-500"
+                        />
+                        <StatCard 
+                            title="Pending UPI Failures"
+                            value={escrowStats.pending_upi_failures || 0}
+                            icon={AlertCircle}
+                            color="from-rose-500 to-red-600"
+                        />
+                    </div>
+                </div>
+            )}
+
             {/* Charts Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-4 border-t border-slate-100 dark:border-slate-800">
                 {/* Main Activity Chart */}
                 <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm relative overflow-hidden group transition-all">
                     <div className="flex items-center justify-between mb-8 relative z-10">

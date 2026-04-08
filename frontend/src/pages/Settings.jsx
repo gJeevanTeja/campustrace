@@ -12,7 +12,8 @@ import {
   ShieldCheck, 
   Sparkles,
   Zap,
-  CheckCircle2
+  CheckCircle2,
+  Wallet
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PremiumCard from '../components/ui/PremiumCard';
@@ -23,6 +24,7 @@ const Settings = ({ darkMode, setDarkMode }) => {
         notifications_enabled: true,
         notification_sound: true,
         email_notifications: true,
+        upi_id: '',
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -65,6 +67,22 @@ const Settings = ({ darkMode, setDarkMode }) => {
         } catch (err) {
             setSettings(prev => ({ ...prev, [key]: !newVal }));
             showToast('Protocol failure: Sync aborted');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleSaveUPI = async () => {
+        if (!settings.upi_id || !settings.upi_id.includes('@')) {
+            showToast('Invalid UPI format (requires @)');
+            return;
+        }
+        setSaving(true);
+        try {
+            await authAPI.updateSettings({ upi_id: settings.upi_id });
+            showToast('UPI Address Linked Successfully');
+        } catch (err) {
+            showToast(err.response?.data?.upi_id?.[0] || 'Failed to link UPI');
         } finally {
             setSaving(false);
         }
@@ -153,6 +171,35 @@ const Settings = ({ darkMode, setDarkMode }) => {
                             onToggle={() => handleToggle('email_notifications')} 
                             color="text-success"
                         />
+                    </PremiumCard>
+                </section>
+
+                {/* Financial Links */}
+                <section className="space-y-4">
+                    <h3 className="text-[10px] font-black uppercase tracking-[3px] text-text-secondary dark:text-slate-500 pl-2">Financial Routing (UPI)</h3>
+                    <PremiumCard className="p-6 space-y-4 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex flex-col md:flex-row gap-6 items-start md:items-center">
+                        <div className="flex items-center gap-4 flex-1">
+                            <div className="w-12 h-12 text-emerald-500 bg-emerald-500/10 rounded-2xl flex items-center justify-center shrink-0">
+                                <Wallet size={20} />
+                            </div>
+                            <div className="flex-1 w-full">
+                                <p className="text-sm font-black text-text-primary dark:text-slate-100 uppercase tracking-tight">Reward UPI ID</p>
+                                <p className="text-[10px] font-medium text-text-secondary dark:text-slate-400 mb-2">Configure account for reward payouts (e.g. name@bank)</p>
+                                <input 
+                                    type="text" 
+                                    placeholder="Enter UPI Address..."
+                                    value={settings.upi_id || ''}
+                                    onChange={(e) => setSettings({...settings, upi_id: e.target.value.trim()})}
+                                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-bold text-text-primary dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
+                                />
+                            </div>
+                        </div>
+                        <button 
+                            onClick={handleSaveUPI}
+                            className="w-full md:w-auto px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-colors shadow-lg shadow-emerald-500/20 active:scale-95"
+                        >
+                            Link Account
+                        </button>
                     </PremiumCard>
                 </section>
 

@@ -41,6 +41,8 @@ const MyClaims = lazy(() => import('./pages/MyClaims'));
 const ResolutionManager = lazy(() => import('./pages/admin/ResolutionManager'));
 const CollegeInfo = lazy(() => import('./pages/admin/CollegeInfo'));
 const SuperAdminDashboard = lazy(() => import('./pages/admin/SuperAdminDashboard'));
+const ProofReviews = lazy(() => import('./pages/admin/ProofReviews'));
+const EscrowControl = lazy(() => import('./pages/admin/EscrowControl'));
 
 function AppRoutes() {
   const { darkMode, setDarkMode } = useTheme();
@@ -85,6 +87,8 @@ function AppRoutes() {
                   <Route path="/admin/requests" element={<AdminRequestManager darkMode={darkMode} />} />
                   <Route path="/admin/resolutions" element={<ResolutionManager darkMode={darkMode} />} />
                   <Route path="/admin/college-info" element={<CollegeInfo darkMode={darkMode} />} />
+                  <Route path="/admin/proof-reviews" element={<ProofReviews darkMode={darkMode} />} />
+                  <Route path="/admin/escrow-control" element={<EscrowControl darkMode={darkMode} />} />
 
                   {/* Main Routes */}
                   <Route path="/" element={<Home darkMode={darkMode} setDarkMode={setDarkMode} />} />

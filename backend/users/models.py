@@ -79,6 +79,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     badges             = models.JSONField(default=list, blank=True)
     trust_score        = models.IntegerField(default=100)
 
+    # Payments Layer
+    upi_id             = models.CharField(max_length=100, blank=True, null=True)
+
     # Django Required
     is_active  = models.BooleanField(default=True)
     is_staff   = models.BooleanField(default=False)

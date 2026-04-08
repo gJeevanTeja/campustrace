@@ -15,7 +15,7 @@ class UserSerializer(serializers.ModelSerializer):
             'section', 'college_year', 'student_id', 'avatar', 'avatar_url',
             'notifications_enabled', 'notification_sound', 'email_notifications',
             'dark_mode', 'auth_provider', 'created_at', 'reward_points', 'level',
-            'successful_returns', 'badges', 'college_data'
+            'successful_returns', 'badges', 'college_data', 'upi_id'
         ]
         read_only_fields = ['id', 'created_at']
 
@@ -244,8 +244,16 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
         fields = [
             'name', 'username', 'phone', 'department', 'section',
             'college_year', 'notifications_enabled',
-            'notification_sound', 'email_notifications', 'dark_mode'
+            'notification_sound', 'email_notifications', 'dark_mode', 'upi_id'
         ]
+
+    def validate_upi_id(self, value):
+        if not value:
+            return value
+        value = value.strip().lower()
+        if '@' not in value:
+            raise serializers.ValidationError("Enter a valid UPI ID (e.g. name@bank)")
+        return value
 
     def validate_username(self, value):
         if not value:

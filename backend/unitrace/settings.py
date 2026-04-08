@@ -231,5 +231,10 @@ USE_TZ = True
 RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'rzp_test_placeholder')
 RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', 'placeholder_secret')
 
+# RazorpayX Payout Settings
+RAZORPAYX_KEY_ID = os.environ.get('RAZORPAYX_KEY_ID', RAZORPAY_KEY_ID)
+RAZORPAYX_KEY_SECRET = os.environ.get('RAZORPAYX_KEY_SECRET', RAZORPAY_KEY_SECRET)
+RAZORPAYX_ACCOUNT_NUMBER = os.environ.get('RAZORPAYX_ACCOUNT_NUMBER', '2323230076295778')
+
 # Debug Log
 print("Razorpay Key:", RAZORPAY_KEY_ID)

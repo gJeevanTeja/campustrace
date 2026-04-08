@@ -30,7 +30,7 @@ class ClaimSessionSerializer(serializers.ModelSerializer):
 
     def get_has_paid(self, obj):
         from payments.models import RewardPayment
-        return RewardPayment.objects.filter(item=obj.item, payer=obj.claimant, status__in=['paid', 'completed']).exists()
+        return RewardPayment.objects.filter(item=obj.item, payer=obj.claimant, status__in=['paid', 'held', 'proof_pending', 'released', 'completed']).exists()
 
     def get_claim_code(self, obj):
         request = self.context.get('request')
@@ -41,7 +41,7 @@ class ClaimSessionSerializer(serializers.ModelSerializer):
         if obj.item.user == request.user:
              # Only show if paid
              from payments.models import RewardPayment
-             if RewardPayment.objects.filter(item=obj.item, payer=obj.claimant, status__in=['paid', 'completed']).exists():
+             if RewardPayment.objects.filter(item=obj.item, payer=obj.claimant, status__in=['paid', 'held', 'proof_pending', 'released', 'completed']).exists():
                  return obj.claim_code
             
         return None
@@ -123,7 +123,7 @@ class ItemSerializer(serializers.ModelSerializer):
             from payments.models import RewardPayment
             has_paid = RewardPayment.objects.filter(
                 item=obj, 
-                status__in=['paid', 'completed']
+                status__in=['paid', 'held', 'proof_pending', 'released', 'completed']
             ).exists()
             
             if has_paid:
@@ -243,7 +243,7 @@ class ItemSerializer(serializers.ModelSerializer):
             has_paid = RewardPayment.objects.filter(
                 item=obj, 
                 payer=request.user, 
-                status__in=['paid', 'completed']
+                status__in=['paid', 'held', 'proof_pending', 'released', 'completed']
             ).exists()
             
             if has_paid:

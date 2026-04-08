@@ -19,7 +19,9 @@ import {
   QrCode,
   PartyPopper,
   CheckCircle2,
-  Sparkles
+  Sparkles,
+  UploadCloud,
+  Camera
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PremiumCard from '../components/ui/PremiumCard';
@@ -41,6 +43,10 @@ const ItemDetails = ({ darkMode: dm }) => {
   const [selectedReward, setSelectedReward] = useState(null);
   const [isPaying, setIsPaying] = useState(false);
   const [customPrice, setCustomPrice] = useState('');
+  const [proofFile, setProofFile] = useState(null);
+  const [proofComment, setProofComment] = useState('');
+  const [uploadingProof, setUploadingProof] = useState(false);
+  const [proofSuccess, setProofSuccess] = useState(false);
   const rewardShownRef = useRef(false);
   const prevStatusRef = useRef(null);
 
@@ -239,11 +245,7 @@ const ItemDetails = ({ darkMode: dm }) => {
     setConfirming(true);
     try {
       const res = await itemsAPI.confirmReturn(id, code);
-      try {
-        await itemsAPI.releasePayment(id);
-      } catch (re) {
-        console.warn("Silent escrow release failure:", re);
-      }
+      // Wait for proof upload before releasing payment.
 
       if (res.data?.reward?.is_yours === true) {
         setRewardData(res.data.reward);
@@ -255,6 +257,25 @@ const ItemDetails = ({ darkMode: dm }) => {
       alert(e.response?.data?.error || 'Invalid code.');
     } finally {
       setConfirming(false);
+    }
+  };
+
+  const handleUploadProof = async () => {
+    if (!proofFile) return alert("Please select a photo or video to upload as proof.");
+    setUploadingProof(true);
+    try {
+      const formData = new FormData();
+      formData.append('proof', proofFile);
+      if (proofComment) formData.append('comment', proofComment);
+      
+      await itemsAPI.uploadReturnProof(id, formData);
+      setProofSuccess(true);
+      alert("Proof uploaded successfully! Admin will verify and release the reward.");
+      fetchItem(); 
+    } catch (e) {
+      alert(e.response?.data?.error || "Failed to upload proof.");
+    } finally {
+      setUploadingProof(false);
     }
   };
 
@@ -653,6 +674,43 @@ const ItemDetails = ({ darkMode: dm }) => {
                             onVerify={handleConfirmReceipt} 
                             loading={confirming} 
                          />
+                      </motion.div>
+                   )}
+
+                   {item.my_claim && item.status === 'returned' && item.my_claim.status === 'verified' && !proofSuccess && (
+                      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white dark:bg-slate-900 border border-border dark:border-slate-800 rounded-3xl p-6 space-y-4">
+                         <div className="flex items-center gap-3">
+                            <div className="p-3 bg-primary/10 text-primary rounded-2xl">
+                               <Camera size={24} />
+                            </div>
+                            <div>
+                               <h4 className="font-black text-text-primary dark:text-slate-100 uppercase tracking-tighter">Handover Proof Required</h4>
+                               <p className="text-xs text-text-secondary dark:text-slate-400">Upload a photo to release the reward to the finder.</p>
+                            </div>
+                         </div>
+                         <div className="space-y-3">
+                            <label className="border-2 border-dashed border-primary/20 hover:border-primary/50 dark:border-primary/40 rounded-2xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors bg-white dark:bg-slate-950">
+                               <UploadCloud className="text-primary/50" size={32} />
+                               <span className="text-xs font-bold text-text-secondary dark:text-slate-400 text-center">
+                                 {proofFile ? proofFile.name : "Tap to upload photo/video"}
+                               </span>
+                               <input type="file" accept="image/*,video/*" className="hidden" onChange={(e) => setProofFile(e.target.files[0])} />
+                            </label>
+                            <input 
+                              type="text" 
+                              placeholder="Add an optional comment..." 
+                              value={proofComment}
+                              onChange={(e) => setProofComment(e.target.value)}
+                              className="w-full bg-slate-50 dark:bg-slate-950 border border-border dark:border-slate-800 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                            />
+                            <button 
+                              onClick={handleUploadProof}
+                              disabled={!proofFile || uploadingProof}
+                              className="w-full bg-primary text-white py-3 rounded-xl font-black text-sm shadow-lg shadow-primary/20 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                               {uploadingProof ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : "Submit Proof"}
+                            </button>
+                         </div>
                       </motion.div>
                    )}
                 </AnimatePresence>

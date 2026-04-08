@@ -234,6 +234,9 @@ export const itemsAPI = {
   confirmReturn: (itemId, claimCode) => api.post(`items/${itemId}/confirm-return/`, { claim_code: claimCode }),
   approveClaim: (claimId) => api.post(`items/claim/${claimId}/approve/`),
   rejectClaim: (claimId) => api.post(`items/claim/${claimId}/reject/`),
+  uploadReturnProof: (itemId, formData) => api.post(`payments/proof-upload/${itemId}/`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
   initiatePayment: (itemId, data) => api.post(`payments/initiate/${itemId}/`, data),
   verifyPayment: (data) => api.post(`payments/verify/`, data),
   releasePayment: (itemId) => api.post(`payments/release/${itemId}/`),
@@ -332,6 +335,10 @@ export const adminAPI = {
   userAction: (id, action) => api.patch(`auth/admin/users/${id}/${action}/`),
   getUserActivity: (id) => api.get(`auth/admin/users/${id}/activity/`),
 
+  // Escrow flows
+  getProofReviews: () => api.get('payments/proof-reviews/'),
+  reviewProofAction: (id, payload) => api.patch(`payments/proof-review/${id}/`, payload),
+  getEscrowAnalytics: () => api.get('payments/analytics/'),
 };
 
 // ── WebSocket helpers ─────────────────────────────────────────────
