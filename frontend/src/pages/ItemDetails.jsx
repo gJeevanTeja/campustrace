@@ -459,7 +459,7 @@ const ItemDetails = ({ darkMode: dm }) => {
                 </div>
 
                 <div className="flex flex-col gap-4">
-                   {item.can_be_claimed && !item.my_claim && (
+                   {item.type === 'found' && item.status === 'active' && user && (item.user !== user.id && item.user?.id !== user.id) && !item.my_claim && (
                       <button 
                         onClick={isElectronic ? startAIVerification : startNormalClaimFlow}
                         disabled={claiming}
@@ -473,6 +473,16 @@ const ItemDetails = ({ darkMode: dm }) => {
                                {isElectronic ? 'Verify Claim with AI' : 'Claim This Item'}
                              </>
                          )}
+                      </button>
+                   )}
+
+                   {item.type === 'lost' && item.status === 'active' && user && (item.user !== user.id && item.user?.id !== user.id) && !item.my_claim && (
+                      <button 
+                        onClick={() => navigate(`/report?found=${item.id}`)}
+                        className="w-full bg-emerald-500 text-white py-5 rounded-3xl font-black text-lg shadow-xl shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
+                      >
+                         <CheckCircle2 size={24} />
+                         I Found This
                       </button>
                    )}
 
