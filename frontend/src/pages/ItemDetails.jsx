@@ -457,9 +457,12 @@ const ItemDetails = ({ darkMode: dm }) => {
                       </div>
                    </div>
                 </div>
+              </div>
+           </div>
 
-                <div className="flex flex-col gap-4">
-                   {(() => {
+           {/* 3) CLAIM ACTION SECTION */}
+           <div className="flex flex-col gap-4 w-full max-w-2xl mx-auto">
+              {(() => {
                       if (!item || !user) return null;
                       
                       const itemType = String(item.type || item.report_type || item.item_type || '').toLowerCase();
@@ -631,11 +634,9 @@ const ItemDetails = ({ darkMode: dm }) => {
                       </div>
                    )}
                 </div>
-             </div>
-          </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="space-y-4">
+           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+               <div className="space-y-4">
                   <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider flex items-center gap-2">
                     <MapPin size={16} className="text-primary" />
                     Discovery Location
