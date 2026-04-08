@@ -4,7 +4,7 @@ import {
     Building2, Users, ClipboardList, ShieldCheck, 
     TrendingUp, Layers, CheckCircle, AlertCircle,
     ArrowUpRight, ArrowDownRight, Activity, Wallet,
-    CheckSquare, Coins, PieChart, Info
+    Coins, PieChart, Info
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {

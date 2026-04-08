@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminAPI } from '../../services/api';
 import { 
-    CheckCircle, XCircle, FileImage, 
-    AlertCircle, Search, ExternalLink, Calendar 
+    CheckCircle, FileImage 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
