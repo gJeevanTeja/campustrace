@@ -827,24 +827,17 @@ class ApproveVerificationView(APIView):
                         "message": "Unauthorized"
                     }, status=status.HTTP_403_FORBIDDEN)
 
-                has_price = bool(item.product_price)
-                claim_code = None
-                
-                if not has_price:
-                    import random
-                    claim_code = str(random.randint(100000, 999999))
-                    claim.claim_code = claim_code
-                    item.claim_code = claim_code
+                import random
+                claim_code = str(random.randint(100000, 999999))
+                claim.claim_code = claim_code
+                item.claim_code = claim_code
                 
                 claim.status = 'verified'
                 claim.save()
                 item.save()
 
                 # Notify claimant
-                if has_price:
-                    msg = f"Claim approved for '{item.title}'! Please pay the reward to unlock contact details and the exchange code."
-                else:
-                    msg = f"Claim approved! The founder generated the claim code: {claim_code}. Please verify it to confirm receipt."
+                msg = f"Claim approved! Approval code: {claim_code}. Please verify it on the item page to proceed with payment and unlock contact data."
 
                 send_in_app_notification(
                     user=claim.claimant,

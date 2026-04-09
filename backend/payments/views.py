@@ -41,28 +41,31 @@ class InitiatePaymentView(APIView):
             except Exception:
                 pass
         
-        if not item.product_price:
-            return Response({"error": "Item price is not set. Please provide valuation."}, status=status.HTTP_400_BAD_REQUEST)
+        # Check claim status
+        from items.models import ClaimSession
+        claim = ClaimSession.objects.filter(item=item, claimant=request.user, status='verified').first()
+        if not claim:
+            return Response({"error": "Payment is only allowed after the finder approves your claim."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Get or calculate reward
         reward_amount = request.data.get('reward_amount')
-        suggested, min_reward = get_suggested_reward(item.product_price)
-        
-        if reward_amount:
-            reward_amount = Decimal(str(reward_amount))
-            if reward_amount < min_reward:
-                return Response({"error": f"Minimum reward for this item is ₹{min_reward}"}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            reward_amount = suggested
+        if not reward_amount:
+             return Response({"error": "Missing dynamic reward amount."}, status=status.HTTP_400_BAD_REQUEST)
 
-        total_amount = reward_amount # User pays exactly the reward amount
+        try:
+            total_amount = Decimal(str(reward_amount))
+            amount_paise = int(total_amount * 100)
+            if amount_paise < 5000:
+                return Response({"error": "Minimum reward amount is ₹50"}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception:
+             return Response({"error": "Invalid reward amount format."}, status=status.HTTP_400_BAD_REQUEST)
+
         commission = calculate_commission(total_amount)
         finder_amount = total_amount - commission
         
         # Create Razorpay Order
         try:
             order_data = {
-                "amount": int(total_amount * 100), # amount in paise
+                "amount": amount_paise,
                 "currency": "INR",
                 "payment_capture": "1"
             }
@@ -127,35 +130,17 @@ class VerifyPaymentView(APIView):
             # Logging
             print(f"PAYMENT_SUCCESS: Order={payment.razorpay_order_id}, Reward={payment.amount}, Commission={payment.commission}, Finder={payment.finder_amount}")
 
-            # NEW: Generate claim code and notify ONLY after payment
-            import random
-            claim_code = str(random.randint(100000, 999999))
-            
             item = payment.item
-            item.claim_code = claim_code
-            item.save()
-
-            # Update the active claim session for this claimant
-            from items.models import ClaimSession
-            claim = ClaimSession.objects.filter(item=item, claimant=payment.payer, status='verified').first()
-            if not claim:
-                # Fallback to any pending claim if verified not found
-                claim = ClaimSession.objects.filter(item=item, claimant=payment.payer).first()
-            
-            if claim:
-                claim.claim_code = claim_code
-                claim.save()
-
-            # Notify claimant with code
+            # Notify claimant with success
             from items.views import send_in_app_notification
             send_in_app_notification(
                 user=payment.payer,
                 item=item,
-                message=f"Payment successful! Reward escrowed. Your escape code is: {claim_code}. Use this to confirm receipt with the finder.",
-                notification_type='claim_verified'
+                message="Payment successful! Reward escrowed. Finder contact details are now unlocked for you to arrange the handover.",
+                notification_type='payment_success'
             )
             
-            return Response({"message": "Payment verified and code generated.", "status": "held", "claim_code": claim_code})
+            return Response({"message": "Payment verified.", "status": "held", "claim_code": getattr(item, 'claim_code', None)})
             
         except Exception as e:
             payment = RewardPayment.objects.filter(razorpay_order_id=razorpay_order_id).first()
