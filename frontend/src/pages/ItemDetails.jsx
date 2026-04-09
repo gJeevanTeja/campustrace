@@ -21,7 +21,8 @@ import {
   CheckCircle2,
   Sparkles,
   UploadCloud,
-  Camera
+  Camera,
+  ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PremiumCard from '../components/ui/PremiumCard';
