@@ -255,6 +255,7 @@ export const itemsAPI = {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
   verifyClaim: (id, answers) => api.post(`items/${id}/verify-claim/`, { answers }),
+  verifyApprovalCode: (id, payload) => api.post(`items/${id}/verify-approval-code/`, payload),
   confirmReturn: (itemId, claimCode) => api.post(`items/${itemId}/confirm-return/`, { claim_code: claimCode }),
   approveClaim: (claimId) => api.post(`items/claim/${claimId}/approve/`),
   rejectClaim: (claimId) => api.post(`items/claim/${claimId}/reject/`),

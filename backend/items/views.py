@@ -827,11 +827,14 @@ class ApproveVerificationView(APIView):
                         "message": "Unauthorized"
                     }, status=status.HTTP_403_FORBIDDEN)
 
-                import random
-                claim_code = str(random.randint(100000, 999999))
-                claim.claim_code = claim_code
-                item.claim_code = claim_code
-                
+                if not claim.claim_code:
+                    import random
+                    claim_code = str(random.randint(100000, 999999))
+                    claim.claim_code = claim_code
+                    item.claim_code = claim_code
+                else:
+                    claim_code = claim.claim_code
+                    
                 claim.status = 'verified'
                 claim.save()
                 item.save()
@@ -893,6 +896,33 @@ class RejectClaimView(APIView):
             from unitrace.api_utils import log_event
             log_event("reject_claim_error", {"error": str(e), "claim_id": claim_id}, level="error")
             raise e
+
+class VerifyApprovalCodeView(APIView):
+    def post(self, request, item_id):
+        try:
+            entered_code = request.data.get("code")
+            if not entered_code:
+                return Response({"success": False, "message": "Code is required."}, status=status.HTTP_400_BAD_REQUEST)
+                
+            claim = ClaimSession.objects.filter(
+                item_id=item_id, 
+                claimant=request.user, 
+                status="verified"
+            ).latest("created_at")
+            
+            print("DB CODE:", claim.claim_code)
+            print("USER INPUT:", entered_code)
+            
+            if str(claim.claim_code).strip() != str(entered_code).strip():
+                return Response({"success": False, "message": "Invalid approval code."}, status=status.HTTP_400_BAD_REQUEST)
+                
+            return Response({"success": True, "message": "Code verified successfully."})
+        except ClaimSession.DoesNotExist:
+            return Response({"success": False, "message": "No verified claim found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            from unitrace.api_utils import log_event
+            log_event("verify_approval_code_error", {"error": str(e), "item_id": item_id}, level="error")
+            return Response({"success": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class GenerateElectronicQuestionsView(APIView):
     def post(self, request):

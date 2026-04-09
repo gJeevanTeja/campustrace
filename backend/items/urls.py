@@ -2,9 +2,9 @@ from django.urls import path
 from .views import (
     ItemListCreateView, ItemDetailView, ClaimItemView,
     MyItemsView, MyClaimsView, RecentItemsView, AddItemPhotosView,
-    NearbyItemsView, VerifyClaimView, ConfirmReturnView,
+    VerifyClaimView, ConfirmReturnView,
     ApproveVerificationView, SubmitAIAnswerView, RejectClaimView,
-    GenerateElectronicQuestionsView
+    GenerateElectronicQuestionsView, VerifyApprovalCodeView
 )
 
 urlpatterns = [
@@ -17,6 +17,7 @@ urlpatterns = [
     path('<int:pk>/', ItemDetailView.as_view(), name='item-detail'),
     path('<int:pk>/claim/', ClaimItemView.as_view(), name='claim-item'),
     path('<int:pk>/verify-claim/', VerifyClaimView.as_view(), name='verify-claim'),
+    path('<int:item_id>/verify-approval-code/', VerifyApprovalCodeView.as_view(), name='verify-approval-code'),
     path('<int:pk>/submit-ai-answer/', SubmitAIAnswerView.as_view(), name='submit-ai-answer'),
 
     path('<int:item_id>/confirm-return/', ConfirmReturnView.as_view(), name='confirm-return'),

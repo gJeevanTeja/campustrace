@@ -552,12 +552,13 @@ const ItemDetails = ({ darkMode: dm }) => {
                                          className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-primary/20 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 font-black text-center tracking-[0.2em] text-lg text-primary"
                                       />
                                       <button 
-                                         onClick={() => {
-                                            if (enteredCode.trim() === String(item.claim_code)) {
+                                         onClick={async () => {
+                                            try {
+                                                await itemsAPI.verifyApprovalCode(item.id, { code: enteredCode.trim() });
                                                 setIsCodeVerified(true);
                                                 alert("Code verified! Please proceed to payment.");
-                                            } else {
-                                                alert("Invalid approval code.");
+                                            } catch (err) {
+                                                alert(err.response?.data?.message || err.response?.data?.error || "Invalid approval code.");
                                             }
                                          }}
                                          disabled={!enteredCode}
