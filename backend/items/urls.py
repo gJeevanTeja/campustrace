@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     ItemListCreateView, ItemDetailView, ClaimItemView,
     MyItemsView, MyClaimsView, RecentItemsView, AddItemPhotosView,
-    VerifyClaimView, ConfirmReturnView,
+    NearbyItemsView, VerifyClaimView, ConfirmReturnView,
     ApproveVerificationView, SubmitAIAnswerView, RejectClaimView,
     GenerateElectronicQuestionsView, VerifyApprovalCodeView
 )
