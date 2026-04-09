@@ -82,6 +82,7 @@ class ItemSerializer(serializers.ModelSerializer):
     contact_phone     = serializers.SerializerMethodField()
     matching_lost_item_price = serializers.SerializerMethodField()
     matching_lost_item_id = serializers.SerializerMethodField()
+    matching_lost_item_reward = serializers.SerializerMethodField()
 
     class Meta:
         model  = Item
@@ -98,7 +99,7 @@ class ItemSerializer(serializers.ModelSerializer):
             'is_electronics', 'latitude', 'longitude',
             'brand', 'color', 'unique_mark', 'verification_questions', 'verification_answers',
             'product_price', 'reward_amount', 'reward_suggestions',
-            'matching_lost_item_price', 'matching_lost_item_id'
+            'matching_lost_item_price', 'matching_lost_item_id', 'matching_lost_item_reward'
         ]
         read_only_fields = ['id', 'reference_number', 'user', 'created_at', 'updated_at', 'claim_code']
 
@@ -144,6 +145,20 @@ class ItemSerializer(serializers.ModelSerializer):
         ).order_by('-created_at').first()
         if match and match.product_price:
             return float(match.product_price)
+        return None
+
+    def get_matching_lost_item_reward(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated or obj.type != 'found':
+            return None
+        match = Item.objects.filter(
+            user=request.user, 
+            type='lost', 
+            category=obj.category,
+            status='active'
+        ).order_by('-created_at').first()
+        if match and match.reward_amount:
+            return float(match.reward_amount)
         return None
 
     def get_matching_lost_item_id(self, obj):

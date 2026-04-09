@@ -62,6 +62,7 @@ const ReportItem = ({ darkMode: dm }) => {
     verification_questions: [],
     verification_answers: {},
     product_price: '',
+    reward_amount: '',
   });
 
   const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
@@ -192,6 +193,10 @@ const ReportItem = ({ darkMode: dm }) => {
     if (!form.incident_date) return setError('Please select a date');
     if (!form.incident_time) return setError('Please select a time');
     if (isLost && !form.product_price) return setError('Product Price is required for lost items');
+    if (isLost) {
+      const reward = parseFloat(form.reward_amount);
+      if (isNaN(reward) || reward < 50) return setError('Reward amount must be at least ₹50');
+    }
 
     if (!isLost && isElectronic) {
       if (!questionsGenerated) return setError('Please generate verification questions for this electronic item.');
@@ -362,7 +367,21 @@ const ReportItem = ({ darkMode: dm }) => {
                           placeholder=""
                           className="w-full bg-white dark:bg-slate-950 border border-primary/20 dark:border-slate-700 rounded-xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-black text-lg text-primary dark:text-primary-light"
                         />
-                       <p className="text-[10px] text-primary/60 dark:text-primary/40 font-bold uppercase">This helps us calculate the fair reward and platform commission.</p>
+                       <p className="text-[10px] text-primary/60 dark:text-primary/40 font-bold uppercase mb-4">This helps us calculate the fair platform commission.</p>
+
+                       <label className="text-sm font-black text-primary uppercase tracking-wider flex items-center gap-2 mt-4">
+                         <Sparkles size={16} /> Reward Amount for Finder (₹) (Min ₹50)
+                       </label>
+                        <input 
+                          name="reward_amount" 
+                          type="number"
+                          value={form.reward_amount} 
+                          onChange={handleChange}
+                          min="50"
+                          placeholder="e.g. 50"
+                          className="w-full bg-white dark:bg-slate-950 border border-primary/20 dark:border-slate-700 rounded-xl px-5 py-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-black text-lg text-primary dark:text-primary-light"
+                        />
+                       <p className="text-[10px] text-primary/60 dark:text-primary/40 font-bold uppercase">This exact amount will be locked and requested from you when a match is found.</p>
                     </div>
                   )}
                   </div>

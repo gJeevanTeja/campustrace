@@ -147,19 +147,20 @@ const ItemDetails = ({ darkMode: dm }) => {
   };
 
   const handlePayment = async () => {
-    const priceToUse = item.product_price || customPrice;
-    if (!priceToUse) return alert("Please enter the product value first.");
-    if (!selectedReward) return alert("Please select a reward amount.");
+    const lockedReward = item.matching_lost_item_reward || selectedReward || 50;
+    const priceToUse = item.product_price || customPrice || 1000;
+    
+    if (!item.matching_lost_item_reward && !selectedReward) return alert("Please select a reward amount.");
     
     setIsPaying(true);
     try {
       const { data } = await itemsAPI.initiatePayment(id, { 
-        reward_amount: selectedReward,
+        reward_amount: lockedReward,
         product_price: priceToUse 
       });
       
       const options = {
-        key: process.env.REACT_APP_RAZORPAY_KEY_ID || data.key_id,
+        key: data.key_id, // OVERRIDE FOR RAZORPAY AUTH FAIL: STRICTLY USE BACKEND KEY
         amount: data.amount * 100,
         currency: data.currency,
         name: "UniTrace Reward",
@@ -536,73 +537,92 @@ const ItemDetails = ({ darkMode: dm }) => {
                                  </div>
                               </div>
 
-                              {!item.product_price && (
-                                <div className="space-y-2">
-                                  <label className="text-[10px] font-black text-primary uppercase tracking-wider flex items-center gap-2">
-                                    <Sparkles size={14} /> Confirm Product Market Price (₹)
-                                  </label>
-                                  <input 
-                                    type="number"
-                                    value={customPrice}
-                                    onChange={(e) => {
-                                      setCustomPrice(e.target.value);
-                                      const details = getAutomaticDetails(e.target.value);
-                                      setSelectedReward(details.suggested);
-                                    }}
-                                    placeholder="e.g. 5000"
-                                    className="w-full bg-white dark:bg-slate-900 border-2 border-primary/20 dark:border-primary/40 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-black text-primary"
-                                  />
-                                  <p className="text-[9px] text-text-secondary dark:text-slate-400 font-bold uppercase">This price determines the fair reward suggestion.</p>
+                              {item.matching_lost_item_reward ? (
+                                <div className="bg-primary/5 dark:bg-slate-800 rounded-3xl p-5 border border-primary/20 dark:border-primary/30 space-y-4">
+                                   <div className="flex items-center gap-2">
+                                       <Sparkles size={18} className="text-primary" />
+                                       <span className="text-xs font-black text-primary uppercase tracking-wider">Reward Locked from Lost Report</span>
+                                   </div>
+                                   <div className="flex justify-between items-center bg-white dark:bg-slate-900 px-5 py-4 rounded-2xl border border-border dark:border-slate-700 shadow-sm">
+                                      <span className="text-sm font-bold text-text-secondary dark:text-slate-400 uppercase tracking-tight">Total to Pay (Escrow)</span>
+                                      <span className="text-3xl font-black text-primary">₹{item.matching_lost_item_reward}</span>
+                                   </div>
+                                   <p className="text-[10px] text-primary/70 dark:text-primary/60 uppercase font-black tracking-tight text-center">
+                                      This exact reward amount was predefined by you. Platform commission will be automatically deducted before payout.
+                                   </p>
+                                </div>
+                              ) : (
+                                <div className="space-y-4">
+                                   {!item.product_price && (
+                                     <div className="space-y-2">
+                                       <label className="text-[10px] font-black text-primary uppercase tracking-wider flex items-center gap-2">
+                                         <Sparkles size={14} /> Confirm Product Market Price (₹)
+                                       </label>
+                                       <input 
+                                         type="number"
+                                         value={customPrice}
+                                         onChange={(e) => {
+                                           setCustomPrice(e.target.value);
+                                           const details = getAutomaticDetails(e.target.value);
+                                           setSelectedReward(details.suggested);
+                                         }}
+                                         placeholder="e.g. 5000"
+                                         className="w-full bg-white dark:bg-slate-900 border-2 border-primary/20 dark:border-primary/40 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-black text-primary"
+                                       />
+                                       <p className="text-[9px] text-text-secondary dark:text-slate-400 font-bold uppercase">This price determines the fair reward suggestion.</p>
+                                     </div>
+                                   )}
+
+                                   <div className="space-y-4">
+                                       <div className="space-y-1">
+                                         <label className="text-[10px] font-black text-text-secondary dark:text-slate-400 uppercase">Select Reward Amount</label>
+                                         <p className="text-[11px] font-bold text-primary">
+                                           Suggested Reward Range based on item value ₹{currentPrice}
+                                         </p>
+                                         <p className="text-[10px] text-text-secondary dark:text-slate-400">
+                                           Minimum reward: <span className="font-black">₹{autoDetails.suggested}</span>. You can choose a higher reward for a faster response.
+                                         </p>
+                                       </div>
+                                       <div className="grid grid-cols-2 gap-2">
+                                          {[
+                                            autoDetails.suggested,
+                                            Math.round(autoDetails.suggested * 1.5),
+                                            Math.round(autoDetails.suggested * 2),
+                                            Math.round(autoDetails.suggested * 3)
+                                          ].filter(amt => amt > 0).map((amt, i) => (
+                                            <button 
+                                              key={i} 
+                                              onClick={() => setSelectedReward(amt)}
+                                              className={`py-3 rounded-xl border-2 font-black text-sm transition-all ${selectedReward === amt ? 'bg-primary border-primary text-white ring-4 ring-primary/10 scale-[1.02]' : 'bg-white dark:bg-slate-900 border-border dark:border-slate-800 text-text-secondary dark:text-slate-400 hover:border-primary/20'}`}
+                                            >
+                                              ₹{amt}
+                                            </button>
+                                          ))}
+                                       </div>
+                                       <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-border dark:border-slate-800 space-y-2 transition-colors">
+                                          <div className="flex justify-between text-xs">
+                                             <span className="text-text-secondary dark:text-slate-400 font-bold">Reward for Finder:</span>
+                                             <span className="text-text-primary dark:text-slate-100 font-black">₹{selectedReward || 0}</span>
+                                          </div>
+                                          <div className="flex justify-between text-[10px]">
+                                             <span className="text-text-secondary dark:text-slate-500">Commission will be deducted from reward.</span>
+                                          </div>
+                                          <div className="pt-2 border-t border-border dark:border-slate-800 flex justify-between text-sm">
+                                             <span className="font-black text-text-primary dark:text-slate-100 uppercase tracking-tighter">Total to Pay (Escrow):</span>
+                                             <span className="font-black text-primary text-lg">₹{selectedReward || 0}</span>
+                                          </div>
+                                       </div>
+                                   </div>
                                 </div>
                               )}
 
-                              <div className="space-y-4">
-                                  <div className="space-y-1">
-                                    <label className="text-[10px] font-black text-text-secondary dark:text-slate-400 uppercase">Select Reward Amount</label>
-                                    <p className="text-[11px] font-bold text-primary">
-                                      Suggested Reward Range based on item value ₹{currentPrice}
-                                    </p>
-                                    <p className="text-[10px] text-text-secondary dark:text-slate-400">
-                                      Minimum reward: <span className="font-black">₹{autoDetails.suggested}</span>. You can choose a higher reward for a faster response.
-                                    </p>
-                                  </div>
-                                  <div className="grid grid-cols-2 gap-2">
-                                     {[
-                                       autoDetails.suggested,
-                                       Math.round(autoDetails.suggested * 1.5),
-                                       Math.round(autoDetails.suggested * 2),
-                                       Math.round(autoDetails.suggested * 3)
-                                     ].filter(amt => amt > 0).map((amt, i) => (
-                                       <button 
-                                         key={i} 
-                                         onClick={() => setSelectedReward(amt)}
-                                         className={`py-3 rounded-xl border-2 font-black text-sm transition-all ${selectedReward === amt ? 'bg-primary border-primary text-white ring-4 ring-primary/10 scale-[1.02]' : 'bg-white dark:bg-slate-900 border-border dark:border-slate-800 text-text-secondary dark:text-slate-400 hover:border-primary/20'}`}
-                                       >
-                                         ₹{amt}
-                                       </button>
-                                     ))}
-                                  </div>
-                                  <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-border dark:border-slate-800 space-y-2 transition-colors">
-                                     <div className="flex justify-between text-xs">
-                                        <span className="text-text-secondary dark:text-slate-400 font-bold">Reward for Finder:</span>
-                                        <span className="text-text-primary dark:text-slate-100 font-black">₹{selectedReward || 0}</span>
-                                     </div>
-                                     <div className="flex justify-between text-[10px]">
-                                        <span className="text-text-secondary dark:text-slate-500">Commission will be deducted from reward.</span>
-                                     </div>
-                                     <div className="pt-2 border-t border-border dark:border-slate-800 flex justify-between text-sm">
-                                        <span className="font-black text-text-primary dark:text-slate-100 uppercase tracking-tighter">Total to Pay (Escrow):</span>
-                                        <span className="font-black text-primary text-lg">₹{selectedReward || 0}</span>
-                                     </div>
-                                  </div>
-                               </div>
-
                               <button 
                                 onClick={handlePayment}
-                                disabled={isPaying || !currentPrice}
+                                disabled={isPaying || (!item.matching_lost_item_reward && !currentPrice)}
                                 className="w-full bg-primary text-white py-4 rounded-2xl font-black shadow-xl shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                               >
                                 {isPaying ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : "PROCEED TO PAY"}
+                                {!isPaying && <ArrowRight size={20} />}
                               </button>
                               <p className="text-[10px] text-center text-text-secondary font-bold">Payment is safe. Money will be released only after item confirmation.</p>
                            </div>
